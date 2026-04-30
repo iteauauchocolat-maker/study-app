@@ -1030,7 +1030,6 @@ function buildSampleData() {
     ],
     units: [
       { id: 'u-eng-1', subjectId: 'english', name: '基本単語', parentId: null },
-      { id: 'u-kan-1', subjectId: 'kanji',   name: '中学漢字',   parentId: null },
       { id: 'u-soc-1', subjectId: 'social',  name: '日本史',     parentId: null },
       { id: 'u-sci-1', subjectId: 'science', name: '基礎',       parentId: null }
     ],
@@ -1041,12 +1040,6 @@ function buildSampleData() {
       { id: 'q-e3', unitId: 'u-eng-1', type: 'qa', question: '「先生」を英語で', answers: ['teacher'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
       { id: 'q-e4', unitId: 'u-eng-1', type: 'qa', question: '「本」を英語で', answers: ['book'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
       { id: 'q-e5', unitId: 'u-eng-1', type: 'qa', question: '「昼食」を英語で', answers: ['lunch'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
-      // 漢字
-      { id: 'q-k1', unitId: 'u-kan-1', type: 'qa', question: '「えいえん」を漢字で', answers: ['永遠'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
-      { id: 'q-k2', unitId: 'u-kan-1', type: 'qa', question: '「じゅんび」を漢字で', answers: ['準備'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
-      { id: 'q-k3', unitId: 'u-kan-1', type: 'qa', question: '「けっか」を漢字で', answers: ['結果'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
-      { id: 'q-k4', unitId: 'u-kan-1', type: 'qa', question: '「ぎもん」を漢字で', answers: ['疑問'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
-      { id: 'q-k5', unitId: 'u-kan-1', type: 'qa', question: '「ふくざつ」を漢字で', answers: ['複雑'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
       // 社会
       { id: 'q-s1', unitId: 'u-soc-1', type: 'qa', question: '1192年に鎌倉幕府を開いた人物は?', answers: ['源頼朝'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
       { id: 'q-s2', unitId: 'u-soc-1', type: 'qa', question: '江戸幕府を開いた人物は?', answers: ['徳川家康'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
@@ -1099,6 +1092,19 @@ function loadState() {
       const pack = buildKanji5L2Pack();
       state.units.push(pack.unit);
       state.questions.push(...pack.questions);
+      migrated = true;
+    }
+    // 旧サンプル単元「中学漢字」(u-kan-1) を削除
+    if (state.units.some(u => u.id === 'u-kan-1')) {
+      const removedQIds = new Set(
+        state.questions.filter(q => q.unitId === 'u-kan-1').map(q => q.id)
+      );
+      state.units = state.units.filter(u => u.id !== 'u-kan-1');
+      state.questions = state.questions.filter(q => q.unitId !== 'u-kan-1');
+      // 履歴に残っている参照も除去
+      Object.keys(state.history).forEach(pid => {
+        state.history[pid] = state.history[pid].filter(h => !removedQIds.has(h.questionId));
+      });
       migrated = true;
     }
     if (migrated) saveState();
