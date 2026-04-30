@@ -955,6 +955,91 @@ input, textarea, select {
   .print-area .answer-text {
     font-weight: 600;
   }
+
+  /* 漢字書き取りプリント (縦書きグリッド) */
+  .print-area .kp-page {
+    page-break-after: always;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .print-area .kp-page:last-child { page-break-after: auto; }
+  .print-area .kp-header {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4mm;
+    font-size: 10pt;
+    border-bottom: 0.5pt solid #888;
+    padding-bottom: 2mm;
+  }
+  .print-area .kp-header .kp-title { font-weight: 600; font-size: 12pt; }
+  .print-area .kp-grid {
+    flex: 1;
+    display: grid;
+    gap: 1.5mm;
+  }
+  .print-area .kp-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .print-area .kp-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .print-area .kp-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .print-area .kp-grid.cols-5 { grid-template-columns: repeat(5, 1fr); }
+  .print-area .kp-grid.rows-4 { grid-template-rows: repeat(4, 1fr); }
+  .print-area .kp-grid.rows-5 { grid-template-rows: repeat(5, 1fr); }
+  .print-area .kp-grid.rows-6 { grid-template-rows: repeat(6, 1fr); }
+  .print-area .kp-cell {
+    border: 0.8pt solid #555;
+    border-radius: 1mm;
+    display: flex;
+    flex-direction: row-reverse;
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .print-area .kp-cell.kp-cell-empty { border-style: dashed; border-color: #ddd; }
+  .print-area .kp-cell .kp-q {
+    writing-mode: vertical-rl;
+    font-family: 'Klee One', 'Yu Mincho', 'Hiragino Mincho ProN', serif;
+    font-size: 13pt;
+    padding: 3mm 1.5mm 2mm;
+    border-left: 0.5pt solid #aaa;
+    flex-shrink: 0;
+    text-align: start;
+    background: #f7f7f7;
+    color: #222;
+  }
+  .print-area .kp-cell .kp-q.kp-q-large { font-size: 22pt; font-weight: 600; }
+  .print-area .kp-cell .kp-a {
+    flex: 1;
+    padding: 2mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    writing-mode: vertical-rl;
+    font-family: 'Klee One', 'Yu Mincho', 'Hiragino Mincho ProN', serif;
+  }
+  .print-area .kp-cell .kp-a-shown {
+    color: #c00;
+    font-size: 22pt;
+    font-weight: 600;
+  }
+  .print-area .kp-cell .kp-a-shown.kp-a-yomi { font-size: 14pt; }
+  .print-area .kp-cell .kp-mark {
+    position: absolute;
+    top: 0.5mm;
+    right: 0.5mm;
+    font-size: 9pt;
+    font-weight: bold;
+    background: #fff;
+    padding: 0 1mm;
+    border-radius: 1mm;
+    line-height: 1;
+    z-index: 2;
+  }
+  .print-area .kp-mark.o { color: #1a8a2a; border: 0.4pt solid #1a8a2a; }
+  .print-area .kp-mark.d { color: #c08000; border: 0.4pt solid #c08000; }
+  .print-area .kp-mark.x { color: #c00; border: 0.4pt solid #c00; }
+
   /* 用紙サイズ */
   @page {
     margin: 12mm;
@@ -1409,7 +1494,7 @@ function showScreen(name, params = {}, replace = false) {
     case 'kanji-list':      renderKanjiList(params); break;
     case 'study':           renderStudy(); break;
     case 'result':          renderResult(); break;
-    case 'print':           renderPrint(); break;
+    case 'print':           renderPrint(params); break;
     case 'question-mgmt':   renderQuestionMgmt(); break;
     case 'question-edit':   renderQuestionEdit(params.questionId, params.unitId); break;
     case 'subject-mgmt':    renderSubjectMgmt(); break;
@@ -1435,7 +1520,7 @@ function goBack() {
     case 'kanji-list':      renderKanjiList(prev.params); break;
     case 'study':           renderStudy(); break;
     case 'result':          renderResult(); break;
-    case 'print':           renderPrint(); break;
+    case 'print':           renderPrint(prev.params); break;
     case 'question-mgmt':   renderQuestionMgmt(); break;
     case 'question-edit':   renderQuestionEdit(prev.params.questionId, prev.params.unitId); break;
     case 'subject-mgmt':    renderSubjectMgmt(); break;
@@ -1664,12 +1749,19 @@ function renderStudyDirection(params) {
             <div class="list-item-subtitle">漢字と読みをまとめて確認</div>
           </div>
         </button>
+        <button class="list-item list-item-chevron" id="sd-print">
+          <div class="list-item-main">
+            <div class="list-item-title">🖨 印刷</div>
+            <div class="list-item-subtitle">書き取り / よみ プリントを出力</div>
+          </div>
+        </button>
       </div>
     </div>`;
   document.getElementById('sd-back').onclick = goBack;
   document.getElementById('sd-kakitori').onclick = () => startStudy({ ...params, direction: 'kakitori' });
   document.getElementById('sd-yomi').onclick = () => startStudy({ ...params, direction: 'yomi' });
   document.getElementById('sd-list').onclick = () => showScreen('kanji-list', params);
+  document.getElementById('sd-print').onclick = () => showScreen('print', { subjectId: params.subjectId || 'kanji', unitId: params.unitId || 'all', label: params.label });
 }
 
 /* ------------------------------------------------------------
@@ -1919,17 +2011,35 @@ function renderResult() {
 /* ------------------------------------------------------------
    画面6: 印刷モード
    ------------------------------------------------------------ */
-function renderPrint() {
+const PRINT_LAYOUTS = {
+  10: { cols: 2, rows: 5 },
+  15: { cols: 3, rows: 5 },
+  20: { cols: 4, rows: 5 },
+  25: { cols: 5, rows: 5 },
+  30: { cols: 5, rows: 6 }
+};
+
+function renderPrint(params) {
   if (!printConfig) {
     printConfig = {
       subjectId: 'all',
       unitId: 'all',
-      count: 10,
+      perPage: 20,
       paper: 'A4',
-      output: 'question' // 'question' | 'with-answer' | 'answer-only'
+      output: 'question',  // 'question' | 'with-answer' | 'answer-only'
+      direction: 'kakitori' // for 漢字: 'kakitori' | 'yomi'
     };
   }
+  // params で渡された場合、設定を上書き (study-direction から進入)
+  if (params && (params.subjectId || params.unitId)) {
+    if (params.subjectId) printConfig.subjectId = params.subjectId;
+    if (params.unitId) printConfig.unitId = params.unitId;
+  }
   const cfg = printConfig;
+  // 旧 count キーが残っていたら除去
+  if ('count' in cfg) delete cfg.count;
+  if (!cfg.perPage) cfg.perPage = 20;
+  if (!cfg.direction) cfg.direction = 'kakitori';
 
   // 単元プルダウンは教科に応じて変化
   const subjectOptions = ['<option value="all">すべての教科</option>']
@@ -1943,11 +2053,24 @@ function renderPrint() {
       .join('');
   }
 
-  // 出題プールを計算してプレビュー描画
+  // 出題プールを計算 (全問・順番固定)
   const pool = collectPrintPool(cfg);
-  const max = Math.max(1, Math.min(50, pool.length || 1));
-  if (cfg.count > max) cfg.count = max;
-  const previewItems = pool.slice(0, cfg.count);
+  const totalPages = Math.max(1, Math.ceil(pool.length / cfg.perPage));
+  const isKanjiPool = pool.length > 0 && pool.every(q => q.type === 'kanji');
+
+  const perPageOptions = [10, 15, 20, 25, 30].map(n =>
+    `<label class="radio-item ${cfg.perPage === n ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="perpage" value="${n}" hidden>${n}問</label>`
+  ).join('');
+
+  const directionField = isKanjiPool
+    ? `<div class="field">
+        <div class="field-label">出題向き</div>
+        <div class="radio-group" id="pr-direction">
+          <label class="radio-item ${cfg.direction === 'kakitori' ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="direction" value="kakitori" hidden>✏️ 書き取り</label>
+          <label class="radio-item ${cfg.direction === 'yomi' ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="direction" value="yomi" hidden>📖 よみ</label>
+        </div>
+      </div>`
+    : '';
 
   document.getElementById('screen-print').innerHTML = `
     <div class="nav-bar">
@@ -1964,13 +2087,11 @@ function renderPrint() {
         <div class="field-label">単元</div>
         <select class="select" id="pr-unit" ${cfg.subjectId === 'all' ? 'disabled' : ''}>${unitOptions}</select>
       </div>
+      ${directionField}
       <div class="field">
-        <div class="field-label">問題数</div>
-        <div class="slider-wrap">
-          <input type="range" id="pr-count" min="1" max="${max}" value="${cfg.count}" step="1">
-          <span class="slider-value" id="pr-count-v">${cfg.count}</span>
-        </div>
-        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px">範囲内の問題: ${pool.length}問</div>
+        <div class="field-label">1ページあたりの問題数</div>
+        <div class="radio-group" id="pr-perpage">${perPageOptions}</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-top:6px">範囲内の全 ${pool.length}問 を <b>${totalPages}ページ</b> に分けて印刷します</div>
       </div>
       <div class="field">
         <div class="field-label">用紙サイズ</div>
@@ -1982,19 +2103,18 @@ function renderPrint() {
       <div class="field">
         <div class="field-label">出力種別</div>
         <div class="radio-group" id="pr-output">
-          <label class="radio-item ${cfg.output === 'question' ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="output" value="question" hidden>問題用紙(解答欄つき)</label>
-          <label class="radio-item ${cfg.output === 'with-answer' ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="output" value="with-answer" hidden>解答付き</label>
-          <label class="radio-item ${cfg.output === 'answer-only' ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="output" value="answer-only" hidden>解答用紙のみ</label>
+          <label class="radio-item ${cfg.output === 'question' ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="output" value="question" hidden>問題のみ(解答欄つき)</label>
+          <label class="radio-item ${cfg.output === 'with-answer' ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="output" value="with-answer" hidden>解答つき</label>
+          <label class="radio-item ${cfg.output === 'answer-only' ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="output" value="answer-only" hidden>解答のみ</label>
         </div>
       </div>
 
-      <div class="section-label">プレビュー</div>
+      <div class="section-label">プレビュー (1ページ目の内容)</div>
       <div class="print-preview">
-        ${buildPreviewHtml(previewItems, cfg)}
+        ${buildPreviewHtml(pool.slice(0, cfg.perPage), cfg)}
       </div>
 
-      <button class="btn" id="pr-print" ${previewItems.length === 0 ? 'disabled style="opacity:0.5"' : ''}>🖨 印刷する</button>
-      <button class="btn secondary" id="pr-shuffle">問題をシャッフル</button>
+      <button class="btn" id="pr-print" ${pool.length === 0 ? 'disabled style="opacity:0.5"' : ''}>🖨 印刷する (全${totalPages}ページ)</button>
     </div>`;
 
   // イベント
@@ -2008,12 +2128,12 @@ function renderPrint() {
     cfg.unitId = e.target.value;
     renderPrint();
   };
-  const slider = document.getElementById('pr-count');
-  slider.oninput = e => {
-    cfg.count = parseInt(e.target.value, 10);
-    document.getElementById('pr-count-v').textContent = cfg.count;
-  };
-  slider.onchange = () => renderPrint();
+  document.querySelectorAll('#pr-perpage .radio-item').forEach(item => {
+    item.onclick = () => {
+      cfg.perPage = parseInt(item.querySelector('input').value, 10);
+      renderPrint();
+    };
+  });
   document.querySelectorAll('#pr-paper .radio-item').forEach(item => {
     item.onclick = () => {
       cfg.paper = item.querySelector('input').value;
@@ -2026,23 +2146,23 @@ function renderPrint() {
       renderPrint();
     };
   });
-  document.getElementById('pr-shuffle').onclick = () => {
-    // 同じプールでシャッフルした結果を保存
-    cfg._shuffledIds = shuffle(collectPrintPool(cfg, true).map(q => q.id));
-    renderPrint();
-  };
+  if (isKanjiPool) {
+    document.querySelectorAll('#pr-direction .radio-item').forEach(item => {
+      item.onclick = () => {
+        cfg.direction = item.querySelector('input').value;
+        renderPrint();
+      };
+    });
+  }
   document.getElementById('pr-print').onclick = () => {
-    // 印刷専用エリアにレイアウトを書き込み、window.print()
-    const items = collectPrintPool(cfg).slice(0, cfg.count);
-    document.getElementById('print-area').innerHTML = buildPrintHtml(items, cfg);
-    // 用紙サイズ指定 (印刷ダイアログで反映)
+    document.getElementById('print-area').innerHTML = buildPrintHtml(pool, cfg);
     setPrintPaperSize(cfg.paper);
     setTimeout(() => window.print(), 50);
   };
 }
 
-// 印刷用の出題プール (対象を絞ってシャッフル)
-function collectPrintPool(cfg, raw = false) {
+// 印刷用の出題プール (対象を絞り、順番は維持)
+function collectPrintPool(cfg) {
   let pool = state.questions.slice();
   if (cfg.subjectId !== 'all') {
     pool = pool.filter(q => {
@@ -2053,34 +2173,43 @@ function collectPrintPool(cfg, raw = false) {
   if (cfg.unitId && cfg.unitId !== 'all') {
     pool = pool.filter(q => q.unitId === cfg.unitId);
   }
-  if (raw) return pool;
-  // _shuffledIds がキャッシュされていればその順で返す
-  if (cfg._shuffledIds) {
-    const map = new Map(pool.map(q => [q.id, q]));
-    const ordered = cfg._shuffledIds.map(id => map.get(id)).filter(Boolean);
-    if (ordered.length === pool.length) return ordered;
-  }
-  // 初回はシャッフル
-  cfg._shuffledIds = shuffle(pool).map(q => q.id);
-  const map = new Map(pool.map(q => [q.id, q]));
-  return cfg._shuffledIds.map(id => map.get(id)).filter(Boolean);
+  return pool;
 }
 
+// プレビュー: 1ページ目相当の内容を画面で表示
 function buildPreviewHtml(items, cfg) {
   if (items.length === 0) return '<div style="color:#666">出題できる問題がありません</div>';
   const title = printTitle(cfg);
-  const meta = `<div class="meta"><span>${escapeHtml(title)}</span><span>名前:_______________</span></div>`;
-  // 印刷は当面 kakitori (ひらがな→漢字) で固定
-  const dir = 'kakitori';
+  const dir = cfg.direction || 'kakitori';
+  const dirLabel = dir === 'yomi' ? 'よみ' : '書き取り';
+  const isKanjiPool = items.every(q => q.type === 'kanji');
+  if (isKanjiPool) {
+    // 漢字は簡易リストでプレビュー (実際の印刷は縦書きグリッド)
+    const list = items.map(q => {
+      const d = questionDisplay(q, dir);
+      const ans = cfg.output === 'with-answer' || cfg.output === 'answer-only'
+        ? `<span class="answer-text">[${escapeHtml(d.answers.join(' / '))}]</span>`
+        : '<span class="answer-line"></span>';
+      return `<li>${escapeHtml(d.text)} ${ans}</li>`;
+    }).join('');
+    return `<h2>${escapeHtml(title)} ${dirLabel}</h2>
+      <div class="meta"><span>${escapeHtml(title)} (${dirLabel})</span><span>名前:_______________</span></div>
+      <div style="font-size:11px;color:#666;margin-bottom:8px">※ 印刷時は学校の書き取りプリント風に縦書きグリッドで出力されます</div>
+      <ol>${list}</ol>`;
+  }
   if (cfg.output === 'answer-only') {
-    return `<h2>${escapeHtml(title)} 解答</h2>${meta}<ol>` +
+    return `<h2>${escapeHtml(title)} 解答</h2>
+      <div class="meta"><span>${escapeHtml(title)}</span><span>名前:_______________</span></div>
+      <ol>` +
       items.map(q => {
         const d = questionDisplay(q, dir);
         return `<li><span class="answer-text">${escapeHtml(d.answers.join(' / '))}</span></li>`;
       }).join('') +
       '</ol>';
   }
-  return `<h2>${escapeHtml(title)}</h2>${meta}<ol>` +
+  return `<h2>${escapeHtml(title)}</h2>
+    <div class="meta"><span>${escapeHtml(title)}</span><span>名前:_______________</span></div>
+    <ol>` +
     items.map(q => {
       const d = questionDisplay(q, dir);
       const ans = cfg.output === 'with-answer'
@@ -2091,9 +2220,87 @@ function buildPreviewHtml(items, cfg) {
     '</ol>';
 }
 
+// 実印刷HTML: 漢字は縦書きグリッド、それ以外はリスト
 function buildPrintHtml(items, cfg) {
-  // 印刷時はプレビューと同等のHTML
-  return `<div class="print-page">${buildPreviewHtml(items, cfg)}</div>`;
+  if (items.length === 0) return '';
+  const isKanjiPool = items.every(q => q.type === 'kanji');
+  if (isKanjiPool) return buildKanjiPrintHtml(items, cfg);
+  return buildListPrintHtml(items, cfg);
+}
+
+function buildKanjiPrintHtml(items, cfg) {
+  const dir = cfg.direction || 'kakitori';
+  const dirLabel = dir === 'yomi' ? 'よみ' : '書き取り';
+  const perPage = cfg.perPage || 20;
+  const lay = PRINT_LAYOUTS[perPage] || { cols: 4, rows: Math.ceil(perPage / 4) };
+  const totalPages = Math.max(1, Math.ceil(items.length / perPage));
+  const pages = [];
+  for (let i = 0; i < items.length; i += perPage) pages.push(items.slice(i, i + perPage));
+
+  const title = printTitle(cfg);
+  return pages.map((pageItems, pageIdx) => {
+    const cells = pageItems.map(q => {
+      const d = questionDisplay(q, dir);
+      const r = getLatestResult(q.id, dir);
+      const markCh = r === 'o' ? '○' : (r === 'd' ? '△' : (r === 'x' ? '×' : ''));
+      const mark = r ? `<span class="kp-mark ${r}">${markCh}</span>` : '';
+      // 問題側 (向きにより漢字か読み)
+      const qClass = (dir === 'yomi') ? 'kp-q kp-q-large' : 'kp-q';
+      const qHtml = `<div class="${qClass}">${escapeHtml(d.text)}</div>`;
+      // 解答側
+      let aHtml;
+      if (cfg.output === 'with-answer' || cfg.output === 'answer-only') {
+        const ansText = (d.answers && d.answers[0]) || '';
+        const aCls = (dir === 'yomi') ? 'kp-a kp-a-shown kp-a-yomi' : 'kp-a kp-a-shown';
+        aHtml = `<div class="${aCls}">${escapeHtml(ansText)}</div>`;
+      } else {
+        aHtml = '<div class="kp-a"></div>';
+      }
+      return `<div class="kp-cell">${mark}${qHtml}${aHtml}</div>`;
+    }).join('');
+    // 余り枠 (空セル) でグリッドを埋める
+    const fillerCount = perPage - pageItems.length;
+    const fillers = fillerCount > 0
+      ? Array(fillerCount).fill('<div class="kp-cell kp-cell-empty"></div>').join('')
+      : '';
+    return `<div class="kp-page">
+      <div class="kp-header">
+        <span class="kp-title">${escapeHtml(title)} (${dirLabel})</span>
+        <span>名前:______________</span>
+        <span>${pageIdx + 1} / ${totalPages}</span>
+      </div>
+      <div class="kp-grid cols-${lay.cols} rows-${lay.rows}">${cells}${fillers}</div>
+    </div>`;
+  }).join('');
+}
+
+function buildListPrintHtml(items, cfg) {
+  const dir = cfg.direction || 'kakitori';
+  const perPage = cfg.perPage || 20;
+  const totalPages = Math.max(1, Math.ceil(items.length / perPage));
+  const pages = [];
+  for (let i = 0; i < items.length; i += perPage) pages.push(items.slice(i, i + perPage));
+  const title = printTitle(cfg);
+  return pages.map((pageItems, pageIdx) => {
+    const startNum = pageIdx * perPage + 1;
+    const pageHeader = `<h2>${escapeHtml(title)}${cfg.output === 'answer-only' ? ' 解答' : ''} (${pageIdx + 1}/${totalPages})</h2>
+      <div class="meta"><span>${escapeHtml(title)}</span><span>名前:______________</span></div>`;
+    if (cfg.output === 'answer-only') {
+      const lis = pageItems.map((q, i) => {
+        const d = questionDisplay(q, dir);
+        return `<li value="${startNum + i}"><span class="answer-text">${escapeHtml(d.answers.join(' / '))}</span></li>`;
+      }).join('');
+      return `<div class="print-page">${pageHeader}<ol start="${startNum}">${lis}</ol></div>`;
+    }
+    const lis = pageItems.map((q, i) => {
+      const d = questionDisplay(q, dir);
+      const ans = cfg.output === 'with-answer'
+        ? `<span class="answer-text">[${escapeHtml(d.answers.join(' / '))}]</span>`
+        : '<span class="answer-line"></span>';
+      return `<li value="${startNum + i}">${escapeHtml(d.text)} ${ans}</li>`;
+    }).join('');
+    return `<div class="print-page">${pageHeader}<ol start="${startNum}">${lis}</ol></div>`;
+  }).join('');
 }
 
 function printTitle(cfg) {
@@ -2107,7 +2314,6 @@ function printTitle(cfg) {
       if (u) parts.push(u.name);
     }
   }
-  parts.push('一問一答');
   return parts.join(' ');
 }
 
