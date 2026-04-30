@@ -903,112 +903,133 @@ input, textarea, select {
   html, body {
     overflow: visible;
     height: auto;
+    margin: 0;
+    padding: 0;
     background: #fff;
     color: #000;
   }
-  body * {
-    visibility: hidden;
+  /* 画面UIは完全に非表示 (display:none で複数ページにも影響を出さない) */
+  body > #app,
+  body > #modal-overlay,
+  body > #toast {
+    display: none !important;
   }
-  .print-area, .print-area * {
-    visibility: visible;
-  }
+  /* 印刷エリアを通常フローで表示 (position absolute は複数ページを壊すので使わない) */
   .print-area {
     display: block;
-    position: absolute;
-    inset: 0;
-    padding: 12mm;
+    position: static;
+    margin: 0;
+    padding: 0;
     background: #fff;
     color: #000;
   }
-  .print-area .print-page {
+
+  /* 共通: ページ区切り */
+  .print-area .print-page,
+  .print-area .kp-page {
     page-break-after: always;
+    break-after: page;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
-  .print-area .print-page:last-child {
+  .print-area .print-page:last-child,
+  .print-area .kp-page:last-child {
     page-break-after: auto;
+    break-after: auto;
   }
-  .print-area h2 {
+
+  /* リスト形式 (漢字以外) */
+  .print-area .print-page h2 {
     text-align: center;
-    margin: 0 0 8mm;
+    margin: 0 0 6mm;
     font-size: 16pt;
   }
-  .print-area .meta {
+  .print-area .print-page .meta {
     font-size: 10pt;
-    margin-bottom: 6mm;
+    margin-bottom: 4mm;
     display: flex;
     justify-content: space-between;
   }
-  .print-area ol {
+  .print-area .print-page ol {
     padding-left: 6mm;
     font-size: 12pt;
-    line-height: 2;
+    line-height: 1.9;
+    margin: 0;
   }
-  .print-area ol li {
+  .print-area .print-page ol li {
     margin-bottom: 4mm;
   }
-  .print-area .answer-line {
+  .print-area .print-page .answer-line {
     border-bottom: 1px solid #000;
     display: inline-block;
     min-width: 50%;
     margin-left: 4mm;
     height: 1.4em;
   }
-  .print-area .answer-text {
+  .print-area .print-page .answer-text {
     font-weight: 600;
   }
 
   /* 漢字書き取りプリント (縦書きグリッド) */
   .print-area .kp-page {
-    page-break-after: always;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+    margin: 0;
+    padding: 0;
   }
-  .print-area .kp-page:last-child { page-break-after: auto; }
   .print-area .kp-header {
-    flex-shrink: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 4mm;
+    margin-bottom: 3mm;
     font-size: 10pt;
     border-bottom: 0.5pt solid #888;
     padding-bottom: 2mm;
   }
   .print-area .kp-header .kp-title { font-weight: 600; font-size: 12pt; }
   .print-area .kp-grid {
-    flex: 1;
     display: grid;
     gap: 1.5mm;
+    width: 100%;
   }
   .print-area .kp-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
   .print-area .kp-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
   .print-area .kp-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
   .print-area .kp-grid.cols-5 { grid-template-columns: repeat(5, 1fr); }
-  .print-area .kp-grid.rows-4 { grid-template-rows: repeat(4, 1fr); }
-  .print-area .kp-grid.rows-5 { grid-template-rows: repeat(5, 1fr); }
-  .print-area .kp-grid.rows-6 { grid-template-rows: repeat(6, 1fr); }
+  /* 行数に応じてセルの高さを固定値で指定 (flex:1 では高さ算出できないため) */
+  .print-area .kp-grid.rows-4 .kp-cell { height: 58mm; }
+  .print-area .kp-grid.rows-5 .kp-cell { height: 48mm; }
+  .print-area .kp-grid.rows-6 .kp-cell { height: 39mm; }
   .print-area .kp-cell {
     border: 0.8pt solid #555;
     border-radius: 1mm;
     display: flex;
     flex-direction: row-reverse;
     position: relative;
-    min-height: 0;
     overflow: hidden;
+    background: #fff;
+    color: #000;
+    box-sizing: border-box;
   }
-  .print-area .kp-cell.kp-cell-empty { border-style: dashed; border-color: #ddd; }
+  .print-area .kp-cell.kp-cell-empty {
+    border-style: dashed;
+    border-color: #ddd;
+  }
   .print-area .kp-cell .kp-q {
     writing-mode: vertical-rl;
     font-family: 'Klee One', 'Yu Mincho', 'Hiragino Mincho ProN', serif;
-    font-size: 13pt;
+    font-size: 12pt;
     padding: 3mm 1.5mm 2mm;
     border-left: 0.5pt solid #aaa;
     flex-shrink: 0;
     text-align: start;
-    background: #f7f7f7;
+    background: #f3f3f3;
     color: #222;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
-  .print-area .kp-cell .kp-q.kp-q-large { font-size: 22pt; font-weight: 600; }
+  .print-area .kp-cell .kp-q.kp-q-large {
+    font-size: 20pt;
+    font-weight: 600;
+  }
   .print-area .kp-cell .kp-a {
     flex: 1;
     padding: 2mm;
@@ -1020,10 +1041,14 @@ input, textarea, select {
   }
   .print-area .kp-cell .kp-a-shown {
     color: #c00;
-    font-size: 22pt;
+    font-size: 20pt;
     font-weight: 600;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
-  .print-area .kp-cell .kp-a-shown.kp-a-yomi { font-size: 14pt; }
+  .print-area .kp-cell .kp-a-shown.kp-a-yomi {
+    font-size: 13pt;
+  }
   .print-area .kp-cell .kp-mark {
     position: absolute;
     top: 0.5mm;
@@ -1035,15 +1060,14 @@ input, textarea, select {
     border-radius: 1mm;
     line-height: 1;
     z-index: 2;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   .print-area .kp-mark.o { color: #1a8a2a; border: 0.4pt solid #1a8a2a; }
   .print-area .kp-mark.d { color: #c08000; border: 0.4pt solid #c08000; }
   .print-area .kp-mark.x { color: #c00; border: 0.4pt solid #c00; }
 
-  /* 用紙サイズ */
-  @page {
-    margin: 12mm;
-  }
+  /* 用紙サイズはJSで動的注入 (setPrintPaperSize) */
 }
 
 /* 教科ごとのアクセントカラー (タイル左ボーダー) */
