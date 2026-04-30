@@ -1663,6 +1663,22 @@ function renderHome() {
 /* ------------------------------------------------------------
    画面3: 単元選択
    ------------------------------------------------------------ */
+let unitsReviewMode = false; // ○以外のみ出題するか
+
+// 単元(または教科全体)の中で、最新解答が ○ 以外の問題数を数える
+// 漢字問題はどちらかの向きが ○ 以外であれば「復習対象」とみなす
+function countReviewQuestions(filterFn) {
+  return state.questions.filter(q => {
+    if (!filterFn(q)) return false;
+    if (q.type === 'kanji') {
+      const k = getLatestResult(q.id, 'kakitori', currentProfileId);
+      const y = getLatestResult(q.id, 'yomi', currentProfileId);
+      return k !== 'o' || y !== 'o';
+    }
+    return getLatestResult(q.id, 'kakitori', currentProfileId) !== 'o';
+  }).length;
+}
+
 function renderUnits(subjectId) {
   const subject = getSubject(subjectId);
   if (!subject) { goBack(); return; }
@@ -1681,18 +1697,32 @@ function renderUnits(subjectId) {
     if (hist.length === 0) return null;
     return Math.round(hist.filter(h => h.result === 'o').length / hist.length * 100);
   })();
+  const totalReview = unitsReviewMode
+    ? countReviewQuestions(q => {
+        const u = getUnit(q.unitId);
+        return u && u.subjectId === subjectId;
+      })
+    : null;
 
   const items = units.map(u => {
     const qcount = state.questions.filter(q => q.unitId === u.id).length;
     const acc = getUnitAccuracy(u.id, currentProfileId);
+    const reviewCount = unitsReviewMode ? countReviewQuestions(q => q.unitId === u.id) : null;
+    const subtitle = unitsReviewMode
+      ? `復習対象 ${reviewCount}問 / 全${qcount}問`
+      : `${qcount}問 ${acc != null ? '・正答率 ' + acc + '%' : '・未学習'}`;
     return `
       <button class="list-item list-item-chevron" data-uid="${u.id}">
         <div class="list-item-main">
           <div class="list-item-title">${escapeHtml(u.name)}</div>
-          <div class="list-item-subtitle">${qcount}問 ${acc != null ? `・正答率 ${acc}%` : '・未学習'}</div>
+          <div class="list-item-subtitle">${subtitle}</div>
         </div>
       </button>`;
   }).join('');
+
+  const allSubtitle = unitsReviewMode
+    ? `復習対象 ${totalReview}問 / 全${totalQ}問`
+    : `${totalQ}問 ${totalAcc != null ? '・正答率 ' + totalAcc + '%' : '・未学習'}`;
 
   document.getElementById('screen-units').innerHTML = `
     <div class="nav-bar">
@@ -1701,12 +1731,17 @@ function renderUnits(subjectId) {
       <span class="nav-spacer"></span>
     </div>
     <div class="content">
+      <div class="section-label">出題範囲</div>
+      <div class="radio-group" id="u-mode">
+        <label class="radio-item ${!unitsReviewMode ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="umode" value="all" hidden>全問</label>
+        <label class="radio-item ${unitsReviewMode ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="umode" value="review" hidden>○以外のみ (復習)</label>
+      </div>
       <div class="section-label">範囲を選んで学習を始める</div>
       <div class="list-group">
         <button class="list-item list-item-chevron" id="u-all">
           <div class="list-item-main">
-            <div class="list-item-title">全単元から出題</div>
-            <div class="list-item-subtitle">${totalQ}問 ${totalAcc != null ? `・正答率 ${totalAcc}%` : '・未学習'}</div>
+            <div class="list-item-title">全単元から出題${unitsReviewMode ? ' (復習)' : ''}</div>
+            <div class="list-item-subtitle">${allSubtitle}</div>
           </div>
         </button>
       </div>
@@ -1717,11 +1752,17 @@ function renderUnits(subjectId) {
     </div>`;
 
   document.getElementById('u-back').onclick = goBack;
+  document.querySelectorAll('#u-mode .radio-item').forEach(item => {
+    item.onclick = () => {
+      unitsReviewMode = item.querySelector('input').value === 'review';
+      renderUnits(subjectId);
+    };
+  });
   document.getElementById('u-all').onclick = () => {
     if (isKanjiSubject(subjectId)) {
-      showScreen('study-direction', { subjectId, label: subject.name + ' 全単元' });
+      showScreen('study-direction', { subjectId, label: subject.name + ' 全単元', reviewMode: unitsReviewMode });
     } else {
-      startStudy({ subjectId });
+      startStudy({ subjectId, reviewMode: unitsReviewMode });
     }
   };
   document.querySelectorAll('#screen-units .list-item[data-uid]').forEach(b => {
@@ -1729,9 +1770,9 @@ function renderUnits(subjectId) {
       const uid = b.dataset.uid;
       if (isKanjiUnit(uid)) {
         const u = getUnit(uid);
-        showScreen('study-direction', { unitId: uid, label: u.name });
+        showScreen('study-direction', { unitId: uid, label: u.name, reviewMode: unitsReviewMode });
       } else {
-        startStudy({ unitId: uid });
+        startStudy({ unitId: uid, reviewMode: unitsReviewMode });
       }
     };
   });
@@ -1742,6 +1783,25 @@ function renderUnits(subjectId) {
    ------------------------------------------------------------ */
 function renderStudyDirection(params) {
   const label = params && params.label ? params.label : '漢字';
+  const reviewMode = !!(params && params.reviewMode);
+
+  // この範囲の対象問題プール (向きごとの復習対象数を計算)
+  const inScope = state.questions.filter(q => {
+    if (q.type !== 'kanji') return false;
+    if (params.unitId) return q.unitId === params.unitId;
+    if (params.subjectId) {
+      const u = getUnit(q.unitId);
+      return u && u.subjectId === params.subjectId;
+    }
+    return false;
+  });
+  const kakiReviewCnt = inScope.filter(q => getLatestResult(q.id, 'kakitori', currentProfileId) !== 'o').length;
+  const yomiReviewCnt = inScope.filter(q => getLatestResult(q.id, 'yomi', currentProfileId) !== 'o').length;
+  const totalCnt = inScope.length;
+
+  const kakiSub = reviewMode ? `復習対象 ${kakiReviewCnt}問 / 全${totalCnt}問` : 'よみがなを見て漢字を書く';
+  const yomiSub = reviewMode ? `復習対象 ${yomiReviewCnt}問 / 全${totalCnt}問` : '漢字を見てよみがなを答える';
+
   document.getElementById('screen-study-direction').innerHTML = `
     <div class="nav-bar">
       <button class="nav-button" id="sd-back">‹ 戻る</button>
@@ -1749,18 +1809,23 @@ function renderStudyDirection(params) {
       <span class="nav-spacer"></span>
     </div>
     <div class="content">
+      <div class="section-label">出題範囲</div>
+      <div class="radio-group" id="sd-mode">
+        <label class="radio-item ${!reviewMode ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="sdmode" value="all" hidden>全問</label>
+        <label class="radio-item ${reviewMode ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="sdmode" value="review" hidden>○以外のみ (復習)</label>
+      </div>
       <div class="section-label">出題のしかたを選んでください</div>
       <div class="list-group">
         <button class="list-item list-item-chevron" id="sd-kakitori">
           <div class="list-item-main">
-            <div class="list-item-title">✏️ 書き取り</div>
-            <div class="list-item-subtitle">よみがなを見て漢字を書く</div>
+            <div class="list-item-title">✏️ 書き取り${reviewMode ? ' (復習)' : ''}</div>
+            <div class="list-item-subtitle">${escapeHtml(kakiSub)}</div>
           </div>
         </button>
         <button class="list-item list-item-chevron" id="sd-yomi">
           <div class="list-item-main">
-            <div class="list-item-title">📖 よみ</div>
-            <div class="list-item-subtitle">漢字を見てよみがなを答える</div>
+            <div class="list-item-title">📖 よみ${reviewMode ? ' (復習)' : ''}</div>
+            <div class="list-item-subtitle">${escapeHtml(yomiSub)}</div>
           </div>
         </button>
       </div>
@@ -1782,8 +1847,14 @@ function renderStudyDirection(params) {
       </div>
     </div>`;
   document.getElementById('sd-back').onclick = goBack;
-  document.getElementById('sd-kakitori').onclick = () => startStudy({ ...params, direction: 'kakitori' });
-  document.getElementById('sd-yomi').onclick = () => startStudy({ ...params, direction: 'yomi' });
+  document.querySelectorAll('#sd-mode .radio-item').forEach(item => {
+    item.onclick = () => {
+      params.reviewMode = item.querySelector('input').value === 'review';
+      renderStudyDirection(params);
+    };
+  });
+  document.getElementById('sd-kakitori').onclick = () => startStudy({ ...params, direction: 'kakitori', reviewMode: !!params.reviewMode });
+  document.getElementById('sd-yomi').onclick = () => startStudy({ ...params, direction: 'yomi', reviewMode: !!params.reviewMode });
   document.getElementById('sd-list').onclick = () => showScreen('kanji-list', params);
   document.getElementById('sd-print').onclick = () => showScreen('print', { subjectId: params.subjectId || 'kanji', unitId: params.unitId || 'all', label: params.label });
 }
@@ -1850,7 +1921,7 @@ function renderKanjiList(params) {
 /* ------------------------------------------------------------
    画面4: 学習
    ------------------------------------------------------------ */
-function startStudy({ unitId = null, subjectId = null, direction = 'kakitori', label = null } = {}) {
+function startStudy({ unitId = null, subjectId = null, direction = 'kakitori', label = null, reviewMode = false } = {}) {
   // 出題対象を絞り込む
   let pool = state.questions.slice();
   if (unitId) pool = pool.filter(q => q.unitId === unitId);
@@ -1858,14 +1929,25 @@ function startStudy({ unitId = null, subjectId = null, direction = 'kakitori', l
     const u = getUnit(q.unitId);
     return u && u.subjectId === subjectId;
   });
+  // 復習モード: 直近結果が ○ 以外 (△/× 未学習) だけに絞り込む
+  if (reviewMode) {
+    pool = pool.filter(q => {
+      const dir = q.type === 'kanji' ? direction : 'kakitori';
+      const r = getLatestResult(q.id, dir, currentProfileId);
+      return r !== 'o';
+    });
+  }
   if (pool.length === 0) {
-    showAlert('問題がありません', 'この範囲には問題がありません。問題管理から追加してください。');
+    const msg = reviewMode
+      ? 'この範囲には「○以外」の問題がありません。一度学習してから復習モードを使ってください。'
+      : 'この範囲には問題がありません。問題管理から追加してください。';
+    showAlert('問題がありません', msg);
     return;
   }
   // sourceNote (例: 練習中の漢字) でグループ化し、同じグループが連続しないよう並べる
   const ordered = shuffleByGroup(pool, q => q.sourceNote).slice(0, Math.min(SESSION_DEFAULT_SIZE, pool.length));
   studySession = {
-    unitId, subjectId, direction,
+    unitId, subjectId, direction, reviewMode,
     questions: ordered,
     index: 0,
     revealed: false,
@@ -2021,7 +2103,7 @@ function renderResult() {
     </div>`;
 
   document.getElementById('r-again').onclick = () => {
-    const params = { unitId: s.unitId, subjectId: s.subjectId };
+    const params = { unitId: s.unitId, subjectId: s.subjectId, direction: s.direction, reviewMode: s.reviewMode };
     studySession = null;
     startStudy(params);
   };
