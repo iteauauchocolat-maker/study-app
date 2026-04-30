@@ -1,0 +1,2178 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<!-- iPhoneでフルスクリーン表示するための設定 -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="学習アプリ">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)">
+<meta name="format-detection" content="telephone=no">
+<title>学習アプリ</title>
+<style>
+/* ==========================================================
+   テーマ変数 (ライト/ダークモード対応)
+   iOSのシステムカラーに近い色を採用
+   ========================================================== */
+:root {
+  --bg: #f2f2f7;
+  --bg-elevated: #ffffff;
+  --bg-card: #ffffff;
+  --bg-input: #ffffff;
+  --bg-button-secondary: #e5e5ea;
+  --text: #000000;
+  --text-secondary: #6c6c70;
+  --text-tertiary: #aeaeb2;
+  --border: rgba(60, 60, 67, 0.15);
+  --separator: rgba(60, 60, 67, 0.08);
+  --primary: #007aff;
+  --success: #34c759;
+  --warning: #ff9500;
+  --danger: #ff3b30;
+  --overlay: rgba(0, 0, 0, 0.4);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --bg-elevated: #1c1c1e;
+    --bg-card: #1c1c1e;
+    --bg-input: #2c2c2e;
+    --bg-button-secondary: #2c2c2e;
+    --text: #ffffff;
+    --text-secondary: #98989d;
+    --text-tertiary: #6c6c70;
+    --border: rgba(84, 84, 88, 0.4);
+    --separator: rgba(84, 84, 88, 0.25);
+    --primary: #0a84ff;
+    --success: #30d158;
+    --warning: #ff9f0a;
+    --danger: #ff453a;
+    --overlay: rgba(0, 0, 0, 0.6);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* ==========================================================
+   リセットと基本スタイル
+   ========================================================== */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+button {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+input, textarea, select {
+  font-family: inherit;
+  font-size: 16px; /* iOSでフォーカス時にズームしないように16px以上 */
+  color: var(--text);
+}
+
+/* ==========================================================
+   レイアウト基盤
+   ========================================================== */
+#app {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+.screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  background: var(--bg);
+  animation: fadeIn 0.18s ease-out;
+}
+.screen.active {
+  display: flex;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ヘッダ (iOSナビゲーションバー風) */
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--safe-top) + 8px) 12px 8px;
+  background: var(--bg-elevated);
+  border-bottom: 0.5px solid var(--separator);
+  min-height: calc(var(--safe-top) + 44px);
+  flex-shrink: 0;
+}
+.nav-title {
+  font-size: 17px;
+  font-weight: 600;
+  text-align: center;
+  flex: 1;
+  margin: 0 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nav-button {
+  min-width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  font-size: 16px;
+  padding: 0 8px;
+}
+.nav-button.icon {
+  font-size: 22px;
+}
+.nav-spacer {
+  min-width: 44px;
+}
+
+/* スクロールエリア */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
+  padding-bottom: calc(16px + var(--safe-bottom));
+}
+.content.no-padding {
+  padding: 0;
+  padding-bottom: var(--safe-bottom);
+}
+
+/* ==========================================================
+   共通コンポーネント
+   ========================================================== */
+.card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.list-group {
+  background: var(--bg-card);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.list-item {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 0.5px solid var(--separator);
+  min-height: 50px;
+  width: 100%;
+  text-align: left;
+  background: var(--bg-card);
+  transition: background 0.1s;
+}
+.list-item:last-child {
+  border-bottom: none;
+}
+.list-item:active {
+  background: var(--bg-button-secondary);
+}
+.list-item-main {
+  flex: 1;
+  min-width: 0;
+}
+.list-item-title {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text);
+}
+.list-item-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+.list-item-trailing {
+  color: var(--text-tertiary);
+  font-size: 14px;
+  margin-left: 8px;
+}
+.list-item-chevron::after {
+  content: "›";
+  color: var(--text-tertiary);
+  font-size: 22px;
+  margin-left: 4px;
+  font-weight: 300;
+}
+.section-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 8px 16px 6px;
+  font-weight: 500;
+}
+
+/* ボタン */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 50px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 17px;
+  font-weight: 600;
+  background: var(--primary);
+  color: #ffffff;
+  margin-bottom: 12px;
+  transition: opacity 0.1s;
+}
+.btn:active {
+  opacity: 0.7;
+}
+.btn.secondary {
+  background: var(--bg-button-secondary);
+  color: var(--text);
+}
+.btn.danger {
+  background: var(--danger);
+  color: #ffffff;
+}
+.btn.success {
+  background: var(--success);
+  color: #ffffff;
+}
+.btn.outline {
+  background: transparent;
+  border: 1.5px solid var(--primary);
+  color: var(--primary);
+}
+.btn.small {
+  min-height: 36px;
+  padding: 6px 14px;
+  font-size: 14px;
+  width: auto;
+  margin-bottom: 0;
+}
+
+/* 入力 */
+.field {
+  margin-bottom: 16px;
+}
+.field-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.input, .textarea, .select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.input:focus, .textarea:focus, .select:focus {
+  border-color: var(--primary);
+}
+.textarea {
+  min-height: 80px;
+  resize: vertical;
+  font-family: inherit;
+}
+.select {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path fill='gray' d='M6 9L1 4h10z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+/* ==========================================================
+   プロフィール選択画面
+   ========================================================== */
+.profile-select-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  gap: 24px;
+}
+.profile-select-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-align: center;
+}
+.profile-select-subtitle {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+  text-align: center;
+}
+.profile-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 320px;
+}
+.profile-button {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  border-radius: 16px;
+  background: var(--bg-card);
+  box-shadow: var(--shadow);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  width: 100%;
+  text-align: left;
+  transition: transform 0.1s, opacity 0.1s;
+}
+.profile-button:active {
+  transform: scale(0.98);
+  opacity: 0.85;
+}
+.profile-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ==========================================================
+   ホーム画面
+   ========================================================== */
+.home-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 4px 16px;
+}
+.home-profile-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 6px;
+  background: var(--bg-card);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  font-size: 14px;
+  font-weight: 600;
+}
+.home-profile-chip .profile-avatar {
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+}
+.subject-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.subject-tile {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 20px 16px;
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--shadow);
+  transition: transform 0.1s, opacity 0.1s;
+  text-align: left;
+}
+.subject-tile:active {
+  transform: scale(0.97);
+  opacity: 0.85;
+}
+.subject-tile-name {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text);
+}
+.subject-tile-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+}
+.subject-tile-icon {
+  font-size: 26px;
+  margin-bottom: 4px;
+  align-self: flex-start;
+}
+
+/* ==========================================================
+   学習画面
+   ========================================================== */
+.study-header {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.study-progress {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.study-progress-bar {
+  flex: 1;
+  height: 4px;
+  background: var(--bg-button-secondary);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.study-progress-fill {
+  height: 100%;
+  background: var(--primary);
+  transition: width 0.3s ease;
+}
+.study-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 20px;
+  overflow-y: auto;
+}
+.study-question-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.study-question {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.study-hint {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+.study-answer {
+  background: var(--bg-card);
+  border-left: 4px solid var(--success);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+  animation: fadeIn 0.25s ease-out;
+}
+.study-answer-label {
+  font-size: 12px;
+  color: var(--success);
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+.study-answer-text {
+  font-size: 20px;
+  font-weight: 600;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.study-actions {
+  padding: 12px 20px calc(12px + var(--safe-bottom));
+  background: var(--bg-elevated);
+  border-top: 0.5px solid var(--separator);
+  flex-shrink: 0;
+}
+.judge-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.judge-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 64px;
+  border-radius: 12px;
+  font-weight: 700;
+  padding: 8px;
+  transition: transform 0.1s, opacity 0.1s;
+}
+.judge-button:active {
+  transform: scale(0.96);
+  opacity: 0.8;
+}
+.judge-button.o { background: var(--success); color: #fff; }
+.judge-button.d { background: var(--warning); color: #fff; }
+.judge-button.x { background: var(--danger); color: #fff; }
+.judge-symbol {
+  font-size: 26px;
+  line-height: 1;
+}
+.judge-label {
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+/* 結果サマリ */
+.result-summary {
+  text-align: center;
+  padding: 24px 0;
+}
+.result-rate {
+  font-size: 56px;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1;
+}
+.result-rate-label {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  margin-bottom: 24px;
+}
+.result-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.result-stat {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+}
+.result-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+}
+.result-stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+.result-stat.o .result-stat-value { color: var(--success); }
+.result-stat.d .result-stat-value { color: var(--warning); }
+.result-stat.x .result-stat-value { color: var(--danger); }
+.result-mistake {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+.result-mistake-q {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.result-mistake-a {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ==========================================================
+   モーダル / トースト / ダイアログ
+   ========================================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 100;
+  animation: fadeIn 0.15s ease-out;
+}
+.modal-overlay.active {
+  display: flex;
+}
+.modal {
+  background: var(--bg-elevated);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 360px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 20px;
+}
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.modal-message {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+  white-space: pre-wrap;
+}
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+.modal-actions .btn {
+  margin-bottom: 0;
+}
+
+.toast {
+  position: fixed;
+  top: calc(var(--safe-top) + 60px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 200;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ==========================================================
+   問題管理画面
+   ========================================================== */
+.filter-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.filter-row .select {
+  flex: 1;
+}
+.qm-item {
+  background: var(--bg-card);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+.qm-item-q {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.qm-item-a {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.qm-item-meta {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+}
+.qm-item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* スライダー */
+.slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.slider-wrap input[type="range"] {
+  flex: 1;
+}
+.slider-value {
+  font-weight: 700;
+  min-width: 36px;
+  text-align: right;
+}
+
+/* ラジオグループ */
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.radio-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  background: var(--bg-card);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  font-size: 15px;
+}
+.radio-item.selected {
+  border-color: var(--primary);
+  background: rgba(0, 122, 255, 0.08);
+}
+.radio-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--text-tertiary);
+  margin-right: 12px;
+  flex-shrink: 0;
+  position: relative;
+}
+.radio-item.selected .radio-dot {
+  border-color: var(--primary);
+}
+.radio-item.selected .radio-dot::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background: var(--primary);
+  border-radius: 50%;
+}
+
+/* ==========================================================
+   印刷モード
+   ========================================================== */
+.print-area {
+  display: none;
+}
+.print-preview {
+  background: #ffffff;
+  color: #000000;
+  padding: 16px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 13px;
+}
+.print-preview h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  text-align: center;
+}
+.print-preview .meta {
+  font-size: 11px;
+  color: #666;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+}
+.print-preview ol {
+  padding-left: 24px;
+  margin: 0;
+}
+.print-preview li {
+  margin-bottom: 14px;
+  line-height: 1.7;
+}
+.print-preview .answer-line {
+  border-bottom: 1px solid #999;
+  display: inline-block;
+  min-width: 60%;
+  margin-left: 8px;
+  height: 1em;
+}
+.print-preview .answer-text {
+  color: #c00;
+  font-weight: 600;
+}
+
+/* @media print: 印刷時のみ印刷エリアを表示し、UIを隠す */
+@media print {
+  html, body {
+    overflow: visible;
+    height: auto;
+    background: #fff;
+    color: #000;
+  }
+  body * {
+    visibility: hidden;
+  }
+  .print-area, .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    display: block;
+    position: absolute;
+    inset: 0;
+    padding: 12mm;
+    background: #fff;
+    color: #000;
+  }
+  .print-area .print-page {
+    page-break-after: always;
+  }
+  .print-area .print-page:last-child {
+    page-break-after: auto;
+  }
+  .print-area h2 {
+    text-align: center;
+    margin: 0 0 8mm;
+    font-size: 16pt;
+  }
+  .print-area .meta {
+    font-size: 10pt;
+    margin-bottom: 6mm;
+    display: flex;
+    justify-content: space-between;
+  }
+  .print-area ol {
+    padding-left: 6mm;
+    font-size: 12pt;
+    line-height: 2;
+  }
+  .print-area ol li {
+    margin-bottom: 4mm;
+  }
+  .print-area .answer-line {
+    border-bottom: 1px solid #000;
+    display: inline-block;
+    min-width: 50%;
+    margin-left: 4mm;
+    height: 1.4em;
+  }
+  .print-area .answer-text {
+    font-weight: 600;
+  }
+  /* 用紙サイズ */
+  @page {
+    margin: 12mm;
+  }
+}
+
+/* 教科ごとのアクセントカラー (タイル左ボーダー) */
+.tile-color-english { box-shadow: inset 4px 0 0 #5856d6, var(--shadow); }
+.tile-color-kanji   { box-shadow: inset 4px 0 0 #ff2d55, var(--shadow); }
+.tile-color-social  { box-shadow: inset 4px 0 0 #ff9500, var(--shadow); }
+.tile-color-science { box-shadow: inset 4px 0 0 #34c759, var(--shadow); }
+
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- 各画面はJSで動的に描画。screen要素は単に枠だけ用意 -->
+  <div id="screen-profile-select" class="screen"></div>
+  <div id="screen-home" class="screen"></div>
+  <div id="screen-units" class="screen"></div>
+  <div id="screen-study" class="screen"></div>
+  <div id="screen-result" class="screen"></div>
+  <div id="screen-print" class="screen"></div>
+  <div id="screen-question-mgmt" class="screen"></div>
+  <div id="screen-question-edit" class="screen"></div>
+  <div id="screen-subject-mgmt" class="screen"></div>
+  <div id="screen-data-mgmt" class="screen"></div>
+</div>
+
+<!-- 印刷専用エリア (印刷時のみ表示) -->
+<div id="print-area" class="print-area"></div>
+
+<!-- モーダル -->
+<div id="modal-overlay" class="modal-overlay">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<!-- トースト -->
+<div id="toast" class="toast"></div>
+
+<script>
+'use strict';
+
+/* ============================================================
+   学習アプリ - 単一ファイル版
+   ============================================================
+   - データはLocalStorageに保存
+   - プロフィール別に履歴を管理 (問題プールは共有)
+   - 拡張予定:
+       * 選択式問題 (question.type = "choice", payload.choices = [...])
+       * 画像付き問題 (question.imageUrl)
+       * 英単語の発音 (question.payload.pronunciation)
+   - データ構造はバージョン管理 (state.version)
+   ============================================================ */
+
+const STORAGE_KEY = 'study-app-data-v1';
+const SESSION_DEFAULT_SIZE = 10; // 1セッションのデフォルト出題数
+
+/* ------------------------------------------------------------
+   状態管理
+   ------------------------------------------------------------ */
+let state = null;             // LocalStorageから読み込んだ全データ
+let currentProfileId = null;  // 現在選択中のプロフィールID
+let currentScreen = 'profile-select';
+let navStack = [];            // 戻るボタン用のスタック
+let studySession = null;      // 学習中のセッション情報
+let printConfig = null;       // 印刷モードの設定
+
+/* ------------------------------------------------------------
+   サンプルデータ (初回起動時のみ投入)
+   ------------------------------------------------------------ */
+function buildSampleData() {
+  return {
+    version: 1,
+    subjects: [
+      { id: 'english', name: '英語' },
+      { id: 'kanji',   name: '漢字' },
+      { id: 'social',  name: '社会' },
+      { id: 'science', name: '理科' }
+    ],
+    units: [
+      { id: 'u-eng-1', subjectId: 'english', name: '基本単語', parentId: null },
+      { id: 'u-kan-1', subjectId: 'kanji',   name: '中学漢字',   parentId: null },
+      { id: 'u-soc-1', subjectId: 'social',  name: '日本史',     parentId: null },
+      { id: 'u-sci-1', subjectId: 'science', name: '基礎',       parentId: null }
+    ],
+    questions: [
+      // 英語
+      { id: 'q-e1', unitId: 'u-eng-1', type: 'qa', question: '「学校」を英語で', answers: ['school'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
+      { id: 'q-e2', unitId: 'u-eng-1', type: 'qa', question: '「友達」を英語で', answers: ['friend'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
+      { id: 'q-e3', unitId: 'u-eng-1', type: 'qa', question: '「先生」を英語で', answers: ['teacher'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
+      { id: 'q-e4', unitId: 'u-eng-1', type: 'qa', question: '「本」を英語で', answers: ['book'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
+      { id: 'q-e5', unitId: 'u-eng-1', type: 'qa', question: '「昼食」を英語で', answers: ['lunch'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
+      // 漢字
+      { id: 'q-k1', unitId: 'u-kan-1', type: 'qa', question: '「えいえん」を漢字で', answers: ['永遠'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
+      { id: 'q-k2', unitId: 'u-kan-1', type: 'qa', question: '「じゅんび」を漢字で', answers: ['準備'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
+      { id: 'q-k3', unitId: 'u-kan-1', type: 'qa', question: '「けっか」を漢字で', answers: ['結果'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
+      { id: 'q-k4', unitId: 'u-kan-1', type: 'qa', question: '「ぎもん」を漢字で', answers: ['疑問'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
+      { id: 'q-k5', unitId: 'u-kan-1', type: 'qa', question: '「ふくざつ」を漢字で', answers: ['複雑'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
+      // 社会
+      { id: 'q-s1', unitId: 'u-soc-1', type: 'qa', question: '1192年に鎌倉幕府を開いた人物は?', answers: ['源頼朝'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
+      { id: 'q-s2', unitId: 'u-soc-1', type: 'qa', question: '江戸幕府を開いた人物は?', answers: ['徳川家康'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
+      { id: 'q-s3', unitId: 'u-soc-1', type: 'qa', question: '初代内閣総理大臣は?', answers: ['伊藤博文'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
+      { id: 'q-s4', unitId: 'u-soc-1', type: 'qa', question: '平安京に都が移されたのは何年?', answers: ['794年'], hint: '鳴くよウグイス', sourceNote: '', createdAt: '2026-04-30' },
+      { id: 'q-s5', unitId: 'u-soc-1', type: 'qa', question: 'ペリーが浦賀に来航したのは何年?', answers: ['1853年'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
+      // 理科
+      { id: 'q-r1', unitId: 'u-sci-1', type: 'qa', question: '水の化学式は?', answers: ['H2O'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
+      { id: 'q-r2', unitId: 'u-sci-1', type: 'qa', question: '光合成で植物が吸収する気体は?', answers: ['二酸化炭素'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
+      { id: 'q-r3', unitId: 'u-sci-1', type: 'qa', question: '地球から最も近い恒星は?', answers: ['太陽'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
+      { id: 'q-r4', unitId: 'u-sci-1', type: 'qa', question: '心臓から全身に血液を送り出す太い血管は?', answers: ['大動脈'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
+      { id: 'q-r5', unitId: 'u-sci-1', type: 'qa', question: '地球が太陽の周りを1周するのにかかる日数は?', answers: ['365日'], hint: '', sourceNote: '', createdAt: '2026-04-30' }
+    ],
+    profiles: [
+      { id: 'p1', name: '中学', color: '#3b82f6' },
+      { id: 'p2', name: '高校', color: '#ec4899' }
+    ],
+    history: { p1: [], p2: [] }
+  };
+}
+
+/* ------------------------------------------------------------
+   LocalStorage 読み書き
+   ------------------------------------------------------------ */
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      state = buildSampleData();
+      saveState();
+      return;
+    }
+    state = JSON.parse(raw);
+    // 履歴のキーが欠けていれば補う
+    state.profiles.forEach(p => {
+      if (!state.history[p.id]) state.history[p.id] = [];
+    });
+    // 旧サンプル名称 (子1/子2) を新名称 (中学/高校) に移行
+    let migrated = false;
+    state.profiles.forEach(p => {
+      if (p.id === 'p1' && p.name === '子1') { p.name = '中学'; migrated = true; }
+      if (p.id === 'p2' && p.name === '子2') { p.name = '高校'; migrated = true; }
+    });
+    if (migrated) saveState();
+  } catch (e) {
+    console.error('LocalStorageの読込に失敗:', e);
+    state = buildSampleData();
+    saveState();
+  }
+}
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    showToast('保存に失敗しました');
+    console.error(e);
+  }
+}
+
+/* ------------------------------------------------------------
+   ユーティリティ
+   ------------------------------------------------------------ */
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+function genId(prefix) {
+  return prefix + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6);
+}
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' +
+         String(d.getMonth() + 1).padStart(2, '0') + '-' +
+         String(d.getDate()).padStart(2, '0');
+}
+function todayCompact() {
+  return todayStr().replace(/-/g, '');
+}
+function getCurrentProfile() {
+  return state.profiles.find(p => p.id === currentProfileId);
+}
+function getSubject(id)  { return state.subjects.find(s => s.id === id); }
+function getUnit(id)     { return state.units.find(u => u.id === id); }
+function getQuestion(id) { return state.questions.find(q => q.id === id); }
+
+// 単元の正答率 (現在のプロフィール基準)
+function getUnitAccuracy(unitId, profileId) {
+  const qids = state.questions.filter(q => q.unitId === unitId).map(q => q.id);
+  if (qids.length === 0) return null;
+  const hist = (state.history[profileId] || []).filter(h => qids.includes(h.questionId));
+  if (hist.length === 0) return null;
+  const ok = hist.filter(h => h.result === 'o').length;
+  return Math.round((ok / hist.length) * 100);
+}
+
+/* ------------------------------------------------------------
+   トースト / モーダル
+   ------------------------------------------------------------ */
+let toastTimer = null;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+function showAlert(title, message) {
+  return new Promise(resolve => {
+    const overlay = document.getElementById('modal-overlay');
+    const content = document.getElementById('modal-content');
+    content.innerHTML = `
+      <div class="modal-title">${escapeHtml(title)}</div>
+      ${message ? `<div class="modal-message">${escapeHtml(message)}</div>` : ''}
+      <div class="modal-actions">
+        <button class="btn" id="modal-ok">OK</button>
+      </div>`;
+    overlay.classList.add('active');
+    document.getElementById('modal-ok').onclick = () => {
+      overlay.classList.remove('active');
+      resolve();
+    };
+  });
+}
+function showConfirm(title, message, opts = {}) {
+  return new Promise(resolve => {
+    const overlay = document.getElementById('modal-overlay');
+    const content = document.getElementById('modal-content');
+    content.innerHTML = `
+      <div class="modal-title">${escapeHtml(title)}</div>
+      ${message ? `<div class="modal-message">${escapeHtml(message)}</div>` : ''}
+      <div class="modal-actions">
+        <button class="btn secondary" id="modal-cancel">${escapeHtml(opts.cancelText || 'キャンセル')}</button>
+        <button class="btn ${opts.danger ? 'danger' : ''}" id="modal-ok">${escapeHtml(opts.okText || 'OK')}</button>
+      </div>`;
+    overlay.classList.add('active');
+    document.getElementById('modal-ok').onclick = () => {
+      overlay.classList.remove('active');
+      resolve(true);
+    };
+    document.getElementById('modal-cancel').onclick = () => {
+      overlay.classList.remove('active');
+      resolve(false);
+    };
+  });
+}
+
+/* ------------------------------------------------------------
+   画面遷移
+   ------------------------------------------------------------ */
+function showScreen(name, params = {}, replace = false) {
+  if (!replace && currentScreen) {
+    navStack.push({ screen: currentScreen, params: window.__lastParams || {} });
+  }
+  currentScreen = name;
+  window.__lastParams = params;
+
+  // 全画面非表示にしてから対象だけ表示
+  document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+  const id = 'screen-' + name;
+  const el = document.getElementById(id);
+  if (!el) {
+    console.error('画面が見つかりません:', name);
+    return;
+  }
+  el.classList.add('active');
+  // 画面ごとの描画
+  switch (name) {
+    case 'profile-select':  renderProfileSelect(); break;
+    case 'home':            renderHome(); break;
+    case 'units':           renderUnits(params.subjectId); break;
+    case 'study':           renderStudy(); break;
+    case 'result':          renderResult(); break;
+    case 'print':           renderPrint(); break;
+    case 'question-mgmt':   renderQuestionMgmt(); break;
+    case 'question-edit':   renderQuestionEdit(params.questionId, params.unitId); break;
+    case 'subject-mgmt':    renderSubjectMgmt(); break;
+    case 'data-mgmt':       renderDataMgmt(); break;
+  }
+}
+function goBack() {
+  if (navStack.length === 0) {
+    showScreen('home', {}, true);
+    return;
+  }
+  const prev = navStack.pop();
+  currentScreen = prev.screen;
+  window.__lastParams = prev.params;
+  document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+  document.getElementById('screen-' + prev.screen).classList.add('active');
+  // 戻り先の再描画
+  switch (prev.screen) {
+    case 'profile-select':  renderProfileSelect(); break;
+    case 'home':            renderHome(); break;
+    case 'units':           renderUnits(prev.params.subjectId); break;
+    case 'study':           renderStudy(); break;
+    case 'result':          renderResult(); break;
+    case 'print':           renderPrint(); break;
+    case 'question-mgmt':   renderQuestionMgmt(); break;
+    case 'question-edit':   renderQuestionEdit(prev.params.questionId, prev.params.unitId); break;
+    case 'subject-mgmt':    renderSubjectMgmt(); break;
+    case 'data-mgmt':       renderDataMgmt(); break;
+  }
+}
+
+/* ------------------------------------------------------------
+   画面1: プロフィール選択
+   ------------------------------------------------------------ */
+function renderProfileSelect() {
+  const buttons = state.profiles.map(p => {
+    const initial = (p.name || '?').charAt(0);
+    return `
+      <button class="profile-button" data-pid="${p.id}">
+        <span class="profile-avatar" style="background:${p.color}">${escapeHtml(initial)}</span>
+        <span>${escapeHtml(p.name)}</span>
+      </button>`;
+  }).join('');
+
+  document.getElementById('screen-profile-select').innerHTML = `
+    <div class="nav-bar">
+      <span class="nav-spacer"></span>
+      <span class="nav-title">学習アプリ</span>
+      <button class="nav-button icon" id="ps-settings" aria-label="設定">⚙</button>
+    </div>
+    <div class="profile-select-wrap">
+      <div>
+        <div class="profile-select-title">だれが学習する?</div>
+        <div class="profile-select-subtitle">プロフィールを選んでください</div>
+      </div>
+      <div class="profile-buttons">${buttons}</div>
+    </div>`;
+
+  // イベント
+  document.querySelectorAll('#screen-profile-select .profile-button').forEach(btn => {
+    btn.onclick = () => {
+      currentProfileId = btn.dataset.pid;
+      navStack = []; // ホームから始める
+      showScreen('home', {}, true);
+    };
+  });
+  document.getElementById('ps-settings').onclick = () => {
+    // 設定 = 問題管理画面へ (プロフィール未選択でも入れる)
+    showScreen('question-mgmt');
+  };
+}
+
+/* ------------------------------------------------------------
+   画面2: ホーム
+   ------------------------------------------------------------ */
+function renderHome() {
+  const profile = getCurrentProfile();
+  if (!profile) { showScreen('profile-select', {}, true); return; }
+
+  const initial = (profile.name || '?').charAt(0);
+  const subjectIcons = { english: '🌐', kanji: '✏️', social: '🗾', science: '🔬' };
+
+  const tiles = state.subjects.map(s => {
+    const qcount = state.questions.filter(q => {
+      const u = getUnit(q.unitId);
+      return u && u.subjectId === s.id;
+    }).length;
+    const icon = subjectIcons[s.id] || '📘';
+    return `
+      <button class="subject-tile tile-color-${s.id}" data-sid="${s.id}">
+        <div>
+          <div class="subject-tile-icon">${icon}</div>
+          <div class="subject-tile-name">${escapeHtml(s.name)}</div>
+        </div>
+        <div class="subject-tile-meta">${qcount}問</div>
+      </button>`;
+  }).join('');
+
+  document.getElementById('screen-home').innerHTML = `
+    <div class="nav-bar">
+      <span class="nav-spacer"></span>
+      <span class="nav-title">ホーム</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="content">
+      <div class="home-header">
+        <button class="home-profile-chip" id="home-switch-profile">
+          <span class="profile-avatar" style="background:${profile.color}">${escapeHtml(initial)}</span>
+          <span>${escapeHtml(profile.name)}</span>
+        </button>
+      </div>
+      <div class="section-label">教科を選ぶ</div>
+      <div class="subject-grid">${tiles}</div>
+
+      <div class="section-label">その他</div>
+      <div class="list-group">
+        <button class="list-item list-item-chevron" id="home-print">
+          <div class="list-item-main"><div class="list-item-title">🖨 印刷モード</div></div>
+        </button>
+        <button class="list-item list-item-chevron" id="home-qm">
+          <div class="list-item-main"><div class="list-item-title">📝 問題管理</div></div>
+        </button>
+        <button class="list-item list-item-chevron" id="home-data">
+          <div class="list-item-main"><div class="list-item-title">💾 データ管理</div></div>
+        </button>
+      </div>
+    </div>`;
+
+  document.getElementById('home-switch-profile').onclick = () => {
+    showScreen('profile-select');
+  };
+  document.querySelectorAll('#screen-home .subject-tile').forEach(t => {
+    t.onclick = () => showScreen('units', { subjectId: t.dataset.sid });
+  });
+  document.getElementById('home-print').onclick = () => showScreen('print');
+  document.getElementById('home-qm').onclick = () => showScreen('question-mgmt');
+  document.getElementById('home-data').onclick = () => showScreen('data-mgmt');
+}
+
+/* ------------------------------------------------------------
+   画面3: 単元選択
+   ------------------------------------------------------------ */
+function renderUnits(subjectId) {
+  const subject = getSubject(subjectId);
+  if (!subject) { goBack(); return; }
+  const units = state.units.filter(u => u.subjectId === subjectId);
+
+  const totalQ = state.questions.filter(q => {
+    const u = getUnit(q.unitId);
+    return u && u.subjectId === subjectId;
+  }).length;
+  const totalAcc = (() => {
+    const qids = state.questions.filter(q => {
+      const u = getUnit(q.unitId);
+      return u && u.subjectId === subjectId;
+    }).map(q => q.id);
+    const hist = (state.history[currentProfileId] || []).filter(h => qids.includes(h.questionId));
+    if (hist.length === 0) return null;
+    return Math.round(hist.filter(h => h.result === 'o').length / hist.length * 100);
+  })();
+
+  const items = units.map(u => {
+    const qcount = state.questions.filter(q => q.unitId === u.id).length;
+    const acc = getUnitAccuracy(u.id, currentProfileId);
+    return `
+      <button class="list-item list-item-chevron" data-uid="${u.id}">
+        <div class="list-item-main">
+          <div class="list-item-title">${escapeHtml(u.name)}</div>
+          <div class="list-item-subtitle">${qcount}問 ${acc != null ? `・正答率 ${acc}%` : '・未学習'}</div>
+        </div>
+      </button>`;
+  }).join('');
+
+  document.getElementById('screen-units').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="u-back">‹ 戻る</button>
+      <span class="nav-title">${escapeHtml(subject.name)}</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="content">
+      <div class="section-label">範囲を選んで学習を始める</div>
+      <div class="list-group">
+        <button class="list-item list-item-chevron" id="u-all">
+          <div class="list-item-main">
+            <div class="list-item-title">全単元から出題</div>
+            <div class="list-item-subtitle">${totalQ}問 ${totalAcc != null ? `・正答率 ${totalAcc}%` : '・未学習'}</div>
+          </div>
+        </button>
+      </div>
+      <div class="section-label">単元別</div>
+      <div class="list-group">
+        ${items || '<div class="list-item"><div class="list-item-main"><div class="list-item-subtitle">単元がありません。問題管理から追加してください。</div></div></div>'}
+      </div>
+    </div>`;
+
+  document.getElementById('u-back').onclick = goBack;
+  document.getElementById('u-all').onclick = () => startStudy({ subjectId });
+  document.querySelectorAll('#screen-units .list-item[data-uid]').forEach(b => {
+    b.onclick = () => startStudy({ unitId: b.dataset.uid });
+  });
+}
+
+/* ------------------------------------------------------------
+   画面4: 学習
+   ------------------------------------------------------------ */
+function startStudy({ unitId = null, subjectId = null } = {}) {
+  // 出題対象を絞り込む
+  let pool = state.questions.slice();
+  if (unitId) pool = pool.filter(q => q.unitId === unitId);
+  if (subjectId) pool = pool.filter(q => {
+    const u = getUnit(q.unitId);
+    return u && u.subjectId === subjectId;
+  });
+  if (pool.length === 0) {
+    showAlert('問題がありません', 'この範囲には問題がありません。問題管理から追加してください。');
+    return;
+  }
+  const ordered = shuffle(pool).slice(0, Math.min(SESSION_DEFAULT_SIZE, pool.length));
+  studySession = {
+    unitId, subjectId,
+    questions: ordered,
+    index: 0,
+    revealed: false,
+    results: [], // { questionId, result }
+    startedAt: Date.now()
+  };
+  showScreen('study');
+}
+
+function renderStudy() {
+  if (!studySession) { goBack(); return; }
+  const s = studySession;
+  if (s.index >= s.questions.length) {
+    // 完了 → 結果へ
+    showScreen('result', {}, true);
+    return;
+  }
+  const q = s.questions[s.index];
+  const progress = ((s.index) / s.questions.length) * 100;
+
+  document.getElementById('screen-study').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="st-quit">中断</button>
+      <span class="nav-title">学習中</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="study-header">
+      <div class="study-progress">${s.index + 1} / ${s.questions.length}</div>
+      <div class="study-progress-bar">
+        <div class="study-progress-fill" style="width:${progress}%"></div>
+      </div>
+    </div>
+    <div class="study-body">
+      <div class="study-question-label">問題</div>
+      <div class="study-question">${escapeHtml(q.question)}</div>
+      ${q.hint ? `<div class="study-hint">💡 ヒント: ${escapeHtml(q.hint)}</div>` : ''}
+      <div id="st-answer-area"></div>
+    </div>
+    <div class="study-actions" id="st-actions">
+      <button class="btn" id="st-show">答えを見る</button>
+    </div>`;
+
+  document.getElementById('st-quit').onclick = async () => {
+    const ok = await showConfirm('学習を中断', 'これまでの結果は保存されません。中断しますか?', { okText: '中断', danger: true });
+    if (ok) { studySession = null; goBack(); }
+  };
+  document.getElementById('st-show').onclick = revealAnswer;
+}
+
+function revealAnswer() {
+  const s = studySession;
+  const q = s.questions[s.index];
+  s.revealed = true;
+  document.getElementById('st-answer-area').innerHTML = `
+    <div class="study-answer">
+      <div class="study-answer-label">正解</div>
+      <div class="study-answer-text">${escapeHtml((q.answers || []).join(' / '))}</div>
+    </div>`;
+  document.getElementById('st-actions').innerHTML = `
+    <div class="judge-buttons">
+      <button class="judge-button x" data-r="x">
+        <span class="judge-symbol">×</span>
+        <span class="judge-label">できなかった</span>
+      </button>
+      <button class="judge-button d" data-r="d">
+        <span class="judge-symbol">△</span>
+        <span class="judge-label">あやふや</span>
+      </button>
+      <button class="judge-button o" data-r="o">
+        <span class="judge-symbol">○</span>
+        <span class="judge-label">できた</span>
+      </button>
+    </div>`;
+  document.querySelectorAll('#st-actions .judge-button').forEach(b => {
+    b.onclick = () => recordResult(b.dataset.r);
+  });
+}
+
+function recordResult(result) {
+  const s = studySession;
+  const q = s.questions[s.index];
+  s.results.push({ questionId: q.id, result });
+  // 履歴に1レコード追加
+  state.history[currentProfileId].push({
+    questionId: q.id,
+    profileId: currentProfileId,
+    result,
+    answeredAt: new Date().toISOString()
+  });
+  saveState();
+  s.index++;
+  s.revealed = false;
+  renderStudy();
+}
+
+/* ------------------------------------------------------------
+   画面5: 結果サマリ
+   ------------------------------------------------------------ */
+function renderResult() {
+  const s = studySession;
+  if (!s) { goBack(); return; }
+  const total = s.results.length;
+  const o = s.results.filter(r => r.result === 'o').length;
+  const d = s.results.filter(r => r.result === 'd').length;
+  const x = s.results.filter(r => r.result === 'x').length;
+  const rate = total > 0 ? Math.round((o / total) * 100) : 0;
+  const elapsedMs = Date.now() - s.startedAt;
+  const min = Math.floor(elapsedMs / 60000);
+  const sec = Math.floor((elapsedMs % 60000) / 1000);
+
+  // 間違えた問題 (x と d をリストアップ)
+  const mistakes = s.results.filter(r => r.result !== 'o').map(r => {
+    const q = getQuestion(r.questionId);
+    return q ? { q, mark: r.result } : null;
+  }).filter(Boolean);
+
+  const mistakeHtml = mistakes.length === 0
+    ? '<div class="card" style="text-align:center;color:var(--text-secondary)">全問正解!お見事!</div>'
+    : mistakes.map(m => `
+        <div class="result-mistake">
+          <div class="result-mistake-q">${m.mark === 'd' ? '△' : '×'} ${escapeHtml(m.q.question)}</div>
+          <div class="result-mistake-a">→ ${escapeHtml((m.q.answers || []).join(' / '))}</div>
+        </div>`).join('');
+
+  document.getElementById('screen-result').innerHTML = `
+    <div class="nav-bar">
+      <span class="nav-spacer"></span>
+      <span class="nav-title">結果</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="content">
+      <div class="result-summary">
+        <div class="result-rate">${rate}%</div>
+        <div class="result-rate-label">正答率 (${o} / ${total} 問)</div>
+        <div class="result-stats">
+          <div class="result-stat o"><div class="result-stat-value">${o}</div><div class="result-stat-label">○ できた</div></div>
+          <div class="result-stat d"><div class="result-stat-value">${d}</div><div class="result-stat-label">△ あやふや</div></div>
+          <div class="result-stat x"><div class="result-stat-value">${x}</div><div class="result-stat-label">× できない</div></div>
+        </div>
+        <div style="font-size:13px;color:var(--text-secondary)">所要時間 ${min}分${sec}秒</div>
+      </div>
+      <div class="section-label">復習が必要な問題</div>
+      ${mistakeHtml}
+      <button class="btn" id="r-again" style="margin-top:16px">もう一度同じ範囲を学習</button>
+      <button class="btn secondary" id="r-home">ホームへ戻る</button>
+    </div>`;
+
+  document.getElementById('r-again').onclick = () => {
+    const params = { unitId: s.unitId, subjectId: s.subjectId };
+    studySession = null;
+    startStudy(params);
+  };
+  document.getElementById('r-home').onclick = () => {
+    studySession = null;
+    navStack = [];
+    showScreen('home', {}, true);
+  };
+}
+
+/* ------------------------------------------------------------
+   画面6: 印刷モード
+   ------------------------------------------------------------ */
+function renderPrint() {
+  if (!printConfig) {
+    printConfig = {
+      subjectId: 'all',
+      unitId: 'all',
+      count: 10,
+      paper: 'A4',
+      output: 'question' // 'question' | 'with-answer' | 'answer-only'
+    };
+  }
+  const cfg = printConfig;
+
+  // 単元プルダウンは教科に応じて変化
+  const subjectOptions = ['<option value="all">すべての教科</option>']
+    .concat(state.subjects.map(s => `<option value="${s.id}" ${cfg.subjectId === s.id ? 'selected' : ''}>${escapeHtml(s.name)}</option>`))
+    .join('');
+  let unitOptions = '<option value="all">すべての単元</option>';
+  if (cfg.subjectId !== 'all') {
+    unitOptions += state.units
+      .filter(u => u.subjectId === cfg.subjectId)
+      .map(u => `<option value="${u.id}" ${cfg.unitId === u.id ? 'selected' : ''}>${escapeHtml(u.name)}</option>`)
+      .join('');
+  }
+
+  // 出題プールを計算してプレビュー描画
+  const pool = collectPrintPool(cfg);
+  const max = Math.max(1, Math.min(50, pool.length || 1));
+  if (cfg.count > max) cfg.count = max;
+  const previewItems = pool.slice(0, cfg.count);
+
+  document.getElementById('screen-print').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="pr-back">‹ 戻る</button>
+      <span class="nav-title">印刷モード</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="content">
+      <div class="field">
+        <div class="field-label">教科</div>
+        <select class="select" id="pr-subject">${subjectOptions}</select>
+      </div>
+      <div class="field">
+        <div class="field-label">単元</div>
+        <select class="select" id="pr-unit" ${cfg.subjectId === 'all' ? 'disabled' : ''}>${unitOptions}</select>
+      </div>
+      <div class="field">
+        <div class="field-label">問題数</div>
+        <div class="slider-wrap">
+          <input type="range" id="pr-count" min="1" max="${max}" value="${cfg.count}" step="1">
+          <span class="slider-value" id="pr-count-v">${cfg.count}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px">範囲内の問題: ${pool.length}問</div>
+      </div>
+      <div class="field">
+        <div class="field-label">用紙サイズ</div>
+        <div class="radio-group" id="pr-paper">
+          <label class="radio-item ${cfg.paper === 'A4' ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="paper" value="A4" hidden>A4</label>
+          <label class="radio-item ${cfg.paper === 'B5' ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="paper" value="B5" hidden>B5</label>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label">出力種別</div>
+        <div class="radio-group" id="pr-output">
+          <label class="radio-item ${cfg.output === 'question' ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="output" value="question" hidden>問題用紙(解答欄つき)</label>
+          <label class="radio-item ${cfg.output === 'with-answer' ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="output" value="with-answer" hidden>解答付き</label>
+          <label class="radio-item ${cfg.output === 'answer-only' ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="output" value="answer-only" hidden>解答用紙のみ</label>
+        </div>
+      </div>
+
+      <div class="section-label">プレビュー</div>
+      <div class="print-preview">
+        ${buildPreviewHtml(previewItems, cfg)}
+      </div>
+
+      <button class="btn" id="pr-print" ${previewItems.length === 0 ? 'disabled style="opacity:0.5"' : ''}>🖨 印刷する</button>
+      <button class="btn secondary" id="pr-shuffle">問題をシャッフル</button>
+    </div>`;
+
+  // イベント
+  document.getElementById('pr-back').onclick = goBack;
+  document.getElementById('pr-subject').onchange = e => {
+    cfg.subjectId = e.target.value;
+    cfg.unitId = 'all';
+    renderPrint();
+  };
+  document.getElementById('pr-unit').onchange = e => {
+    cfg.unitId = e.target.value;
+    renderPrint();
+  };
+  const slider = document.getElementById('pr-count');
+  slider.oninput = e => {
+    cfg.count = parseInt(e.target.value, 10);
+    document.getElementById('pr-count-v').textContent = cfg.count;
+  };
+  slider.onchange = () => renderPrint();
+  document.querySelectorAll('#pr-paper .radio-item').forEach(item => {
+    item.onclick = () => {
+      cfg.paper = item.querySelector('input').value;
+      renderPrint();
+    };
+  });
+  document.querySelectorAll('#pr-output .radio-item').forEach(item => {
+    item.onclick = () => {
+      cfg.output = item.querySelector('input').value;
+      renderPrint();
+    };
+  });
+  document.getElementById('pr-shuffle').onclick = () => {
+    // 同じプールでシャッフルした結果を保存
+    cfg._shuffledIds = shuffle(collectPrintPool(cfg, true).map(q => q.id));
+    renderPrint();
+  };
+  document.getElementById('pr-print').onclick = () => {
+    // 印刷専用エリアにレイアウトを書き込み、window.print()
+    const items = collectPrintPool(cfg).slice(0, cfg.count);
+    document.getElementById('print-area').innerHTML = buildPrintHtml(items, cfg);
+    // 用紙サイズ指定 (印刷ダイアログで反映)
+    setPrintPaperSize(cfg.paper);
+    setTimeout(() => window.print(), 50);
+  };
+}
+
+// 印刷用の出題プール (対象を絞ってシャッフル)
+function collectPrintPool(cfg, raw = false) {
+  let pool = state.questions.slice();
+  if (cfg.subjectId !== 'all') {
+    pool = pool.filter(q => {
+      const u = getUnit(q.unitId);
+      return u && u.subjectId === cfg.subjectId;
+    });
+  }
+  if (cfg.unitId && cfg.unitId !== 'all') {
+    pool = pool.filter(q => q.unitId === cfg.unitId);
+  }
+  if (raw) return pool;
+  // _shuffledIds がキャッシュされていればその順で返す
+  if (cfg._shuffledIds) {
+    const map = new Map(pool.map(q => [q.id, q]));
+    const ordered = cfg._shuffledIds.map(id => map.get(id)).filter(Boolean);
+    if (ordered.length === pool.length) return ordered;
+  }
+  // 初回はシャッフル
+  cfg._shuffledIds = shuffle(pool).map(q => q.id);
+  const map = new Map(pool.map(q => [q.id, q]));
+  return cfg._shuffledIds.map(id => map.get(id)).filter(Boolean);
+}
+
+function buildPreviewHtml(items, cfg) {
+  if (items.length === 0) return '<div style="color:#666">出題できる問題がありません</div>';
+  const title = printTitle(cfg);
+  const meta = `<div class="meta"><span>${escapeHtml(title)}</span><span>名前:_______________</span></div>`;
+  if (cfg.output === 'answer-only') {
+    return `<h2>${escapeHtml(title)} 解答</h2>${meta}<ol>` +
+      items.map(q => `<li><span class="answer-text">${escapeHtml((q.answers || []).join(' / '))}</span></li>`).join('') +
+      '</ol>';
+  }
+  return `<h2>${escapeHtml(title)}</h2>${meta}<ol>` +
+    items.map(q => {
+      const ans = cfg.output === 'with-answer'
+        ? `<span class="answer-text">[${escapeHtml((q.answers || []).join(' / '))}]</span>`
+        : '<span class="answer-line"></span>';
+      return `<li>${escapeHtml(q.question)} ${ans}</li>`;
+    }).join('') +
+    '</ol>';
+}
+
+function buildPrintHtml(items, cfg) {
+  // 印刷時はプレビューと同等のHTML
+  return `<div class="print-page">${buildPreviewHtml(items, cfg)}</div>`;
+}
+
+function printTitle(cfg) {
+  const parts = [];
+  if (cfg.subjectId === 'all') parts.push('全教科');
+  else {
+    const s = getSubject(cfg.subjectId);
+    if (s) parts.push(s.name);
+    if (cfg.unitId !== 'all') {
+      const u = getUnit(cfg.unitId);
+      if (u) parts.push(u.name);
+    }
+  }
+  parts.push('一問一答');
+  return parts.join(' ');
+}
+
+// 用紙サイズを @page CSSに動的注入
+function setPrintPaperSize(paper) {
+  let style = document.getElementById('print-paper-style');
+  if (!style) {
+    style = document.createElement('style');
+    style.id = 'print-paper-style';
+    document.head.appendChild(style);
+  }
+  style.textContent = `@media print { @page { size: ${paper}; margin: 12mm; } }`;
+}
+
+/* ------------------------------------------------------------
+   画面7: 問題管理
+   ------------------------------------------------------------ */
+let qmFilter = { subjectId: 'all', unitId: 'all' };
+
+function renderQuestionMgmt() {
+  const subjectOpts = ['<option value="all">すべての教科</option>']
+    .concat(state.subjects.map(s => `<option value="${s.id}" ${qmFilter.subjectId === s.id ? 'selected' : ''}>${escapeHtml(s.name)}</option>`))
+    .join('');
+  let unitOpts = '<option value="all">すべての単元</option>';
+  if (qmFilter.subjectId !== 'all') {
+    unitOpts += state.units
+      .filter(u => u.subjectId === qmFilter.subjectId)
+      .map(u => `<option value="${u.id}" ${qmFilter.unitId === u.id ? 'selected' : ''}>${escapeHtml(u.name)}</option>`)
+      .join('');
+  }
+
+  // フィルタ適用
+  let qs = state.questions.slice();
+  if (qmFilter.subjectId !== 'all') {
+    qs = qs.filter(q => {
+      const u = getUnit(q.unitId);
+      return u && u.subjectId === qmFilter.subjectId;
+    });
+  }
+  if (qmFilter.unitId !== 'all') {
+    qs = qs.filter(q => q.unitId === qmFilter.unitId);
+  }
+
+  const itemsHtml = qs.length === 0
+    ? '<div class="card" style="text-align:center;color:var(--text-secondary)">問題がありません</div>'
+    : qs.map(q => {
+        const unit = getUnit(q.unitId);
+        const subj = unit ? getSubject(unit.subjectId) : null;
+        const tag = (subj ? subj.name : '?') + ' / ' + (unit ? unit.name : '?');
+        return `
+          <div class="qm-item">
+            <div class="qm-item-meta">${escapeHtml(tag)}</div>
+            <div class="qm-item-q">${escapeHtml(q.question)}</div>
+            <div class="qm-item-a">→ ${escapeHtml((q.answers || []).join(' / '))}</div>
+            <div class="qm-item-actions">
+              <button class="btn small secondary" data-act="edit" data-id="${q.id}">編集</button>
+              <button class="btn small danger" data-act="delete" data-id="${q.id}">削除</button>
+            </div>
+          </div>`;
+      }).join('');
+
+  document.getElementById('screen-question-mgmt').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="qm-back">‹ 戻る</button>
+      <span class="nav-title">問題管理</span>
+      <button class="nav-button" id="qm-subject-mgmt">教科</button>
+    </div>
+    <div class="content">
+      <div class="filter-row">
+        <select class="select" id="qm-f-sub">${subjectOpts}</select>
+        <select class="select" id="qm-f-unit" ${qmFilter.subjectId === 'all' ? 'disabled' : ''}>${unitOpts}</select>
+      </div>
+      <button class="btn" id="qm-add">＋ 問題を追加</button>
+      <div class="section-label">${qs.length}件</div>
+      ${itemsHtml}
+    </div>`;
+
+  document.getElementById('qm-back').onclick = () => {
+    if (currentProfileId) goBack();
+    else showScreen('profile-select', {}, true);
+  };
+  document.getElementById('qm-subject-mgmt').onclick = () => showScreen('subject-mgmt');
+  document.getElementById('qm-f-sub').onchange = e => {
+    qmFilter.subjectId = e.target.value;
+    qmFilter.unitId = 'all';
+    renderQuestionMgmt();
+  };
+  document.getElementById('qm-f-unit').onchange = e => {
+    qmFilter.unitId = e.target.value;
+    renderQuestionMgmt();
+  };
+  document.getElementById('qm-add').onclick = () => {
+    const initialUnit = (qmFilter.unitId !== 'all') ? qmFilter.unitId : null;
+    showScreen('question-edit', { questionId: null, unitId: initialUnit });
+  };
+  document.querySelectorAll('#screen-question-mgmt [data-act="edit"]').forEach(b => {
+    b.onclick = () => showScreen('question-edit', { questionId: b.dataset.id });
+  });
+  document.querySelectorAll('#screen-question-mgmt [data-act="delete"]').forEach(b => {
+    b.onclick = async () => {
+      const ok = await showConfirm('問題を削除', 'この問題を削除しますか? (履歴も一緒に削除されます)', { okText: '削除', danger: true });
+      if (!ok) return;
+      const id = b.dataset.id;
+      state.questions = state.questions.filter(q => q.id !== id);
+      // 履歴も対応するものを削除
+      Object.keys(state.history).forEach(pid => {
+        state.history[pid] = state.history[pid].filter(h => h.questionId !== id);
+      });
+      saveState();
+      showToast('削除しました');
+      renderQuestionMgmt();
+    };
+  });
+}
+
+/* ------------------------------------------------------------
+   画面: 問題編集 (新規/編集兼用)
+   ------------------------------------------------------------ */
+function renderQuestionEdit(questionId, defaultUnitId) {
+  const isNew = !questionId;
+  const q = isNew
+    ? { id: null, unitId: defaultUnitId || (state.units[0] && state.units[0].id), type: 'qa', question: '', answers: [''], hint: '', sourceNote: '' }
+    : Object.assign({}, getQuestion(questionId));
+  if (!q) { goBack(); return; }
+  if (!q.answers || q.answers.length === 0) q.answers = [''];
+
+  // 単元プルダウンを教科ごとにグループ化
+  const unitOptionsHtml = state.subjects.map(s => {
+    const us = state.units.filter(u => u.subjectId === s.id);
+    if (us.length === 0) return '';
+    return `<optgroup label="${escapeHtml(s.name)}">` +
+      us.map(u => `<option value="${u.id}" ${q.unitId === u.id ? 'selected' : ''}>${escapeHtml(u.name)}</option>`).join('') +
+      `</optgroup>`;
+  }).join('');
+
+  document.getElementById('screen-question-edit').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="qe-cancel">キャンセル</button>
+      <span class="nav-title">${isNew ? '問題を追加' : '問題を編集'}</span>
+      <button class="nav-button" id="qe-save"><b>保存</b></button>
+    </div>
+    <div class="content">
+      <div class="field">
+        <div class="field-label">単元</div>
+        <select class="select" id="qe-unit">${unitOptionsHtml}</select>
+        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px">単元がない場合は「教科」から追加してください</div>
+      </div>
+      <div class="field">
+        <div class="field-label">問題文</div>
+        <textarea class="textarea" id="qe-q" placeholder="例: 「学校」を英語で">${escapeHtml(q.question)}</textarea>
+      </div>
+      <div class="field">
+        <div class="field-label">解答 (将来的に複数登録可能)</div>
+        <input class="input" id="qe-a" placeholder="例: school" value="${escapeHtml((q.answers || [''])[0])}">
+      </div>
+      <div class="field">
+        <div class="field-label">ヒント (任意)</div>
+        <input class="input" id="qe-hint" value="${escapeHtml(q.hint || '')}">
+      </div>
+      <div class="field">
+        <div class="field-label">出典メモ (任意)</div>
+        <input class="input" id="qe-src" placeholder="例: 教科書p.34" value="${escapeHtml(q.sourceNote || '')}">
+      </div>
+      ${!isNew ? '<button class="btn danger" id="qe-delete">この問題を削除</button>' : ''}
+    </div>`;
+
+  document.getElementById('qe-cancel').onclick = goBack;
+  document.getElementById('qe-save').onclick = () => {
+    const unitId = document.getElementById('qe-unit').value;
+    const question = document.getElementById('qe-q').value.trim();
+    const answer = document.getElementById('qe-a').value.trim();
+    const hint = document.getElementById('qe-hint').value.trim();
+    const src = document.getElementById('qe-src').value.trim();
+    if (!unitId) { showAlert('単元を選んでください'); return; }
+    if (!question) { showAlert('問題文を入力してください'); return; }
+    if (!answer) { showAlert('解答を入力してください'); return; }
+
+    if (isNew) {
+      state.questions.push({
+        id: genId('q'),
+        unitId,
+        type: 'qa',
+        question,
+        answers: [answer],
+        hint, sourceNote: src,
+        createdAt: todayStr()
+      });
+    } else {
+      const target = getQuestion(q.id);
+      target.unitId = unitId;
+      target.question = question;
+      target.answers = [answer];
+      target.hint = hint;
+      target.sourceNote = src;
+    }
+    saveState();
+    showToast(isNew ? '追加しました' : '保存しました');
+    goBack();
+  };
+  if (!isNew) {
+    document.getElementById('qe-delete').onclick = async () => {
+      const ok = await showConfirm('問題を削除', 'この問題を削除しますか?', { okText: '削除', danger: true });
+      if (!ok) return;
+      state.questions = state.questions.filter(x => x.id !== q.id);
+      Object.keys(state.history).forEach(pid => {
+        state.history[pid] = state.history[pid].filter(h => h.questionId !== q.id);
+      });
+      saveState();
+      showToast('削除しました');
+      goBack();
+    };
+  }
+}
+
+/* ------------------------------------------------------------
+   画面: 教科・単元管理
+   ------------------------------------------------------------ */
+function renderSubjectMgmt() {
+  const subjectsHtml = state.subjects.map(s => {
+    const units = state.units.filter(u => u.subjectId === s.id);
+    const unitsHtml = units.map(u => {
+      const qcount = state.questions.filter(q => q.unitId === u.id).length;
+      return `
+        <div class="list-item">
+          <div class="list-item-main">
+            <div class="list-item-title">${escapeHtml(u.name)}</div>
+            <div class="list-item-subtitle">${qcount}問</div>
+          </div>
+          <button class="btn small secondary" data-uact="rename" data-id="${u.id}">名称変更</button>
+          <button class="btn small danger" data-uact="delete" data-id="${u.id}" style="margin-left:6px">削除</button>
+        </div>`;
+    }).join('') || '<div class="list-item"><div class="list-item-main"><div class="list-item-subtitle">単元がありません</div></div></div>';
+    return `
+      <div class="section-label">${escapeHtml(s.name)}
+        <button class="btn small" data-sact="rename-sub" data-id="${s.id}" style="margin-left:8px">名称</button>
+        <button class="btn small danger" data-sact="del-sub" data-id="${s.id}" style="margin-left:4px">削除</button>
+      </div>
+      <div class="list-group">
+        ${unitsHtml}
+        <button class="list-item" data-sact="add-unit" data-id="${s.id}">
+          <div class="list-item-main"><div class="list-item-title" style="color:var(--primary)">＋ 単元を追加</div></div>
+        </button>
+      </div>`;
+  }).join('');
+
+  document.getElementById('screen-subject-mgmt').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="sm-back">‹ 戻る</button>
+      <span class="nav-title">教科・単元の管理</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="content">
+      <button class="btn" id="sm-add-sub">＋ 教科を追加</button>
+      ${subjectsHtml}
+    </div>`;
+
+  document.getElementById('sm-back').onclick = goBack;
+  document.getElementById('sm-add-sub').onclick = () => {
+    const name = prompt('教科名を入力してください');
+    if (!name) return;
+    state.subjects.push({ id: genId('sub'), name: name.trim() });
+    saveState();
+    showToast('教科を追加しました');
+    renderSubjectMgmt();
+  };
+  document.querySelectorAll('#screen-subject-mgmt [data-sact]').forEach(b => {
+    b.onclick = async () => {
+      const act = b.dataset.sact;
+      const id = b.dataset.id;
+      if (act === 'rename-sub') {
+        const sub = getSubject(id);
+        const name = prompt('教科名', sub.name);
+        if (name) { sub.name = name.trim(); saveState(); renderSubjectMgmt(); }
+      } else if (act === 'del-sub') {
+        const sub = getSubject(id);
+        const unitIds = state.units.filter(u => u.subjectId === id).map(u => u.id);
+        const qids = state.questions.filter(q => unitIds.includes(q.unitId)).map(q => q.id);
+        const ok = await showConfirm('教科を削除',
+          `「${sub.name}」と配下の単元 ${unitIds.length}件・問題 ${qids.length}件 をすべて削除します。よろしいですか?`,
+          { okText: '削除', danger: true });
+        if (!ok) return;
+        state.subjects = state.subjects.filter(s => s.id !== id);
+        state.units = state.units.filter(u => u.subjectId !== id);
+        state.questions = state.questions.filter(q => !qids.includes(q.id));
+        Object.keys(state.history).forEach(pid => {
+          state.history[pid] = state.history[pid].filter(h => !qids.includes(h.questionId));
+        });
+        saveState();
+        showToast('削除しました');
+        renderSubjectMgmt();
+      } else if (act === 'add-unit') {
+        const name = prompt('単元名を入力してください');
+        if (!name) return;
+        state.units.push({ id: genId('u'), subjectId: id, name: name.trim(), parentId: null });
+        saveState();
+        showToast('単元を追加しました');
+        renderSubjectMgmt();
+      }
+    };
+  });
+  document.querySelectorAll('#screen-subject-mgmt [data-uact]').forEach(b => {
+    b.onclick = async () => {
+      const act = b.dataset.uact;
+      const id = b.dataset.id;
+      if (act === 'rename') {
+        const u = getUnit(id);
+        const name = prompt('単元名', u.name);
+        if (name) { u.name = name.trim(); saveState(); renderSubjectMgmt(); }
+      } else if (act === 'delete') {
+        const u = getUnit(id);
+        const qids = state.questions.filter(q => q.unitId === id).map(q => q.id);
+        const ok = await showConfirm('単元を削除',
+          `「${u.name}」と配下の問題 ${qids.length}件 を削除します。よろしいですか?`,
+          { okText: '削除', danger: true });
+        if (!ok) return;
+        state.units = state.units.filter(x => x.id !== id);
+        state.questions = state.questions.filter(q => q.unitId !== id);
+        Object.keys(state.history).forEach(pid => {
+          state.history[pid] = state.history[pid].filter(h => !qids.includes(h.questionId));
+        });
+        saveState();
+        showToast('削除しました');
+        renderSubjectMgmt();
+      }
+    };
+  });
+}
+
+/* ------------------------------------------------------------
+   画面: データ管理
+   ------------------------------------------------------------ */
+function renderDataMgmt() {
+  // 統計
+  const totalQ = state.questions.length;
+  const totalSub = state.subjects.length;
+  const totalUnit = state.units.length;
+  const histStats = state.profiles.map(p => {
+    const h = state.history[p.id] || [];
+    return `${p.name}: ${h.length}件`;
+  }).join(' / ');
+
+  document.getElementById('screen-data-mgmt').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="dm-back">‹ 戻る</button>
+      <span class="nav-title">データ管理</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="content">
+      <div class="card">
+        <div style="font-size:13px;color:var(--text-secondary);margin-bottom:6px">現在のデータ</div>
+        <div>教科 ${totalSub} / 単元 ${totalUnit} / 問題 ${totalQ}</div>
+        <div style="font-size:13px;color:var(--text-secondary);margin-top:4px">学習履歴 - ${histStats}</div>
+      </div>
+      <button class="btn" id="dm-export">⬇ JSONをエクスポート</button>
+      <button class="btn secondary" id="dm-import">⬆ JSONをインポート</button>
+      <input type="file" id="dm-file" accept="application/json,.json" style="display:none">
+      <div style="height:24px"></div>
+      <button class="btn danger" id="dm-reset">⚠ 全データをリセット</button>
+      <div style="font-size:12px;color:var(--text-secondary);margin-top:8px;text-align:center">リセットするとサンプルデータに戻ります</div>
+    </div>`;
+
+  document.getElementById('dm-back').onclick = goBack;
+  document.getElementById('dm-export').onclick = doExport;
+  document.getElementById('dm-import').onclick = () => document.getElementById('dm-file').click();
+  document.getElementById('dm-file').onchange = doImport;
+  document.getElementById('dm-reset').onclick = doReset;
+}
+
+function doExport() {
+  const json = JSON.stringify(state, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `study-app-data-${todayCompact()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast('エクスポートしました');
+}
+
+async function doImport(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const imported = JSON.parse(text);
+    if (!imported || !imported.subjects || !imported.units || !imported.questions) {
+      throw new Error('データ形式が正しくありません');
+    }
+    const choice = await showConfirm('インポート方法',
+      '「OK」で現在のデータを置き換え、「キャンセル」で操作をやめます。\n\n※ マージはしません (置き換えのみ)',
+      { okText: '置き換え', danger: true });
+    if (!choice) {
+      e.target.value = '';
+      return;
+    }
+    state = imported;
+    if (!state.history) state.history = {};
+    state.profiles.forEach(p => {
+      if (!state.history[p.id]) state.history[p.id] = [];
+    });
+    saveState();
+    showToast('インポートしました');
+    // ホームへ
+    currentProfileId = null;
+    navStack = [];
+    showScreen('profile-select', {}, true);
+  } catch (err) {
+    showAlert('インポート失敗', String(err.message || err));
+  }
+  e.target.value = '';
+}
+
+async function doReset() {
+  const ok = await showConfirm('全データをリセット',
+    '本当にすべてのデータ (問題・単元・履歴) を削除し、サンプルデータに戻しますか?\nこの操作は取り消せません。',
+    { okText: 'リセット', danger: true });
+  if (!ok) return;
+  // 念のためダブルチェック
+  const ok2 = await showConfirm('最終確認', '本当によろしいですか?', { okText: '実行', danger: true });
+  if (!ok2) return;
+  state = buildSampleData();
+  saveState();
+  currentProfileId = null;
+  navStack = [];
+  showToast('リセットしました');
+  showScreen('profile-select', {}, true);
+}
+
+/* ------------------------------------------------------------
+   起動
+   ------------------------------------------------------------ */
+loadState();
+showScreen('profile-select', {}, true);
+// 印刷後はプリントエリアをクリア (空にしておかないと次の印刷で前のが残る)
+window.addEventListener('afterprint', () => {
+  document.getElementById('print-area').innerHTML = '';
+});
+
+</script>
+</body>
+</html>
