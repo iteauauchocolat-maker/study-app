@@ -2139,6 +2139,7 @@ function renderPrint(params) {
       </div>
 
       <button class="btn" id="pr-print" ${pool.length === 0 ? 'disabled style="opacity:0.5"' : ''}>🖨 印刷する (全${totalPages}ページ)</button>
+      <button class="btn secondary" id="pr-pdf" ${pool.length === 0 ? 'disabled style="opacity:0.5"' : ''}>📄 PDFとして保存</button>
     </div>`;
 
   // イベント
@@ -2179,6 +2180,15 @@ function renderPrint(params) {
     });
   }
   document.getElementById('pr-print').onclick = () => {
+    document.getElementById('print-area').innerHTML = buildPrintHtml(pool, cfg);
+    setPrintPaperSize(cfg.paper);
+    setTimeout(() => window.print(), 50);
+  };
+  document.getElementById('pr-pdf').onclick = async () => {
+    await showAlert(
+      'PDFとして保存',
+      'このあと印刷ダイアログが開きます。\n\n• PCの場合: 「保存先 / 送信先」を「PDFに保存」に変更して保存\n• iPhoneの場合: プレビューを上にスワイプ（または拡大）→ 共有ボタンから「ファイルに保存」'
+    );
     document.getElementById('print-area').innerHTML = buildPrintHtml(pool, cfg);
     setPrintPaperSize(cfg.paper);
     setTimeout(() => window.print(), 50);
