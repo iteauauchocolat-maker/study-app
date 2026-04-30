@@ -493,6 +493,18 @@ input, textarea, select {
   white-space: pre-wrap;
   word-break: break-word;
 }
+.study-question.kanji-large {
+  font-size: 64px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+}
+.study-question.yomi-large {
+  font-size: 34px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: center;
+}
 .study-hint {
   background: var(--bg-card);
   border-radius: 12px;
@@ -522,6 +534,18 @@ input, textarea, select {
   font-weight: 600;
   white-space: pre-wrap;
   word-break: break-word;
+}
+.study-answer-text.kanji-large {
+  font-size: 60px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+}
+.study-answer-text.yomi-large {
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: center;
 }
 .study-actions {
   padding: 12px 20px calc(12px + var(--safe-bottom));
@@ -901,6 +925,7 @@ input, textarea, select {
   <div id="screen-profile-select" class="screen"></div>
   <div id="screen-home" class="screen"></div>
   <div id="screen-units" class="screen"></div>
+  <div id="screen-study-direction" class="screen"></div>
   <div id="screen-study" class="screen"></div>
   <div id="screen-result" class="screen"></div>
   <div id="screen-print" class="screen"></div>
@@ -1004,9 +1029,9 @@ function buildKanji5L2Pack() {
       questions.push({
         id: 'q-k5l2-' + String(n).padStart(3, '0'),
         unitId: 'u-kan-5-l2',
-        type: 'qa',
-        question: '「' + yomi + '」を漢字で',
-        answers: [ans],
+        type: 'kanji',
+        kanji: ans,
+        yomi: yomi,
         hint: '',
         sourceNote: kanji,
         createdAt: '2026-04-30'
@@ -1094,6 +1119,20 @@ function loadState() {
       state.questions.push(...pack.questions);
       migrated = true;
     }
+    // 旧 qa 形式の 5級② 問題を kanji 形式に変換 (既存ユーザー向け)
+    state.questions.forEach(q => {
+      if (q.unitId === 'u-kan-5-l2' && q.type === 'qa' && q.question && Array.isArray(q.answers)) {
+        const m = String(q.question).match(/「(.+?)」を漢字で/);
+        if (m && q.answers[0]) {
+          q.type = 'kanji';
+          q.kanji = q.answers[0];
+          q.yomi = m[1];
+          delete q.question;
+          delete q.answers;
+          migrated = true;
+        }
+      }
+    });
     // 旧サンプル単元「中学漢字」(u-kan-1) を削除
     if (state.units.some(u => u.id === 'u-kan-1')) {
       const removedQIds = new Set(
@@ -1193,6 +1232,26 @@ function getSubject(id)  { return state.subjects.find(s => s.id === id); }
 function getUnit(id)     { return state.units.find(u => u.id === id); }
 function getQuestion(id) { return state.questions.find(q => q.id === id); }
 
+// 出題向きに応じた表示用の問題文・解答とフォントスタイルを返す
+// direction: 'kakitori' (ひらがな→漢字) | 'yomi' (漢字→ひらがな)
+function questionDisplay(q, direction) {
+  if (q.type === 'kanji') {
+    if (direction === 'yomi') {
+      return { text: q.kanji, answers: [q.yomi], qStyle: 'kanji-large', aStyle: 'yomi-large' };
+    }
+    return { text: q.yomi, answers: [q.kanji], qStyle: 'yomi-large', aStyle: 'kanji-large' };
+  }
+  return { text: q.question || '', answers: q.answers || [], qStyle: '', aStyle: '' };
+}
+// 漢字単元かどうか判定 (subjectId = 'kanji' の単元)
+function isKanjiUnit(unitId) {
+  const u = getUnit(unitId);
+  return !!(u && u.subjectId === 'kanji');
+}
+function isKanjiSubject(subjectId) {
+  return subjectId === 'kanji';
+}
+
 // 単元の正答率 (現在のプロフィール基準)
 function getUnitAccuracy(unitId, profileId) {
   const qids = state.questions.filter(q => q.unitId === unitId).map(q => q.id);
@@ -1279,6 +1338,7 @@ function showScreen(name, params = {}, replace = false) {
     case 'profile-select':  renderProfileSelect(); break;
     case 'home':            renderHome(); break;
     case 'units':           renderUnits(params.subjectId); break;
+    case 'study-direction': renderStudyDirection(params); break;
     case 'study':           renderStudy(); break;
     case 'result':          renderResult(); break;
     case 'print':           renderPrint(); break;
@@ -1303,6 +1363,7 @@ function goBack() {
     case 'profile-select':  renderProfileSelect(); break;
     case 'home':            renderHome(); break;
     case 'units':           renderUnits(prev.params.subjectId); break;
+    case 'study-direction': renderStudyDirection(prev.params); break;
     case 'study':           renderStudy(); break;
     case 'result':          renderResult(); break;
     case 'print':           renderPrint(); break;
@@ -1478,16 +1539,63 @@ function renderUnits(subjectId) {
     </div>`;
 
   document.getElementById('u-back').onclick = goBack;
-  document.getElementById('u-all').onclick = () => startStudy({ subjectId });
+  document.getElementById('u-all').onclick = () => {
+    if (isKanjiSubject(subjectId)) {
+      showScreen('study-direction', { subjectId, label: subject.name + ' 全単元' });
+    } else {
+      startStudy({ subjectId });
+    }
+  };
   document.querySelectorAll('#screen-units .list-item[data-uid]').forEach(b => {
-    b.onclick = () => startStudy({ unitId: b.dataset.uid });
+    b.onclick = () => {
+      const uid = b.dataset.uid;
+      if (isKanjiUnit(uid)) {
+        const u = getUnit(uid);
+        showScreen('study-direction', { unitId: uid, label: u.name });
+      } else {
+        startStudy({ unitId: uid });
+      }
+    };
   });
+}
+
+/* ------------------------------------------------------------
+   画面: 漢字の出題方向選択 (よみ / 書き取り)
+   ------------------------------------------------------------ */
+function renderStudyDirection(params) {
+  const label = params && params.label ? params.label : '漢字';
+  document.getElementById('screen-study-direction').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="sd-back">‹ 戻る</button>
+      <span class="nav-title">${escapeHtml(label)}</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="content">
+      <div class="section-label">出題のしかたを選んでください</div>
+      <div class="list-group">
+        <button class="list-item list-item-chevron" id="sd-kakitori">
+          <div class="list-item-main">
+            <div class="list-item-title">✏️ 書き取り</div>
+            <div class="list-item-subtitle">よみがなを見て漢字を書く</div>
+          </div>
+        </button>
+        <button class="list-item list-item-chevron" id="sd-yomi">
+          <div class="list-item-main">
+            <div class="list-item-title">📖 よみ</div>
+            <div class="list-item-subtitle">漢字を見てよみがなを答える</div>
+          </div>
+        </button>
+      </div>
+    </div>`;
+  document.getElementById('sd-back').onclick = goBack;
+  document.getElementById('sd-kakitori').onclick = () => startStudy({ ...params, direction: 'kakitori' });
+  document.getElementById('sd-yomi').onclick = () => startStudy({ ...params, direction: 'yomi' });
 }
 
 /* ------------------------------------------------------------
    画面4: 学習
    ------------------------------------------------------------ */
-function startStudy({ unitId = null, subjectId = null } = {}) {
+function startStudy({ unitId = null, subjectId = null, direction = 'kakitori', label = null } = {}) {
   // 出題対象を絞り込む
   let pool = state.questions.slice();
   if (unitId) pool = pool.filter(q => q.unitId === unitId);
@@ -1502,7 +1610,7 @@ function startStudy({ unitId = null, subjectId = null } = {}) {
   // sourceNote (例: 練習中の漢字) でグループ化し、同じグループが連続しないよう並べる
   const ordered = shuffleByGroup(pool, q => q.sourceNote).slice(0, Math.min(SESSION_DEFAULT_SIZE, pool.length));
   studySession = {
-    unitId, subjectId,
+    unitId, subjectId, direction,
     questions: ordered,
     index: 0,
     revealed: false,
@@ -1521,6 +1629,7 @@ function renderStudy() {
     return;
   }
   const q = s.questions[s.index];
+  const disp = questionDisplay(q, s.direction);
   const progress = ((s.index) / s.questions.length) * 100;
 
   document.getElementById('screen-study').innerHTML = `
@@ -1537,7 +1646,7 @@ function renderStudy() {
     </div>
     <div class="study-body">
       <div class="study-question-label">問題</div>
-      <div class="study-question">${escapeHtml(q.question)}</div>
+      <div class="study-question ${disp.qStyle}">${escapeHtml(disp.text)}</div>
       ${q.hint ? `<div class="study-hint">💡 ヒント: ${escapeHtml(q.hint)}</div>` : ''}
       <div id="st-answer-area"></div>
     </div>
@@ -1555,11 +1664,12 @@ function renderStudy() {
 function revealAnswer() {
   const s = studySession;
   const q = s.questions[s.index];
+  const disp = questionDisplay(q, s.direction);
   s.revealed = true;
   document.getElementById('st-answer-area').innerHTML = `
     <div class="study-answer">
       <div class="study-answer-label">正解</div>
-      <div class="study-answer-text">${escapeHtml((q.answers || []).join(' / '))}</div>
+      <div class="study-answer-text ${disp.aStyle}">${escapeHtml((disp.answers || []).join(' / '))}</div>
     </div>`;
   document.getElementById('st-actions').innerHTML = `
     <div class="judge-buttons">
@@ -1621,11 +1731,14 @@ function renderResult() {
 
   const mistakeHtml = mistakes.length === 0
     ? '<div class="card" style="text-align:center;color:var(--text-secondary)">全問正解!お見事!</div>'
-    : mistakes.map(m => `
+    : mistakes.map(m => {
+        const d = questionDisplay(m.q, s.direction);
+        return `
         <div class="result-mistake">
-          <div class="result-mistake-q">${m.mark === 'd' ? '△' : '×'} ${escapeHtml(m.q.question)}</div>
-          <div class="result-mistake-a">→ ${escapeHtml((m.q.answers || []).join(' / '))}</div>
-        </div>`).join('');
+          <div class="result-mistake-q">${m.mark === 'd' ? '△' : '×'} ${escapeHtml(d.text)}</div>
+          <div class="result-mistake-a">→ ${escapeHtml(d.answers.join(' / '))}</div>
+        </div>`;
+      }).join('');
 
   document.getElementById('screen-result').innerHTML = `
     <div class="nav-bar">
@@ -1816,17 +1929,23 @@ function buildPreviewHtml(items, cfg) {
   if (items.length === 0) return '<div style="color:#666">出題できる問題がありません</div>';
   const title = printTitle(cfg);
   const meta = `<div class="meta"><span>${escapeHtml(title)}</span><span>名前:_______________</span></div>`;
+  // 印刷は当面 kakitori (ひらがな→漢字) で固定
+  const dir = 'kakitori';
   if (cfg.output === 'answer-only') {
     return `<h2>${escapeHtml(title)} 解答</h2>${meta}<ol>` +
-      items.map(q => `<li><span class="answer-text">${escapeHtml((q.answers || []).join(' / '))}</span></li>`).join('') +
+      items.map(q => {
+        const d = questionDisplay(q, dir);
+        return `<li><span class="answer-text">${escapeHtml(d.answers.join(' / '))}</span></li>`;
+      }).join('') +
       '</ol>';
   }
   return `<h2>${escapeHtml(title)}</h2>${meta}<ol>` +
     items.map(q => {
+      const d = questionDisplay(q, dir);
       const ans = cfg.output === 'with-answer'
-        ? `<span class="answer-text">[${escapeHtml((q.answers || []).join(' / '))}]</span>`
+        ? `<span class="answer-text">[${escapeHtml(d.answers.join(' / '))}]</span>`
         : '<span class="answer-line"></span>';
-      return `<li>${escapeHtml(q.question)} ${ans}</li>`;
+      return `<li>${escapeHtml(d.text)} ${ans}</li>`;
     }).join('') +
     '</ol>';
 }
@@ -1897,11 +2016,13 @@ function renderQuestionMgmt() {
         const unit = getUnit(q.unitId);
         const subj = unit ? getSubject(unit.subjectId) : null;
         const tag = (subj ? subj.name : '?') + ' / ' + (unit ? unit.name : '?');
+        const qText = q.type === 'kanji' ? (q.yomi || '') : (q.question || '');
+        const aText = q.type === 'kanji' ? (q.kanji || '') : ((q.answers || []).join(' / '));
         return `
           <div class="qm-item">
             <div class="qm-item-meta">${escapeHtml(tag)}</div>
-            <div class="qm-item-q">${escapeHtml(q.question)}</div>
-            <div class="qm-item-a">→ ${escapeHtml((q.answers || []).join(' / '))}</div>
+            <div class="qm-item-q">${escapeHtml(qText)}</div>
+            <div class="qm-item-a">→ ${escapeHtml(aText)}</div>
             <div class="qm-item-actions">
               <button class="btn small secondary" data-act="edit" data-id="${q.id}">編集</button>
               <button class="btn small danger" data-act="delete" data-id="${q.id}">削除</button>
@@ -1972,7 +2093,8 @@ function renderQuestionEdit(questionId, defaultUnitId) {
     ? { id: null, unitId: defaultUnitId || (state.units[0] && state.units[0].id), type: 'qa', question: '', answers: [''], hint: '', sourceNote: '' }
     : Object.assign({}, getQuestion(questionId));
   if (!q) { goBack(); return; }
-  if (!q.answers || q.answers.length === 0) q.answers = [''];
+  if (q.type !== 'kanji' && (!q.answers || q.answers.length === 0)) q.answers = [''];
+  const isKanji = q.type === 'kanji';
 
   // 単元プルダウンを教科ごとにグループ化
   const unitOptionsHtml = state.subjects.map(s => {
@@ -1982,6 +2104,26 @@ function renderQuestionEdit(questionId, defaultUnitId) {
       us.map(u => `<option value="${u.id}" ${q.unitId === u.id ? 'selected' : ''}>${escapeHtml(u.name)}</option>`).join('') +
       `</optgroup>`;
   }).join('');
+
+  const fieldsHtml = isKanji
+    ? `
+      <div class="field">
+        <div class="field-label">漢字</div>
+        <input class="input" id="qe-kanji" placeholder="例: 宗教" value="${escapeHtml(q.kanji || '')}">
+      </div>
+      <div class="field">
+        <div class="field-label">よみ (ひらがな)</div>
+        <input class="input" id="qe-yomi" placeholder="例: しゅうきょう" value="${escapeHtml(q.yomi || '')}">
+      </div>`
+    : `
+      <div class="field">
+        <div class="field-label">問題文</div>
+        <textarea class="textarea" id="qe-q" placeholder="例: 「学校」を英語で">${escapeHtml(q.question || '')}</textarea>
+      </div>
+      <div class="field">
+        <div class="field-label">解答 (将来的に複数登録可能)</div>
+        <input class="input" id="qe-a" placeholder="例: school" value="${escapeHtml((q.answers || [''])[0])}">
+      </div>`;
 
   document.getElementById('screen-question-edit').innerHTML = `
     <div class="nav-bar">
@@ -1995,14 +2137,7 @@ function renderQuestionEdit(questionId, defaultUnitId) {
         <select class="select" id="qe-unit">${unitOptionsHtml}</select>
         <div style="font-size:12px;color:var(--text-secondary);margin-top:4px">単元がない場合は「教科」から追加してください</div>
       </div>
-      <div class="field">
-        <div class="field-label">問題文</div>
-        <textarea class="textarea" id="qe-q" placeholder="例: 「学校」を英語で">${escapeHtml(q.question)}</textarea>
-      </div>
-      <div class="field">
-        <div class="field-label">解答 (将来的に複数登録可能)</div>
-        <input class="input" id="qe-a" placeholder="例: school" value="${escapeHtml((q.answers || [''])[0])}">
-      </div>
+      ${fieldsHtml}
       <div class="field">
         <div class="field-label">ヒント (任意)</div>
         <input class="input" id="qe-hint" value="${escapeHtml(q.hint || '')}">
@@ -2017,13 +2152,21 @@ function renderQuestionEdit(questionId, defaultUnitId) {
   document.getElementById('qe-cancel').onclick = goBack;
   document.getElementById('qe-save').onclick = () => {
     const unitId = document.getElementById('qe-unit').value;
-    const question = document.getElementById('qe-q').value.trim();
-    const answer = document.getElementById('qe-a').value.trim();
     const hint = document.getElementById('qe-hint').value.trim();
     const src = document.getElementById('qe-src').value.trim();
     if (!unitId) { showAlert('単元を選んでください'); return; }
-    if (!question) { showAlert('問題文を入力してください'); return; }
-    if (!answer) { showAlert('解答を入力してください'); return; }
+    let question, answer, kanji, yomi;
+    if (isKanji) {
+      kanji = document.getElementById('qe-kanji').value.trim();
+      yomi = document.getElementById('qe-yomi').value.trim();
+      if (!kanji) { showAlert('漢字を入力してください'); return; }
+      if (!yomi) { showAlert('よみを入力してください'); return; }
+    } else {
+      question = document.getElementById('qe-q').value.trim();
+      answer = document.getElementById('qe-a').value.trim();
+      if (!question) { showAlert('問題文を入力してください'); return; }
+      if (!answer) { showAlert('解答を入力してください'); return; }
+    }
 
     if (isNew) {
       state.questions.push({
@@ -2038,10 +2181,15 @@ function renderQuestionEdit(questionId, defaultUnitId) {
     } else {
       const target = getQuestion(q.id);
       target.unitId = unitId;
-      target.question = question;
-      target.answers = [answer];
       target.hint = hint;
       target.sourceNote = src;
+      if (isKanji) {
+        target.kanji = kanji;
+        target.yomi = yomi;
+      } else {
+        target.question = question;
+        target.answers = [answer];
+      }
     }
     saveState();
     showToast(isNew ? '追加しました' : '保存しました');
