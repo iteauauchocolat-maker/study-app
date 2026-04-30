@@ -11,6 +11,10 @@
 <meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)">
 <meta name="format-detection" content="telephone=no">
 <title>学習アプリ</title>
+<!-- 漢字の手本表示用フォント (教科書体スタイル) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&display=swap">
 <style>
 /* ==========================================================
    テーマ変数 (ライト/ダークモード対応)
@@ -498,6 +502,7 @@ input, textarea, select {
   font-weight: 600;
   line-height: 1.3;
   text-align: center;
+  font-family: 'Klee One', 'Yu Mincho', 'Hiragino Mincho ProN', serif;
 }
 .study-question.yomi-large {
   font-size: 34px;
@@ -540,6 +545,7 @@ input, textarea, select {
   font-weight: 600;
   line-height: 1.3;
   text-align: center;
+  font-family: 'Klee One', 'Yu Mincho', 'Hiragino Mincho ProN', serif;
 }
 .study-answer-text.yomi-large {
   font-size: 30px;
@@ -547,6 +553,50 @@ input, textarea, select {
   line-height: 1.4;
   text-align: center;
 }
+/* 一覧表示用のテーブル */
+.kanji-list-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-card);
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 15px;
+}
+.kanji-list-table th,
+.kanji-list-table td {
+  padding: 10px 8px;
+  border-bottom: 0.5px solid var(--separator);
+  vertical-align: middle;
+}
+.kanji-list-table th {
+  background: var(--bg-button-secondary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  letter-spacing: 0.5px;
+}
+.kanji-list-table tr:last-child td { border-bottom: none; }
+.kanji-list-table .kl-kanji {
+  font-family: 'Klee One', 'Yu Mincho', 'Hiragino Mincho ProN', serif;
+  font-size: 24px;
+  font-weight: 600;
+  width: 36%;
+}
+.kanji-list-table .kl-yomi {
+  color: var(--text-secondary);
+  width: 30%;
+}
+.kanji-list-table .kl-result {
+  width: 17%;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+}
+.kanji-list-table .kl-r-o { color: var(--success); }
+.kanji-list-table .kl-r-d { color: var(--warning); }
+.kanji-list-table .kl-r-x { color: var(--danger); }
+.kanji-list-table .kl-r-none { color: var(--text-tertiary); font-size: 14px; font-weight: normal; }
 .study-actions {
   padding: 12px 20px calc(12px + var(--safe-bottom));
   background: var(--bg-elevated);
@@ -926,6 +976,7 @@ input, textarea, select {
   <div id="screen-home" class="screen"></div>
   <div id="screen-units" class="screen"></div>
   <div id="screen-study-direction" class="screen"></div>
+  <div id="screen-kanji-list" class="screen"></div>
   <div id="screen-study" class="screen"></div>
   <div id="screen-result" class="screen"></div>
   <div id="screen-print" class="screen"></div>
@@ -1251,6 +1302,22 @@ function isKanjiUnit(unitId) {
 function isKanjiSubject(subjectId) {
   return subjectId === 'kanji';
 }
+// 指定の問題・出題向きで最新の解答結果を返す ('o' | 'd' | 'x' | null)
+// 古い履歴 (direction 未保存) は kakitori 扱い
+function getLatestResult(questionId, direction, profileId) {
+  const pid = profileId || currentProfileId;
+  const hist = (state.history[pid] || []).filter(h => {
+    if (h.questionId !== questionId) return false;
+    const d = h.direction || 'kakitori';
+    return d === direction;
+  });
+  if (hist.length === 0) return null;
+  let latest = hist[0];
+  for (const h of hist) {
+    if (h.answeredAt && (!latest.answeredAt || h.answeredAt > latest.answeredAt)) latest = h;
+  }
+  return latest.result;
+}
 
 // 単元の正答率 (現在のプロフィール基準)
 function getUnitAccuracy(unitId, profileId) {
@@ -1339,6 +1406,7 @@ function showScreen(name, params = {}, replace = false) {
     case 'home':            renderHome(); break;
     case 'units':           renderUnits(params.subjectId); break;
     case 'study-direction': renderStudyDirection(params); break;
+    case 'kanji-list':      renderKanjiList(params); break;
     case 'study':           renderStudy(); break;
     case 'result':          renderResult(); break;
     case 'print':           renderPrint(); break;
@@ -1364,6 +1432,7 @@ function goBack() {
     case 'home':            renderHome(); break;
     case 'units':           renderUnits(prev.params.subjectId); break;
     case 'study-direction': renderStudyDirection(prev.params); break;
+    case 'kanji-list':      renderKanjiList(prev.params); break;
     case 'study':           renderStudy(); break;
     case 'result':          renderResult(); break;
     case 'print':           renderPrint(); break;
@@ -1586,10 +1655,80 @@ function renderStudyDirection(params) {
           </div>
         </button>
       </div>
+
+      <div class="section-label">この範囲を確認する</div>
+      <div class="list-group">
+        <button class="list-item list-item-chevron" id="sd-list">
+          <div class="list-item-main">
+            <div class="list-item-title">📋 一覧表示</div>
+            <div class="list-item-subtitle">漢字と読みをまとめて確認</div>
+          </div>
+        </button>
+      </div>
     </div>`;
   document.getElementById('sd-back').onclick = goBack;
   document.getElementById('sd-kakitori').onclick = () => startStudy({ ...params, direction: 'kakitori' });
   document.getElementById('sd-yomi').onclick = () => startStudy({ ...params, direction: 'yomi' });
+  document.getElementById('sd-list').onclick = () => showScreen('kanji-list', params);
+}
+
+/* ------------------------------------------------------------
+   画面: 漢字 一覧表示 (漢字・よみ・最新の○△× を一覧)
+   ------------------------------------------------------------ */
+function renderKanjiList(params) {
+  const label = params && params.label ? params.label : '漢字';
+  // 対象問題の絞り込み (kanji 型のみ)
+  let pool = state.questions.filter(q => q.type === 'kanji');
+  if (params && params.unitId) pool = pool.filter(q => q.unitId === params.unitId);
+  if (params && params.subjectId) pool = pool.filter(q => {
+    const u = getUnit(q.unitId);
+    return u && u.subjectId === params.subjectId;
+  });
+
+  const markCell = (r) => {
+    if (r === 'o') return '<span class="kl-r-o">○</span>';
+    if (r === 'd') return '<span class="kl-r-d">△</span>';
+    if (r === 'x') return '<span class="kl-r-x">×</span>';
+    return '<span class="kl-r-none">−</span>';
+  };
+
+  const rows = pool.map(q => {
+    const k = getLatestResult(q.id, 'kakitori');
+    const y = getLatestResult(q.id, 'yomi');
+    return `
+      <tr>
+        <td class="kl-kanji">${escapeHtml(q.kanji || '')}</td>
+        <td class="kl-yomi">${escapeHtml(q.yomi || '')}</td>
+        <td class="kl-result">${markCell(k)}</td>
+        <td class="kl-result">${markCell(y)}</td>
+      </tr>`;
+  }).join('');
+
+  const tableHtml = pool.length === 0
+    ? '<div class="card" style="text-align:center;color:var(--text-secondary)">この範囲に漢字問題がありません</div>'
+    : `<table class="kanji-list-table">
+        <thead>
+          <tr>
+            <th>漢字</th>
+            <th>よみ</th>
+            <th>書き取り</th>
+            <th>よみ</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+
+  document.getElementById('screen-kanji-list').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="kl-back">‹ 戻る</button>
+      <span class="nav-title">${escapeHtml(label)} 一覧</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="content">
+      <div class="section-label">${pool.length}件 / 最新の解答結果を表示</div>
+      ${tableHtml}
+    </div>`;
+  document.getElementById('kl-back').onclick = goBack;
 }
 
 /* ------------------------------------------------------------
@@ -1695,13 +1834,15 @@ function recordResult(result) {
   const s = studySession;
   const q = s.questions[s.index];
   s.results.push({ questionId: q.id, result });
-  // 履歴に1レコード追加
-  state.history[currentProfileId].push({
+  // 履歴に1レコード追加 (漢字問題は出題向きも保存)
+  const entry = {
     questionId: q.id,
     profileId: currentProfileId,
     result,
     answeredAt: new Date().toISOString()
-  });
+  };
+  if (q.type === 'kanji') entry.direction = s.direction || 'kakitori';
+  state.history[currentProfileId].push(entry);
   saveState();
   s.index++;
   s.revealed = false;
