@@ -1202,6 +1202,43 @@ function buildKanji5L2Pack() {
 }
 
 /* ------------------------------------------------------------
+   英語 JPREP L7 単語 (10問)
+   各エントリ: [日本語, 英語]
+   ------------------------------------------------------------ */
+const ENGLISH_JPREP_L7_SOURCE = [
+  ['よく、しばしば', 'often'],
+  ['建物', 'building'],
+  ['医者', 'doctor'],
+  ['消防士', 'firefighter'],
+  ['仕事', 'job'],
+  ['病院', 'hospital'],
+  ['働く', 'work'],
+  ['オフィス、会社', 'office'],
+  ['報道する', 'report'],
+  ['旅行する', 'travel']
+];
+
+function buildEnglishJprepL7Pack() {
+  const unit = { id: 'u-eng-jprep-l7', subjectId: 'english', name: 'JPREP L7 単語', parentId: null };
+  const questions = [];
+  let n = 0;
+  for (const [ja, en] of ENGLISH_JPREP_L7_SOURCE) {
+    n++;
+    questions.push({
+      id: 'q-ejp7-' + String(n).padStart(3, '0'),
+      unitId: 'u-eng-jprep-l7',
+      type: 'qa',
+      question: '「' + ja + '」を英語で',
+      answers: [en],
+      hint: '',
+      sourceNote: '',
+      createdAt: '2026-05-04'
+    });
+  }
+  return { unit, questions };
+}
+
+/* ------------------------------------------------------------
    サンプルデータ (初回起動時のみ投入)
    ------------------------------------------------------------ */
 function buildSampleData() {
@@ -1214,17 +1251,10 @@ function buildSampleData() {
       { id: 'science', name: '理科' }
     ],
     units: [
-      { id: 'u-eng-1', subjectId: 'english', name: '基本単語', parentId: null },
       { id: 'u-soc-1', subjectId: 'social',  name: '日本史',     parentId: null },
       { id: 'u-sci-1', subjectId: 'science', name: '基礎',       parentId: null }
     ],
     questions: [
-      // 英語
-      { id: 'q-e1', unitId: 'u-eng-1', type: 'qa', question: '「学校」を英語で', answers: ['school'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
-      { id: 'q-e2', unitId: 'u-eng-1', type: 'qa', question: '「友達」を英語で', answers: ['friend'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
-      { id: 'q-e3', unitId: 'u-eng-1', type: 'qa', question: '「先生」を英語で', answers: ['teacher'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
-      { id: 'q-e4', unitId: 'u-eng-1', type: 'qa', question: '「本」を英語で', answers: ['book'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
-      { id: 'q-e5', unitId: 'u-eng-1', type: 'qa', question: '「昼食」を英語で', answers: ['lunch'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
       // 社会
       { id: 'q-s1', unitId: 'u-soc-1', type: 'qa', question: '1192年に鎌倉幕府を開いた人物は?', answers: ['源頼朝'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
       { id: 'q-s2', unitId: 'u-soc-1', type: 'qa', question: '江戸幕府を開いた人物は?', answers: ['徳川家康'], hint: '', sourceNote: '', createdAt: '2026-04-30' },
@@ -1244,9 +1274,12 @@ function buildSampleData() {
     ],
     history: { p1: [], p2: [] }
   };
-  const pack = buildKanji5L2Pack();
-  data.units.push(pack.unit);
-  data.questions.push(...pack.questions);
+  const k5l2 = buildKanji5L2Pack();
+  data.units.push(k5l2.unit);
+  data.questions.push(...k5l2.questions);
+  const ejp7 = buildEnglishJprepL7Pack();
+  data.units.push(ejp7.unit);
+  data.questions.push(...ejp7.questions);
   return data;
 }
 
@@ -1304,6 +1337,25 @@ function loadState() {
       Object.keys(state.history).forEach(pid => {
         state.history[pid] = state.history[pid].filter(h => !removedQIds.has(h.questionId));
       });
+      migrated = true;
+    }
+    // 旧サンプル単元「英語 基本単語」(u-eng-1) を削除
+    if (state.units.some(u => u.id === 'u-eng-1')) {
+      const removedQIds = new Set(
+        state.questions.filter(q => q.unitId === 'u-eng-1').map(q => q.id)
+      );
+      state.units = state.units.filter(u => u.id !== 'u-eng-1');
+      state.questions = state.questions.filter(q => q.unitId !== 'u-eng-1');
+      Object.keys(state.history).forEach(pid => {
+        state.history[pid] = state.history[pid].filter(h => !removedQIds.has(h.questionId));
+      });
+      migrated = true;
+    }
+    // 英語 JPREP L7 単語の追加マイグレーション (既存ユーザー向け)
+    if (!state.units.some(u => u.id === 'u-eng-jprep-l7')) {
+      const pack = buildEnglishJprepL7Pack();
+      state.units.push(pack.unit);
+      state.questions.push(...pack.questions);
       migrated = true;
     }
     if (migrated) saveState();
