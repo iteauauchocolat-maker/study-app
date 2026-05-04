@@ -610,15 +610,33 @@ input, textarea, select {
 /* 英語 5問ずつの行 */
 .eb-row {
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
+  grid-template-columns: auto 1fr 1fr auto;
   gap: 10px;
   align-items: center;
   background: var(--bg-card);
   border-radius: 12px;
-  padding: 14px 14px;
+  padding: 12px 12px;
   margin-bottom: 8px;
   cursor: pointer;
   box-shadow: var(--shadow);
+}
+.eb-speak {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-button-secondary);
+  border: 1px solid var(--border);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  padding: 0;
+}
+.eb-speak:active {
+  background: var(--bg-elevated);
+  transform: scale(0.95);
 }
 .eb-prompt {
   font-size: 20px;
@@ -2399,6 +2417,7 @@ function renderEnglishBatch() {
           : '<div class="eb-grade-placeholder"></div>');
     return `
       <div class="eb-row" data-id="${q.id}">
+        <button class="eb-speak" data-id="${q.id}" aria-label="音声を聞く">🔊</button>
         <div class="eb-prompt">${escapeHtml(prompt)}</div>
         <div class="eb-answer">${revealed ? escapeHtml(answer) : '<span class="eb-tap-hint">タップして表示</span>'}</div>
         ${gradeArea}
@@ -2425,12 +2444,20 @@ function renderEnglishBatch() {
 
   document.querySelectorAll('#screen-english-batch .eb-row').forEach(el => {
     el.onclick = (e) => {
-      if (e.target.closest('.eb-grade') || e.target.closest('.eb-graded-mark')) return;
+      if (e.target.closest('.eb-grade') || e.target.closest('.eb-graded-mark') || e.target.closest('.eb-speak')) return;
       const qid = el.dataset.id;
       if (!s.revealed[qid]) {
         s.revealed[qid] = true;
         renderEnglishBatch();
       }
+    };
+  });
+  document.querySelectorAll('#screen-english-batch .eb-speak').forEach(b => {
+    b.onclick = (e) => {
+      e.stopPropagation();
+      const qid = b.dataset.id;
+      const q = getQuestion(qid);
+      if (q && q.en) speakEnglish(q.en);
     };
   });
   document.querySelectorAll('#screen-english-batch .eb-grade-btn').forEach(b => {
