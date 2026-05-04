@@ -1349,6 +1349,70 @@ function buildEnglishJprepL7Pack() {
 }
 
 /* ------------------------------------------------------------
+   英語 NT L0 単語 (34問: 教室14 / 部屋13 / 街7)
+   各エントリ: [日本語, 英語, カテゴリ]
+   ------------------------------------------------------------ */
+const ENGLISH_NT_L0_SOURCE = [
+  // 教室の様子
+  ['教室', 'classroom', '教室の様子'],
+  ['ドア', 'door', '教室の様子'],
+  ['地図', 'map', '教室の様子'],
+  ['カレンダー', 'calendar', '教室の様子'],
+  ['時計', 'clock', '教室の様子'],
+  ['黒板', 'blackboard', '教室の様子'],
+  ['チョーク', 'chalk', '教室の様子'],
+  ['机', 'desk', '教室の様子'],
+  ['いす', 'chair', '教室の様子'],
+  ['辞書', 'dictionary', '教室の様子'],
+  ['ノート', 'notebook', '教室の様子'],
+  ['えんぴつ', 'pencil', '教室の様子'],
+  ['消しゴム', 'eraser', '教室の様子'],
+  ['教科書', 'textbook', '教室の様子'],
+  // 部屋の様子
+  ['絵、写真', 'picture', '部屋の様子'],
+  ['テレビ', 'TV', '部屋の様子'],
+  ['人形', 'doll', '部屋の様子'],
+  ['コンピューター', 'computer', '部屋の様子'],
+  ['ベッド', 'bed', '部屋の様子'],
+  ['新聞', 'newspaper', '部屋の様子'],
+  ['腕時計', 'watch', '部屋の様子'],
+  ['カメラ', 'camera', '部屋の様子'],
+  ['電話', 'telephone', '部屋の様子'],
+  ['かばん', 'bag', '部屋の様子'],
+  ['アルバム', 'album', '部屋の様子'],
+  ['窓', 'window', '部屋の様子'],
+  ['庭', 'garden', '部屋の様子'],
+  // 街の様子
+  ['電車', 'train', '街の様子'],
+  ['駅', 'station', '街の様子'],
+  ['車', 'car', '街の様子'],
+  ['バス', 'bus', '街の様子'],
+  ['木', 'tree', '街の様子'],
+  ['学校', 'school', '街の様子'],
+  ['自転車', 'bike', '街の様子']
+];
+
+function buildEnglishNtL0Pack() {
+  const unit = { id: 'u-eng-nt-l0', subjectId: 'english', name: 'NT L0 単語', parentId: null };
+  const questions = [];
+  let n = 0;
+  for (const [ja, en, category] of ENGLISH_NT_L0_SOURCE) {
+    n++;
+    questions.push({
+      id: 'q-entl0-' + String(n).padStart(3, '0'),
+      unitId: 'u-eng-nt-l0',
+      type: 'english',
+      ja: ja,
+      en: en,
+      hint: '',
+      sourceNote: category,
+      createdAt: '2026-05-04'
+    });
+  }
+  return { unit, questions };
+}
+
+/* ------------------------------------------------------------
    サンプルデータ (初回起動時のみ投入)
    ------------------------------------------------------------ */
 function buildSampleData() {
@@ -1390,6 +1454,9 @@ function buildSampleData() {
   const ejp7 = buildEnglishJprepL7Pack();
   data.units.push(ejp7.unit);
   data.questions.push(...ejp7.questions);
+  const entl0 = buildEnglishNtL0Pack();
+  data.units.push(entl0.unit);
+  data.questions.push(...entl0.questions);
   return data;
 }
 
@@ -1464,6 +1531,13 @@ function loadState() {
     // 英語 JPREP L7 単語の追加マイグレーション (既存ユーザー向け)
     if (!state.units.some(u => u.id === 'u-eng-jprep-l7')) {
       const pack = buildEnglishJprepL7Pack();
+      state.units.push(pack.unit);
+      state.questions.push(...pack.questions);
+      migrated = true;
+    }
+    // 英語 NT L0 単語の追加マイグレーション (既存ユーザー向け)
+    if (!state.units.some(u => u.id === 'u-eng-nt-l0')) {
+      const pack = buildEnglishNtL0Pack();
       state.units.push(pack.unit);
       state.questions.push(...pack.questions);
       migrated = true;
