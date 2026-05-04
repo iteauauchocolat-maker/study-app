@@ -597,6 +597,94 @@ input, textarea, select {
 .kanji-list-table .kl-r-d { color: var(--warning); }
 .kanji-list-table .kl-r-x { color: var(--danger); }
 .kanji-list-table .kl-r-none { color: var(--text-tertiary); font-size: 14px; font-weight: normal; }
+.kanji-list-table .el-list-en {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+}
+.kanji-list-table .el-list-ja {
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+/* 英語 5問ずつの行 */
+.eb-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 10px;
+  align-items: center;
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 14px 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+.eb-prompt {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  word-break: break-word;
+}
+.eb-answer {
+  font-size: 17px;
+  color: var(--text);
+  word-break: break-word;
+  min-height: 1.4em;
+}
+.eb-tap-hint {
+  color: var(--text-tertiary);
+  font-size: 13px;
+  font-weight: normal;
+}
+.eb-grade-placeholder {
+  width: 96px;
+}
+.eb-grade {
+  display: flex;
+  gap: 4px;
+}
+.eb-grade-btn {
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  background: var(--bg-button-secondary);
+  border: 1px solid var(--border);
+  min-width: 28px;
+}
+.eb-grade-btn.x { color: var(--danger); }
+.eb-grade-btn.d { color: var(--warning); }
+.eb-grade-btn.o { color: var(--success); }
+.eb-graded-mark {
+  font-size: 26px;
+  font-weight: 700;
+  text-align: center;
+  width: 96px;
+}
+.eb-graded-mark.eb-o { color: var(--success); }
+.eb-graded-mark.eb-d { color: var(--warning); }
+.eb-graded-mark.eb-x { color: var(--danger); }
+
+/* 英語 聞き取り */
+.el-icon {
+  text-align: center;
+  font-size: 80px;
+  margin: 24px 0 16px;
+}
+.el-en {
+  font-size: 32px;
+  font-weight: 700;
+  text-align: center;
+  margin-top: 8px;
+  color: var(--text);
+}
+.el-ja {
+  font-size: 22px;
+  text-align: center;
+  margin-top: 6px;
+  color: var(--text-secondary);
+}
 .study-actions {
   padding: 12px 20px calc(12px + var(--safe-bottom));
   background: var(--bg-elevated);
@@ -1086,6 +1174,10 @@ input, textarea, select {
   <div id="screen-units" class="screen"></div>
   <div id="screen-study-direction" class="screen"></div>
   <div id="screen-kanji-list" class="screen"></div>
+  <div id="screen-english-direction" class="screen"></div>
+  <div id="screen-english-batch" class="screen"></div>
+  <div id="screen-english-listen" class="screen"></div>
+  <div id="screen-english-list" class="screen"></div>
   <div id="screen-study" class="screen"></div>
   <div id="screen-result" class="screen"></div>
   <div id="screen-print" class="screen"></div>
@@ -1227,9 +1319,9 @@ function buildEnglishJprepL7Pack() {
     questions.push({
       id: 'q-ejp7-' + String(n).padStart(3, '0'),
       unitId: 'u-eng-jprep-l7',
-      type: 'qa',
-      question: '「' + ja + '」を英語で',
-      answers: [en],
+      type: 'english',
+      ja: ja,
+      en: en,
       hint: '',
       sourceNote: '',
       createdAt: '2026-05-04'
@@ -1358,6 +1450,20 @@ function loadState() {
       state.questions.push(...pack.questions);
       migrated = true;
     }
+    // 旧 qa 形式の英語問題 (JPREP L7) を english 形式に変換
+    state.questions.forEach(q => {
+      if (q.unitId === 'u-eng-jprep-l7' && q.type === 'qa' && q.question && Array.isArray(q.answers)) {
+        const m = String(q.question).match(/「(.+?)」を英語で/);
+        if (m && q.answers[0]) {
+          q.type = 'english';
+          q.ja = m[1];
+          q.en = q.answers[0];
+          delete q.question;
+          delete q.answers;
+          migrated = true;
+        }
+      }
+    });
     if (migrated) saveState();
   } catch (e) {
     console.error('LocalStorageの読込に失敗:', e);
@@ -1445,13 +1551,25 @@ function getUnit(id)     { return state.units.find(u => u.id === id); }
 function getQuestion(id) { return state.questions.find(q => q.id === id); }
 
 // 出題向きに応じた表示用の問題文・解答とフォントスタイルを返す
-// direction: 'kakitori' (ひらがな→漢字) | 'yomi' (漢字→ひらがな)
+// kanji: 'kakitori' (ひらがな→漢字) | 'yomi' (漢字→ひらがな)
+// english: 'en-ja' (英語→日本語) | 'ja-en' (日本語→英語) | 'listen' (音声→両方)
 function questionDisplay(q, direction) {
   if (q.type === 'kanji') {
     if (direction === 'yomi') {
       return { text: q.kanji, answers: [q.yomi], qStyle: 'kanji-large', aStyle: 'yomi-large' };
     }
     return { text: q.yomi, answers: [q.kanji], qStyle: 'yomi-large', aStyle: 'kanji-large' };
+  }
+  if (q.type === 'english') {
+    if (direction === 'ja-en') {
+      return { text: q.ja || '', answers: [q.en || ''], qStyle: '', aStyle: '' };
+    }
+    if (direction === 'listen') {
+      // 聞き取り: 結果画面では英単語と日本語を併記して見せる
+      return { text: q.en || '', answers: [(q.en || '') + ' / ' + (q.ja || '')], qStyle: '', aStyle: '' };
+    }
+    // default: en-ja
+    return { text: q.en || '', answers: [q.ja || ''], qStyle: '', aStyle: '' };
   }
   return { text: q.question || '', answers: q.answers || [], qStyle: '', aStyle: '' };
 }
@@ -1462,6 +1580,30 @@ function isKanjiUnit(unitId) {
 }
 function isKanjiSubject(subjectId) {
   return subjectId === 'kanji';
+}
+function isEnglishUnit(unitId) {
+  const u = getUnit(unitId);
+  return !!(u && u.subjectId === 'english');
+}
+function isEnglishSubject(subjectId) {
+  return subjectId === 'english';
+}
+// 英語の音声合成 (ブラウザ標準 Web Speech API、追加ライブラリ不要)
+function speakEnglish(text) {
+  if (!('speechSynthesis' in window)) {
+    showToast('この端末は音声合成に対応していません');
+    return;
+  }
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US';
+    u.rate = 0.85;
+    u.pitch = 1.0;
+    speechSynthesis.speak(u);
+  } catch (e) {
+    console.warn('speak failed:', e);
+  }
 }
 // 指定の問題・出題向きで最新の解答結果を返す ('o' | 'd' | 'x' | null)
 // 古い履歴 (direction 未保存) は kakitori 扱い
@@ -1568,6 +1710,10 @@ function showScreen(name, params = {}, replace = false) {
     case 'units':           renderUnits(params.subjectId); break;
     case 'study-direction': renderStudyDirection(params); break;
     case 'kanji-list':      renderKanjiList(params); break;
+    case 'english-direction': renderEnglishDirection(params); break;
+    case 'english-batch':   renderEnglishBatch(); break;
+    case 'english-listen':  renderEnglishListen(); break;
+    case 'english-list':    renderEnglishList(params); break;
     case 'study':           renderStudy(); break;
     case 'result':          renderResult(); break;
     case 'print':           renderPrint(params); break;
@@ -1594,6 +1740,10 @@ function goBack() {
     case 'units':           renderUnits(prev.params.subjectId); break;
     case 'study-direction': renderStudyDirection(prev.params); break;
     case 'kanji-list':      renderKanjiList(prev.params); break;
+    case 'english-direction': renderEnglishDirection(prev.params); break;
+    case 'english-batch':   renderEnglishBatch(); break;
+    case 'english-listen':  renderEnglishListen(); break;
+    case 'english-list':    renderEnglishList(prev.params); break;
     case 'study':           renderStudy(); break;
     case 'result':          renderResult(); break;
     case 'print':           renderPrint(prev.params); break;
@@ -1813,6 +1963,8 @@ function renderUnits(subjectId) {
   document.getElementById('u-all').onclick = () => {
     if (isKanjiSubject(subjectId)) {
       showScreen('study-direction', { subjectId, label: subject.name + ' 全単元', reviewMode: unitsReviewMode });
+    } else if (isEnglishSubject(subjectId)) {
+      showScreen('english-direction', { subjectId, label: subject.name + ' 全単元', reviewMode: unitsReviewMode });
     } else {
       startStudy({ subjectId, reviewMode: unitsReviewMode });
     }
@@ -1823,6 +1975,9 @@ function renderUnits(subjectId) {
       if (isKanjiUnit(uid)) {
         const u = getUnit(uid);
         showScreen('study-direction', { unitId: uid, label: u.name, reviewMode: unitsReviewMode });
+      } else if (isEnglishUnit(uid)) {
+        const u = getUnit(uid);
+        showScreen('english-direction', { unitId: uid, label: u.name, reviewMode: unitsReviewMode });
       } else {
         startStudy({ unitId: uid, reviewMode: unitsReviewMode });
       }
@@ -2092,11 +2247,388 @@ function recordResult(result) {
     answeredAt: new Date().toISOString()
   };
   if (q.type === 'kanji') entry.direction = s.direction || 'kakitori';
+  if (q.type === 'english' && s.direction) entry.direction = s.direction;
   state.history[currentProfileId].push(entry);
   saveState();
   s.index++;
   s.revealed = false;
   renderStudy();
+}
+
+/* ------------------------------------------------------------
+   画面: 英語の出題方法選択 (英→日 / 日→英 / 聞き取り / 一覧)
+   ------------------------------------------------------------ */
+function renderEnglishDirection(params) {
+  const label = params && params.label ? params.label : '英語';
+  const reviewMode = !!(params && params.reviewMode);
+
+  // 範囲内の英語問題を集める
+  const inScope = state.questions.filter(q => {
+    if (q.type !== 'english') return false;
+    if (params.unitId) return q.unitId === params.unitId;
+    if (params.subjectId) {
+      const u = getUnit(q.unitId);
+      return u && u.subjectId === params.subjectId;
+    }
+    return false;
+  });
+  const totalCnt = inScope.length;
+  const enJaReview = inScope.filter(q => getLatestResult(q.id, 'en-ja', currentProfileId) !== 'o').length;
+  const jaEnReview = inScope.filter(q => getLatestResult(q.id, 'ja-en', currentProfileId) !== 'o').length;
+  const listenReview = inScope.filter(q => getLatestResult(q.id, 'listen', currentProfileId) !== 'o').length;
+
+  const sub = (reviewCnt) => reviewMode
+    ? '復習対象 ' + reviewCnt + '問 / 全' + totalCnt + '問'
+    : null;
+
+  document.getElementById('screen-english-direction').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="ed-back">‹ 戻る</button>
+      <span class="nav-title">${escapeHtml(label)}</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="content">
+      <div class="section-label">出題範囲</div>
+      <div class="radio-group" id="ed-mode">
+        <label class="radio-item ${!reviewMode ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="edmode" value="all" hidden>全問</label>
+        <label class="radio-item ${reviewMode ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="edmode" value="review" hidden>○以外のみ (復習)</label>
+      </div>
+      <div class="section-label">出題のしかたを選んでください</div>
+      <div class="list-group">
+        <button class="list-item list-item-chevron" id="ed-en-ja">
+          <div class="list-item-main">
+            <div class="list-item-title">📖 英語 → 日本語${reviewMode ? ' (復習)' : ''}</div>
+            <div class="list-item-subtitle">${escapeHtml(sub(enJaReview) || '英語をタップして日本語の意味を確認 (5問ずつ)')}</div>
+          </div>
+        </button>
+        <button class="list-item list-item-chevron" id="ed-ja-en">
+          <div class="list-item-main">
+            <div class="list-item-title">✏️ 日本語 → 英語${reviewMode ? ' (復習)' : ''}</div>
+            <div class="list-item-subtitle">${escapeHtml(sub(jaEnReview) || '日本語をタップして英単語を確認 (5問ずつ)')}</div>
+          </div>
+        </button>
+        <button class="list-item list-item-chevron" id="ed-listen">
+          <div class="list-item-main">
+            <div class="list-item-title">🔊 聞き取り${reviewMode ? ' (復習)' : ''}</div>
+            <div class="list-item-subtitle">${escapeHtml(sub(listenReview) || '英語の音声を聞いて答える (1問ずつ)')}</div>
+          </div>
+        </button>
+      </div>
+      <div class="section-label">この範囲を確認する</div>
+      <div class="list-group">
+        <button class="list-item list-item-chevron" id="ed-list">
+          <div class="list-item-main">
+            <div class="list-item-title">📋 一覧表示</div>
+            <div class="list-item-subtitle">英語と日本語をまとめて確認</div>
+          </div>
+        </button>
+      </div>
+    </div>`;
+
+  document.getElementById('ed-back').onclick = goBack;
+  document.querySelectorAll('#ed-mode .radio-item').forEach(item => {
+    item.onclick = () => {
+      params.reviewMode = item.querySelector('input').value === 'review';
+      renderEnglishDirection(params);
+    };
+  });
+  document.getElementById('ed-en-ja').onclick = () => startEnglishBatch({ ...params, mode: 'en-ja', reviewMode: !!params.reviewMode });
+  document.getElementById('ed-ja-en').onclick = () => startEnglishBatch({ ...params, mode: 'ja-en', reviewMode: !!params.reviewMode });
+  document.getElementById('ed-listen').onclick = () => startEnglishListen({ ...params, reviewMode: !!params.reviewMode });
+  document.getElementById('ed-list').onclick = () => showScreen('english-list', params);
+}
+
+/* ------------------------------------------------------------
+   画面: 英語 5問ずつ (英→日 / 日→英)
+   ------------------------------------------------------------ */
+const ENGLISH_BATCH_SIZE = 5;
+
+function startEnglishBatch({ unitId = null, subjectId = null, mode, reviewMode = false }) {
+  let pool = state.questions.filter(q => q.type === 'english');
+  if (unitId) pool = pool.filter(q => q.unitId === unitId);
+  if (subjectId) pool = pool.filter(q => {
+    const u = getUnit(q.unitId);
+    return u && u.subjectId === subjectId;
+  });
+  if (reviewMode) {
+    pool = pool.filter(q => getLatestResult(q.id, mode, currentProfileId) !== 'o');
+  }
+  if (pool.length === 0) {
+    showAlert('問題がありません', reviewMode
+      ? 'この範囲には「○以外」の問題がありません。'
+      : 'この範囲には英語問題がありません。');
+    return;
+  }
+  studySession = {
+    unitId, subjectId, direction: mode, mode, reviewMode,
+    questions: shuffle(pool),
+    batchIndex: 0,
+    revealed: {},
+    graded: {},
+    results: [],
+    startedAt: Date.now()
+  };
+  showScreen('english-batch');
+}
+
+function renderEnglishBatch() {
+  const s = studySession;
+  if (!s) { goBack(); return; }
+  if (s.batchIndex >= s.questions.length) {
+    showScreen('result', {}, true);
+    return;
+  }
+  const batch = s.questions.slice(s.batchIndex, s.batchIndex + ENGLISH_BATCH_SIZE);
+  const totalBatches = Math.ceil(s.questions.length / ENGLISH_BATCH_SIZE);
+  const currentBatch = Math.floor(s.batchIndex / ENGLISH_BATCH_SIZE) + 1;
+  const isEnJa = s.mode === 'en-ja';
+
+  const rows = batch.map(q => {
+    const prompt = isEnJa ? (q.en || '') : (q.ja || '');
+    const answer = isEnJa ? (q.ja || '') : (q.en || '');
+    const revealed = !!s.revealed[q.id];
+    const grade = s.graded[q.id];
+    const gradeArea = grade
+      ? `<div class="eb-graded-mark eb-${grade}">${grade === 'o' ? '○' : grade === 'd' ? '△' : '×'}</div>`
+      : (revealed
+          ? `<div class="eb-grade">
+              <button class="eb-grade-btn x" data-id="${q.id}" data-r="x">×</button>
+              <button class="eb-grade-btn d" data-id="${q.id}" data-r="d">△</button>
+              <button class="eb-grade-btn o" data-id="${q.id}" data-r="o">○</button>
+            </div>`
+          : '<div class="eb-grade-placeholder"></div>');
+    return `
+      <div class="eb-row" data-id="${q.id}">
+        <div class="eb-prompt">${escapeHtml(prompt)}</div>
+        <div class="eb-answer">${revealed ? escapeHtml(answer) : '<span class="eb-tap-hint">タップして表示</span>'}</div>
+        ${gradeArea}
+      </div>`;
+  }).join('');
+
+  const allGraded = batch.every(q => s.graded[q.id]);
+  const isLast = s.batchIndex + ENGLISH_BATCH_SIZE >= s.questions.length;
+  const nextLabel = isLast ? '結果を見る' : '次の' + Math.min(ENGLISH_BATCH_SIZE, s.questions.length - s.batchIndex - ENGLISH_BATCH_SIZE) + '問へ';
+
+  document.getElementById('screen-english-batch').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="eb-quit">中断</button>
+      <span class="nav-title">${isEnJa ? '英語→日本語' : '日本語→英語'}</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="study-header">
+      <div class="study-progress">${currentBatch} / ${totalBatches} グループ</div>
+    </div>
+    <div class="content">
+      ${rows}
+      <button class="btn" id="eb-next" ${!allGraded ? 'disabled style="opacity:0.5"' : ''}>${escapeHtml(nextLabel)}</button>
+    </div>`;
+
+  document.querySelectorAll('#screen-english-batch .eb-row').forEach(el => {
+    el.onclick = (e) => {
+      if (e.target.closest('.eb-grade') || e.target.closest('.eb-graded-mark')) return;
+      const qid = el.dataset.id;
+      if (!s.revealed[qid]) {
+        s.revealed[qid] = true;
+        renderEnglishBatch();
+      }
+    };
+  });
+  document.querySelectorAll('#screen-english-batch .eb-grade-btn').forEach(b => {
+    b.onclick = (e) => {
+      e.stopPropagation();
+      const qid = b.dataset.id;
+      const r = b.dataset.r;
+      s.graded[qid] = r;
+      s.results.push({ questionId: qid, result: r });
+      state.history[currentProfileId].push({
+        questionId: qid,
+        profileId: currentProfileId,
+        result: r,
+        direction: s.mode,
+        answeredAt: new Date().toISOString()
+      });
+      saveState();
+      renderEnglishBatch();
+    };
+  });
+  document.getElementById('eb-next').onclick = () => {
+    if (!allGraded) return;
+    s.batchIndex += ENGLISH_BATCH_SIZE;
+    if (s.batchIndex >= s.questions.length) {
+      showScreen('result', {}, true);
+    } else {
+      renderEnglishBatch();
+    }
+  };
+  document.getElementById('eb-quit').onclick = async () => {
+    const ok = await showConfirm('学習を中断', 'これまでの結果は記録されています。中断しますか?', { okText: '中断', danger: true });
+    if (ok) { studySession = null; goBack(); }
+  };
+}
+
+/* ------------------------------------------------------------
+   画面: 英語 聞き取り (1問ずつ)
+   ------------------------------------------------------------ */
+function startEnglishListen({ unitId = null, subjectId = null, reviewMode = false }) {
+  let pool = state.questions.filter(q => q.type === 'english');
+  if (unitId) pool = pool.filter(q => q.unitId === unitId);
+  if (subjectId) pool = pool.filter(q => {
+    const u = getUnit(q.unitId);
+    return u && u.subjectId === subjectId;
+  });
+  if (reviewMode) {
+    pool = pool.filter(q => getLatestResult(q.id, 'listen', currentProfileId) !== 'o');
+  }
+  if (pool.length === 0) {
+    showAlert('問題がありません', reviewMode
+      ? 'この範囲には「○以外」の問題がありません。'
+      : 'この範囲には英語問題がありません。');
+    return;
+  }
+  studySession = {
+    unitId, subjectId, direction: 'listen', mode: 'listen', reviewMode,
+    questions: shuffle(pool),
+    index: 0,
+    revealed: false,
+    results: [],
+    startedAt: Date.now()
+  };
+  showScreen('english-listen');
+}
+
+function renderEnglishListen() {
+  const s = studySession;
+  if (!s) { goBack(); return; }
+  if (s.index >= s.questions.length) {
+    showScreen('result', {}, true);
+    return;
+  }
+  const q = s.questions[s.index];
+  const progress = (s.index / s.questions.length) * 100;
+  const revealHtml = s.revealed
+    ? `<div class="study-answer">
+        <div class="study-answer-label">正解</div>
+        <div class="el-en">${escapeHtml(q.en || '')}</div>
+        <div class="el-ja">${escapeHtml(q.ja || '')}</div>
+      </div>`
+    : '';
+  const actionHtml = s.revealed
+    ? `<div class="judge-buttons">
+        <button class="judge-button x" data-r="x"><span class="judge-symbol">×</span><span class="judge-label">できなかった</span></button>
+        <button class="judge-button d" data-r="d"><span class="judge-symbol">△</span><span class="judge-label">あやふや</span></button>
+        <button class="judge-button o" data-r="o"><span class="judge-symbol">○</span><span class="judge-label">できた</span></button>
+      </div>`
+    : `<button class="btn" id="el-show">答えを見る</button>`;
+
+  document.getElementById('screen-english-listen').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="el-quit">中断</button>
+      <span class="nav-title">英語 聞き取り</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="study-header">
+      <div class="study-progress">${s.index + 1} / ${s.questions.length}</div>
+      <div class="study-progress-bar"><div class="study-progress-fill" style="width:${progress}%"></div></div>
+    </div>
+    <div class="study-body">
+      <div class="el-icon">🔊</div>
+      <button class="btn secondary" id="el-replay">▶ もう一度聞く</button>
+      ${revealHtml}
+    </div>
+    <div class="study-actions" id="el-actions">${actionHtml}</div>`;
+
+  // 初回の自動再生 (ユーザー操作直後に呼ばれているので iOS でも音声OK)
+  if (!s._spoke) { s._spoke = true; speakEnglish(q.en || ''); }
+
+  document.getElementById('el-replay').onclick = () => speakEnglish(q.en || '');
+  document.getElementById('el-quit').onclick = async () => {
+    const ok = await showConfirm('学習を中断', '中断しますか?', { okText: '中断', danger: true });
+    if (ok) { studySession = null; goBack(); }
+  };
+  if (!s.revealed) {
+    document.getElementById('el-show').onclick = () => {
+      s.revealed = true;
+      renderEnglishListen();
+    };
+  } else {
+    document.querySelectorAll('#el-actions .judge-button').forEach(b => {
+      b.onclick = () => {
+        const r = b.dataset.r;
+        s.results.push({ questionId: q.id, result: r });
+        state.history[currentProfileId].push({
+          questionId: q.id,
+          profileId: currentProfileId,
+          result: r,
+          direction: 'listen',
+          answeredAt: new Date().toISOString()
+        });
+        saveState();
+        s.index++;
+        s.revealed = false;
+        s._spoke = false;
+        renderEnglishListen();
+      };
+    });
+  }
+}
+
+/* ------------------------------------------------------------
+   画面: 英語 一覧表示
+   ------------------------------------------------------------ */
+function renderEnglishList(params) {
+  const label = params && params.label ? params.label : '英語';
+  let pool = state.questions.filter(q => q.type === 'english');
+  if (params && params.unitId) pool = pool.filter(q => q.unitId === params.unitId);
+  if (params && params.subjectId) pool = pool.filter(q => {
+    const u = getUnit(q.unitId);
+    return u && u.subjectId === params.subjectId;
+  });
+
+  const markCell = (r) => {
+    if (r === 'o') return '<span class="kl-r-o">○</span>';
+    if (r === 'd') return '<span class="kl-r-d">△</span>';
+    if (r === 'x') return '<span class="kl-r-x">×</span>';
+    return '<span class="kl-r-none">−</span>';
+  };
+  const rows = pool.map(q => {
+    const eJa = getLatestResult(q.id, 'en-ja', currentProfileId);
+    const jE = getLatestResult(q.id, 'ja-en', currentProfileId);
+    const lis = getLatestResult(q.id, 'listen', currentProfileId);
+    return `
+      <tr>
+        <td class="el-list-en">${escapeHtml(q.en || '')}</td>
+        <td class="el-list-ja">${escapeHtml(q.ja || '')}</td>
+        <td class="kl-result">${markCell(eJa)}</td>
+        <td class="kl-result">${markCell(jE)}</td>
+        <td class="kl-result">${markCell(lis)}</td>
+      </tr>`;
+  }).join('');
+  const tableHtml = pool.length === 0
+    ? '<div class="card" style="text-align:center;color:var(--text-secondary)">この範囲に英語問題がありません</div>'
+    : `<table class="kanji-list-table">
+        <thead>
+          <tr>
+            <th>英語</th>
+            <th>日本語</th>
+            <th>英→日</th>
+            <th>日→英</th>
+            <th>聞き取り</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+
+  document.getElementById('screen-english-list').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="el-list-back">‹ 戻る</button>
+      <span class="nav-title">${escapeHtml(label)} 一覧</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="content">
+      <div class="section-label">${pool.length}件 / 最新の解答結果を表示</div>
+      ${tableHtml}
+    </div>`;
+  document.getElementById('el-list-back').onclick = goBack;
 }
 
 /* ------------------------------------------------------------
@@ -2156,8 +2688,15 @@ function renderResult() {
 
   document.getElementById('r-again').onclick = () => {
     const params = { unitId: s.unitId, subjectId: s.subjectId, direction: s.direction, reviewMode: s.reviewMode };
+    const mode = s.mode;
     studySession = null;
-    startStudy(params);
+    if (mode === 'en-ja' || mode === 'ja-en') {
+      startEnglishBatch({ ...params, mode });
+    } else if (mode === 'listen') {
+      startEnglishListen(params);
+    } else {
+      startStudy(params);
+    }
   };
   document.getElementById('r-home').onclick = () => {
     studySession = null;
@@ -2531,8 +3070,14 @@ function renderQuestionMgmt() {
         const unit = getUnit(q.unitId);
         const subj = unit ? getSubject(unit.subjectId) : null;
         const tag = (subj ? subj.name : '?') + ' / ' + (unit ? unit.name : '?');
-        const qText = q.type === 'kanji' ? (q.yomi || '') : (q.question || '');
-        const aText = q.type === 'kanji' ? (q.kanji || '') : ((q.answers || []).join(' / '));
+        let qText, aText;
+        if (q.type === 'kanji') {
+          qText = q.yomi || ''; aText = q.kanji || '';
+        } else if (q.type === 'english') {
+          qText = q.ja || ''; aText = q.en || '';
+        } else {
+          qText = q.question || ''; aText = (q.answers || []).join(' / ');
+        }
         return `
           <div class="qm-item">
             <div class="qm-item-meta">${escapeHtml(tag)}</div>
@@ -2608,8 +3153,9 @@ function renderQuestionEdit(questionId, defaultUnitId) {
     ? { id: null, unitId: defaultUnitId || (state.units[0] && state.units[0].id), type: 'qa', question: '', answers: [''], hint: '', sourceNote: '' }
     : Object.assign({}, getQuestion(questionId));
   if (!q) { goBack(); return; }
-  if (q.type !== 'kanji' && (!q.answers || q.answers.length === 0)) q.answers = [''];
+  if (q.type !== 'kanji' && q.type !== 'english' && (!q.answers || q.answers.length === 0)) q.answers = [''];
   const isKanji = q.type === 'kanji';
+  const isEnglish = q.type === 'english';
 
   // 単元プルダウンを教科ごとにグループ化
   const unitOptionsHtml = state.subjects.map(s => {
@@ -2620,8 +3166,9 @@ function renderQuestionEdit(questionId, defaultUnitId) {
       `</optgroup>`;
   }).join('');
 
-  const fieldsHtml = isKanji
-    ? `
+  let fieldsHtml;
+  if (isKanji) {
+    fieldsHtml = `
       <div class="field">
         <div class="field-label">漢字</div>
         <input class="input" id="qe-kanji" placeholder="例: 宗教" value="${escapeHtml(q.kanji || '')}">
@@ -2629,16 +3176,28 @@ function renderQuestionEdit(questionId, defaultUnitId) {
       <div class="field">
         <div class="field-label">よみ (ひらがな)</div>
         <input class="input" id="qe-yomi" placeholder="例: しゅうきょう" value="${escapeHtml(q.yomi || '')}">
-      </div>`
-    : `
+      </div>`;
+  } else if (isEnglish) {
+    fieldsHtml = `
+      <div class="field">
+        <div class="field-label">英語</div>
+        <input class="input" id="qe-en" placeholder="例: building" value="${escapeHtml(q.en || '')}">
+      </div>
+      <div class="field">
+        <div class="field-label">日本語</div>
+        <input class="input" id="qe-ja" placeholder="例: 建物" value="${escapeHtml(q.ja || '')}">
+      </div>`;
+  } else {
+    fieldsHtml = `
       <div class="field">
         <div class="field-label">問題文</div>
-        <textarea class="textarea" id="qe-q" placeholder="例: 「学校」を英語で">${escapeHtml(q.question || '')}</textarea>
+        <textarea class="textarea" id="qe-q" placeholder="例: 江戸幕府を開いた人物は?">${escapeHtml(q.question || '')}</textarea>
       </div>
       <div class="field">
         <div class="field-label">解答 (将来的に複数登録可能)</div>
-        <input class="input" id="qe-a" placeholder="例: school" value="${escapeHtml((q.answers || [''])[0])}">
+        <input class="input" id="qe-a" placeholder="例: 徳川家康" value="${escapeHtml((q.answers || [''])[0])}">
       </div>`;
+  }
 
   document.getElementById('screen-question-edit').innerHTML = `
     <div class="nav-bar">
@@ -2670,12 +3229,17 @@ function renderQuestionEdit(questionId, defaultUnitId) {
     const hint = document.getElementById('qe-hint').value.trim();
     const src = document.getElementById('qe-src').value.trim();
     if (!unitId) { showAlert('単元を選んでください'); return; }
-    let question, answer, kanji, yomi;
+    let question, answer, kanji, yomi, en, ja;
     if (isKanji) {
       kanji = document.getElementById('qe-kanji').value.trim();
       yomi = document.getElementById('qe-yomi').value.trim();
       if (!kanji) { showAlert('漢字を入力してください'); return; }
       if (!yomi) { showAlert('よみを入力してください'); return; }
+    } else if (isEnglish) {
+      en = document.getElementById('qe-en').value.trim();
+      ja = document.getElementById('qe-ja').value.trim();
+      if (!en) { showAlert('英語を入力してください'); return; }
+      if (!ja) { showAlert('日本語を入力してください'); return; }
     } else {
       question = document.getElementById('qe-q').value.trim();
       answer = document.getElementById('qe-a').value.trim();
@@ -2701,6 +3265,9 @@ function renderQuestionEdit(questionId, defaultUnitId) {
       if (isKanji) {
         target.kanji = kanji;
         target.yomi = yomi;
+      } else if (isEnglish) {
+        target.en = en;
+        target.ja = ja;
       } else {
         target.question = question;
         target.answers = [answer];
