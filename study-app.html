@@ -610,14 +610,13 @@ input, textarea, select {
 /* 英語 5問ずつの行 */
 .eb-row {
   display: grid;
-  grid-template-columns: auto auto 1fr 1fr auto;
-  gap: 8px;
+  grid-template-columns: auto 1fr 1fr auto;
+  gap: 10px;
   align-items: center;
   background: var(--bg-card);
   border-radius: 12px;
   padding: 12px 12px;
   margin-bottom: 8px;
-  cursor: pointer;
   box-shadow: var(--shadow);
 }
 .eb-speak {
@@ -638,10 +637,9 @@ input, textarea, select {
   background: var(--bg-elevated);
   transform: scale(0.95);
 }
-/* 🔊ボタンと問題文の間の無効スペース (タップしてもめくれない領域) */
-.eb-spacer {
-  width: 14px;
-}
+/* 問題文 (タップで音声再生) と答え欄 (タップで開く) は個別にカーソル指定 */
+.eb-prompt { cursor: pointer; }
+.eb-answer { cursor: pointer; }
 .eb-prompt {
   font-size: 20px;
   font-weight: 600;
@@ -2496,9 +2494,8 @@ function renderEnglishBatch() {
     return `
       <div class="eb-row" data-id="${q.id}">
         <button class="eb-speak" data-id="${q.id}" aria-label="音声を聞く">🔊</button>
-        <div class="eb-spacer"></div>
-        <div class="eb-prompt">${escapeHtml(prompt)}</div>
-        <div class="eb-answer">${revealed ? escapeHtml(answer) : '<span class="eb-tap-hint">タップして表示</span>'}</div>
+        <div class="eb-prompt" data-id="${q.id}">${escapeHtml(prompt)}</div>
+        <div class="eb-answer" data-id="${q.id}">${revealed ? escapeHtml(answer) : '<span class="eb-tap-hint">タップして表示</span>'}</div>
         ${gradeArea}
       </div>`;
   }).join('');
@@ -2521,22 +2518,27 @@ function renderEnglishBatch() {
       <button class="btn" id="eb-next" ${!allGraded ? 'disabled style="opacity:0.5"' : ''}>${escapeHtml(nextLabel)}</button>
     </div>`;
 
-  document.querySelectorAll('#screen-english-batch .eb-row').forEach(el => {
+  // 🔊ボタンと問題文 (左側) → 音声再生
+  const playFromEvent = (el) => {
+    const qid = el.dataset.id;
+    const q = getQuestion(qid);
+    if (q && q.en) speakEnglish(q.en);
+  };
+  document.querySelectorAll('#screen-english-batch .eb-speak').forEach(b => {
+    b.onclick = (e) => { e.stopPropagation(); playFromEvent(b); };
+  });
+  document.querySelectorAll('#screen-english-batch .eb-prompt').forEach(el => {
+    el.onclick = (e) => { e.stopPropagation(); playFromEvent(el); };
+  });
+  // 答え欄 (右側) → タップで開く
+  document.querySelectorAll('#screen-english-batch .eb-answer').forEach(el => {
     el.onclick = (e) => {
-      if (e.target.closest('.eb-grade') || e.target.closest('.eb-graded-mark') || e.target.closest('.eb-speak') || e.target.classList.contains('eb-spacer')) return;
+      e.stopPropagation();
       const qid = el.dataset.id;
       if (!s.revealed[qid]) {
         s.revealed[qid] = true;
         renderEnglishBatch();
       }
-    };
-  });
-  document.querySelectorAll('#screen-english-batch .eb-speak').forEach(b => {
-    b.onclick = (e) => {
-      e.stopPropagation();
-      const qid = b.dataset.id;
-      const q = getQuestion(qid);
-      if (q && q.en) speakEnglish(q.en);
     };
   });
   document.querySelectorAll('#screen-english-batch .eb-grade-btn').forEach(b => {
