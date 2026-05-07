@@ -610,8 +610,8 @@ input, textarea, select {
 /* 英語 5問ずつの行 */
 .eb-row {
   display: grid;
-  grid-template-columns: auto 1fr 1fr auto;
-  gap: 10px;
+  grid-template-columns: auto auto 1fr 1fr auto;
+  gap: 8px;
   align-items: center;
   background: var(--bg-card);
   border-radius: 12px;
@@ -621,12 +621,12 @@ input, textarea, select {
   box-shadow: var(--shadow);
 }
 .eb-speak {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: var(--bg-button-secondary);
   border: 1px solid var(--border);
-  font-size: 16px;
+  font-size: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -637,6 +637,10 @@ input, textarea, select {
 .eb-speak:active {
   background: var(--bg-elevated);
   transform: scale(0.95);
+}
+/* 🔊ボタンと問題文の間の無効スペース (タップしてもめくれない領域) */
+.eb-spacer {
+  width: 14px;
 }
 .eb-prompt {
   font-size: 20px;
@@ -2492,6 +2496,7 @@ function renderEnglishBatch() {
     return `
       <div class="eb-row" data-id="${q.id}">
         <button class="eb-speak" data-id="${q.id}" aria-label="音声を聞く">🔊</button>
+        <div class="eb-spacer"></div>
         <div class="eb-prompt">${escapeHtml(prompt)}</div>
         <div class="eb-answer">${revealed ? escapeHtml(answer) : '<span class="eb-tap-hint">タップして表示</span>'}</div>
         ${gradeArea}
@@ -2518,7 +2523,7 @@ function renderEnglishBatch() {
 
   document.querySelectorAll('#screen-english-batch .eb-row').forEach(el => {
     el.onclick = (e) => {
-      if (e.target.closest('.eb-grade') || e.target.closest('.eb-graded-mark') || e.target.closest('.eb-speak')) return;
+      if (e.target.closest('.eb-grade') || e.target.closest('.eb-graded-mark') || e.target.closest('.eb-speak') || e.target.classList.contains('eb-spacer')) return;
       const qid = el.dataset.id;
       if (!s.revealed[qid]) {
         s.revealed[qid] = true;
