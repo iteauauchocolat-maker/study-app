@@ -1415,6 +1415,43 @@ function buildEnglishNtL0Pack() {
 }
 
 /* ------------------------------------------------------------
+   英語 JPREP L8 単語 (10問)
+   各エントリ: [日本語, 英語]
+   ------------------------------------------------------------ */
+const ENGLISH_JPREP_L8_SOURCE = [
+  ['皿、料理', 'dish'],
+  ['きれいな', 'clean'],
+  ['〜を入れておく', 'hold'],
+  ['〜になる', 'become'],
+  ['グローブ、手袋(通例複数形)', 'glove'],
+  ['〜を切る', 'cut'],
+  ['大きい', 'large'],
+  ['布', 'cloth'],
+  ['平皿', 'plate'],
+  ['食べ物', 'food']
+];
+
+function buildEnglishJprepL8Pack() {
+  const unit = { id: 'u-eng-jprep-l8', subjectId: 'english', name: 'JPREP L8 単語', parentId: null };
+  const questions = [];
+  let n = 0;
+  for (const [ja, en] of ENGLISH_JPREP_L8_SOURCE) {
+    n++;
+    questions.push({
+      id: 'q-ejp8-' + String(n).padStart(3, '0'),
+      unitId: 'u-eng-jprep-l8',
+      type: 'english',
+      ja: ja,
+      en: en,
+      hint: '',
+      sourceNote: '',
+      createdAt: '2026-05-10'
+    });
+  }
+  return { unit, questions };
+}
+
+/* ------------------------------------------------------------
    サンプルデータ (初回起動時のみ投入)
    ------------------------------------------------------------ */
 function buildSampleData() {
@@ -1459,6 +1496,9 @@ function buildSampleData() {
   const entl0 = buildEnglishNtL0Pack();
   data.units.push(entl0.unit);
   data.questions.push(...entl0.questions);
+  const ejp8 = buildEnglishJprepL8Pack();
+  data.units.push(ejp8.unit);
+  data.questions.push(...ejp8.questions);
   return data;
 }
 
@@ -1540,6 +1580,13 @@ function loadState() {
     // 英語 NT L0 単語の追加マイグレーション (既存ユーザー向け)
     if (!state.units.some(u => u.id === 'u-eng-nt-l0')) {
       const pack = buildEnglishNtL0Pack();
+      state.units.push(pack.unit);
+      state.questions.push(...pack.questions);
+      migrated = true;
+    }
+    // 英語 JPREP L8 単語の追加マイグレーション (既存ユーザー向け)
+    if (!state.units.some(u => u.id === 'u-eng-jprep-l8')) {
+      const pack = buildEnglishJprepL8Pack();
       state.units.push(pack.unit);
       state.questions.push(...pack.questions);
       migrated = true;
