@@ -1519,6 +1519,43 @@ function buildEnglishJprepL8Pack() {
 }
 
 /* ------------------------------------------------------------
+   英語 JPREP L9 単語 (10問)
+   各エントリ: [日本語, 英語]
+   ------------------------------------------------------------ */
+const ENGLISH_JPREP_L9_SOURCE = [
+  ['おじさん、おじ', 'uncle'],
+  ['英語の、英語による', 'English'],
+  ['〜を話す、喋る', 'speak'],
+  ['おいしい', 'delicious'],
+  ['祖父、おじいさん', 'grandfather'],
+  ['レストラン、料理店、飲食店', 'restaurant'],
+  ['おばさん、おば', 'aunt'],
+  ['帽子', 'cap'],
+  ['祖父母', 'grandparent'],
+  ['祖母、おばあさん', 'grandmother']
+];
+
+function buildEnglishJprepL9Pack() {
+  const unit = { id: 'u-eng-jprep-l9', subjectId: 'english', name: 'JPREP L9 単語', parentId: null };
+  const questions = [];
+  let n = 0;
+  for (const [ja, en] of ENGLISH_JPREP_L9_SOURCE) {
+    n++;
+    questions.push({
+      id: 'q-ejp9-' + String(n).padStart(3, '0'),
+      unitId: 'u-eng-jprep-l9',
+      type: 'english',
+      ja: ja,
+      en: en,
+      hint: '',
+      sourceNote: '',
+      createdAt: '2026-05-10'
+    });
+  }
+  return { unit, questions };
+}
+
+/* ------------------------------------------------------------
    サンプルデータ (初回起動時のみ投入)
    ------------------------------------------------------------ */
 function buildSampleData() {
@@ -1569,6 +1606,9 @@ function buildSampleData() {
   const ejp8 = buildEnglishJprepL8Pack();
   data.units.push(ejp8.unit);
   data.questions.push(...ejp8.questions);
+  const ejp9 = buildEnglishJprepL9Pack();
+  data.units.push(ejp9.unit);
+  data.questions.push(...ejp9.questions);
   return data;
 }
 
@@ -1664,6 +1704,13 @@ function loadState() {
     // 英語 JPREP L8 単語の追加マイグレーション (既存ユーザー向け)
     if (!state.units.some(u => u.id === 'u-eng-jprep-l8')) {
       const pack = buildEnglishJprepL8Pack();
+      state.units.push(pack.unit);
+      state.questions.push(...pack.questions);
+      migrated = true;
+    }
+    // 英語 JPREP L9 単語の追加マイグレーション (既存ユーザー向け)
+    if (!state.units.some(u => u.id === 'u-eng-jprep-l9')) {
+      const pack = buildEnglishJprepL9Pack();
       state.units.push(pack.unit);
       state.questions.push(...pack.questions);
       migrated = true;
