@@ -2600,7 +2600,7 @@ function renderKanjiList(params) {
 /* ------------------------------------------------------------
    画面4: 学習
    ------------------------------------------------------------ */
-function startStudy({ unitId = null, subjectId = null, direction = 'kakitori', label = null, reviewMode = false } = {}) {
+function startStudy({ unitId = null, subjectId = null, direction = 'kakitori', label = null, reviewMode = false, order = 'random' } = {}) {
   // 出題対象を絞り込む
   let pool = state.questions.slice();
   if (unitId) pool = pool.filter(q => q.unitId === unitId);
@@ -2627,10 +2627,12 @@ function startStudy({ unitId = null, subjectId = null, direction = 'kakitori', l
     showAlert('問題がありません', msg);
     return;
   }
-  // sourceNote (例: 練習中の漢字) でグループ化し、同じグループが連続しないよう並べる
-  const ordered = shuffleByGroup(pool, q => q.sourceNote).slice(0, Math.min(SESSION_DEFAULT_SIZE, pool.length));
+  // 出題順: seq=元番号順で全問 / random=グループ分散シャッフル+上限
+  const ordered = (order === 'seq')
+    ? pool.slice().sort((a, b) => (a.no || 0) - (b.no || 0))
+    : shuffleByGroup(pool, q => q.sourceNote).slice(0, Math.min(SESSION_DEFAULT_SIZE, pool.length));
   studySession = {
-    unitId, subjectId, direction, reviewMode,
+    unitId, subjectId, direction, reviewMode, order,
     questions: ordered,
     index: 0,
     revealed: false,
@@ -3136,6 +3138,7 @@ function hyakuninSegments(q) {
 function renderHyakuninDirection(params) {
   const label = params && params.label ? params.label : '百人一首';
   const reviewMode = !!(params && params.reviewMode);
+  const order = (params && params.order) === 'seq' ? 'seq' : 'random';
 
   const inScope = state.questions.filter(q => {
     if (q.type !== 'hyakunin') return false;
@@ -3159,6 +3162,11 @@ function renderHyakuninDirection(params) {
       <span class="nav-spacer"></span>
     </div>
     <div class="content">
+      <div class="section-label">出題順</div>
+      <div class="radio-group" id="hd-order">
+        <label class="radio-item ${order === 'random' ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="hdorder" value="random" hidden>ランダム</label>
+        <label class="radio-item ${order === 'seq' ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="hdorder" value="seq" hidden>順番（1→20）</label>
+      </div>
       <div class="section-label">暗記（採点なし）</div>
       <div class="list-group">
         <button class="list-item list-item-chevron" id="hd-progressive">
@@ -3224,10 +3232,16 @@ function renderHyakuninDirection(params) {
       renderHyakuninDirection(params);
     };
   });
-  document.getElementById('hd-progressive').onclick = () => startHyakuninQuiz({ ...params, mode: 'progressive' });
-  document.getElementById('hd-blank').onclick = () => startHyakuninQuiz({ ...params, mode: 'blank' });
-  document.getElementById('hd-meaning').onclick = () => startHyakuninQuiz({ ...params, mode: 'meaning' });
-  const baseP = { unitId: params.unitId || null, subjectId: params.subjectId || null, reviewMode: !!params.reviewMode };
+  document.querySelectorAll('#hd-order .radio-item').forEach(item => {
+    item.onclick = () => {
+      params.order = item.querySelector('input').value;
+      renderHyakuninDirection(params);
+    };
+  });
+  document.getElementById('hd-progressive').onclick = () => startHyakuninQuiz({ ...params, mode: 'progressive', order });
+  document.getElementById('hd-blank').onclick = () => startHyakuninQuiz({ ...params, mode: 'blank', order });
+  document.getElementById('hd-meaning').onclick = () => startHyakuninQuiz({ ...params, mode: 'meaning', order });
+  const baseP = { unitId: params.unitId || null, subjectId: params.subjectId || null, reviewMode: !!params.reviewMode, order };
   document.getElementById('hd-ks').onclick = () => startHyakuninGraded({ ...baseP, direction: 'hk-kami-shimo' });
   document.getElementById('hd-sk').onclick = () => startHyakuninGraded({ ...baseP, direction: 'hk-shimo-kami' });
   document.getElementById('hd-tech').onclick = () => startStudy({ ...baseP, direction: 'hk-technique' });
@@ -3235,7 +3249,7 @@ function renderHyakuninDirection(params) {
 }
 
 /* ④上の句→下の句 / ⑤下の句→上の句: 上の句=上・下の句=中央・詠み手=下 の空間配置 */
-function startHyakuninGraded({ unitId = null, subjectId = null, direction, reviewMode = false }) {
+function startHyakuninGraded({ unitId = null, subjectId = null, direction, reviewMode = false, order = 'random' }) {
   let pool = state.questions.filter(q => q.type === 'hyakunin');
   if (unitId) pool = pool.filter(q => q.unitId === unitId);
   if (subjectId) pool = pool.filter(q => {
@@ -3251,10 +3265,13 @@ function startHyakuninGraded({ unitId = null, subjectId = null, direction, revie
       : 'この範囲には百人一首がありません。');
     return;
   }
+  const ordered = (order === 'seq')
+    ? pool.slice().sort((a, b) => (a.no || 0) - (b.no || 0))
+    : shuffle(pool).slice(0, Math.min(SESSION_DEFAULT_SIZE, pool.length));
   studySession = {
-    unitId, subjectId, direction, reviewMode,
+    unitId, subjectId, direction, reviewMode, order,
     mode: 'hk-graded',
-    questions: shuffle(pool).slice(0, Math.min(SESSION_DEFAULT_SIZE, pool.length)),
+    questions: ordered,
     index: 0,
     revealed: false,
     results: [],
@@ -3331,7 +3348,7 @@ function renderHyakuninTest() {
   }
 }
 
-function startHyakuninQuiz({ unitId = null, subjectId = null, mode }) {
+function startHyakuninQuiz({ unitId = null, subjectId = null, mode, order = 'random' }) {
   let pool = state.questions.filter(q => q.type === 'hyakunin');
   if (unitId) pool = pool.filter(q => q.unitId === unitId);
   if (subjectId) pool = pool.filter(q => {
@@ -3342,9 +3359,12 @@ function startHyakuninQuiz({ unitId = null, subjectId = null, mode }) {
     showAlert('問題がありません', 'この範囲には百人一首がありません。');
     return;
   }
+  const ordered = (order === 'seq')
+    ? pool.slice().sort((a, b) => (a.no || 0) - (b.no || 0))
+    : shuffle(pool);
   studySession = {
-    unitId, subjectId, mode,
-    questions: shuffle(pool),
+    unitId, subjectId, mode, order,
+    questions: ordered,
     index: 0,
     startedAt: Date.now()
   };
@@ -3386,12 +3406,12 @@ function renderHyakuninQuiz() {
         <div style="font-size:52px;margin-bottom:12px">🎴</div>
         <div style="font-size:18px;font-weight:700;margin-bottom:6px">全${s.questions.length}首 おわり</div>
         <div style="color:var(--text-secondary);margin-bottom:28px">おつかれさま！</div>
-        <button class="btn" id="hq-again">もう一度（シャッフル）</button>
+        <button class="btn" id="hq-again">もう一度（${s.order === 'seq' ? '1→20' : 'シャッフル'}）</button>
         <button class="btn secondary" id="hq-home">単元へ戻る</button>
       </div>`;
     document.getElementById('hq-quit').onclick = goBack;
     document.getElementById('hq-home').onclick = goBack;
-    document.getElementById('hq-again').onclick = () => startHyakuninQuiz({ unitId: s.unitId, subjectId: s.subjectId, mode: s.mode });
+    document.getElementById('hq-again').onclick = () => startHyakuninQuiz({ unitId: s.unitId, subjectId: s.subjectId, mode: s.mode, order: s.order });
     return;
   }
   const q = s.questions[s.index];
@@ -3576,7 +3596,7 @@ function renderResult() {
     </div>`;
 
   document.getElementById('r-again').onclick = () => {
-    const params = { unitId: s.unitId, subjectId: s.subjectId, direction: s.direction, reviewMode: s.reviewMode };
+    const params = { unitId: s.unitId, subjectId: s.subjectId, direction: s.direction, reviewMode: s.reviewMode, order: s.order };
     const mode = s.mode;
     studySession = null;
     if (mode === 'en-ja' || mode === 'ja-en') {
