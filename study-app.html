@@ -1556,6 +1556,58 @@ function buildEnglishJprepL9Pack() {
 }
 
 /* ------------------------------------------------------------
+   百人一首 1〜20首
+   各エントリ: { kami(上の句), shimo(下の句), meaning(意味),
+                 author(詠み手), technique(主な表現技法) }
+   ------------------------------------------------------------ */
+const HYAKUNIN_SOURCE = [
+  { kami: '秋の田の かりほの庵の 苫をあらみ', shimo: 'わが衣手は 露にぬれつつ', author: '天智天皇', meaning: '秋の田の仮小屋の(屋根を葺いた)苫の目が粗いので、私の袖は(もれ落ちる)夜露でぬれ続けることだ。', technique: '掛詞(かりほ→刈り穂・仮庵)' },
+  { kami: '春過ぎて 夏来にけらし 白妙の', shimo: '衣ほすてふ 天の香具山', author: '持統天皇', meaning: '春が過ぎて夏がやってきたらしい。(夏になると)真っ白な衣を干すという天の香具山よ。', technique: '枕詞(白妙の→衣)／体言止め（原作は『万葉集』）' },
+  { kami: 'あしびきの 山鳥の尾の しだり尾の', shimo: '長々し夜を ひとりかも寝む', author: '柿本人麻呂', meaning: '山鳥の尾の垂れ下がった尾のように、長い長い(秋の)夜を(私は)ひとりで寝るのだろうか。', technique: '枕詞(あしびきの→山)／序詞(あしびきの〜しだり尾の→長々し)' },
+  { kami: '田子の浦に うち出でて見れば 白妙の', shimo: '富士の高嶺に 雪は降りつつ', author: '山部赤人', meaning: '田子の浦に出て見渡すと、真っ白な富士の高い峰に、今しきりに雪は降り積もっていることだ。', technique: '枕詞(白妙の→雪)（原作は『万葉集』）' },
+  { kami: '奥山に 紅葉踏み分け 鳴く鹿の', shimo: '声聞く時ぞ 秋は悲しき', author: '猿丸大夫', meaning: '奥深い山で、(妻を慕って)紅葉を踏み分けて鳴く鹿の声を聞くときこそ、(何にもまして)秋は悲しい。', technique: '係り結び(ぞ→悲しき)' },
+  { kami: 'かささぎの 渡せる橋に 置く霜の', shimo: '白きを見れば 夜ぞ更けにける', author: '大伴家持', meaning: 'カササギが(天の川に)渡している橋に置く霜が白いのを見ると、夜も更けてしまったことだなあ。', technique: '係り結び(ぞ→ける)' },
+  { kami: '天の原 ふりさけ見れば 春日なる', shimo: '三笠の山に 出でし月かも', author: '安倍仲麿', meaning: '大空を振り仰いで見ると、(故郷の)春日にある三笠の山に出た月(と同じ月)が照り輝いているよ。', technique: '体言止め' },
+  { kami: 'わが庵は 都のたつみ しかぞ住む', shimo: '世をうぢ山と 人は言ふなり', author: '喜撰法師', meaning: '私の庵は都の南東にあり、こうして(心静かに)住んでいる。(ここを)世を嫌って住む宇治山と人は言うそうだ。', technique: '掛詞(うぢ→宇治・憂)／係り結び' },
+  { kami: '花の色は 移りにけりな いたづらに', shimo: 'わが身世にふる ながめせし間に', author: '小野小町', meaning: '(桜の)花の色はすっかりあせてしまったよ。私が物思いをしてぼんやり世を過ごしている間に、長雨が降って。', technique: '掛詞(ふる→経る・降る、ながめ→眺め・長雨)／縁語(長雨・ふる)／倒置' },
+  { kami: 'これやこの 行くも帰るも 別れては', shimo: '知るも知らぬも 逢坂の関', author: '蝉丸', meaning: 'これがまあ、この(東国へ)行く人も(都へ)帰る人も(ここで)別れては、知る人も知らない人も(ここで)逢うという逢坂の関だよ。', technique: '掛詞(逢→逢坂・逢ふ)／体言止め' },
+  { kami: 'わたの原 八十島かけて 漕ぎ出でぬと', shimo: '人には告げよ あまの釣舟', author: '小野篁', meaning: '大海原を多くの島々を目指して舟を漕ぎ出したと、(都の)あの人には告げてくれ。漁夫の釣り舟よ。', technique: '擬人法' },
+  { kami: '天つ風 雲の通ひ路 吹き閉ぢよ', shimo: 'をとめの姿 しばしとどめむ', author: '僧正遍昭', meaning: '天の風よ、雲の(中の天への)通路を吹き閉じてくれ。(五節の舞を舞う)天女の姿をしばらくとどめておきたいのだ。', technique: '擬人法／体言止め' },
+  { kami: '筑波嶺の 峰より落つる みなの川', shimo: '恋ぞつもりて 淵となりぬる', author: '陽成院', meaning: '筑波山の峰から流れ落ちるみなの川のように、(私の)恋も積もって淵のように深くなってしまった。', technique: '序詞(筑波嶺の〜みなの川→恋ぞ)／係り結び' },
+  { kami: '陸奥の しのぶもぢずり 誰ゆゑに', shimo: '乱れそめにし 我ならなくに', author: '河原左大臣(源融)', meaning: '陸奥のしのぶずりの布の乱れ模様のように、(あなた以外の)だれかのせいで思い乱れ始めた私ではないのに。', technique: '序詞(陸奥のしのぶもぢずり→乱れ)／掛詞(そめ→染め・初め)' },
+  { kami: '君がため 春の野に出でて 若菜摘む', shimo: 'わが衣手に 雪は降りつつ', author: '光孝天皇', meaning: 'あなたのために春の野に出て若菜を摘む私の袖に、しきりに雪が降りかかってくることだ。', technique: '' },
+  { kami: '立ち別れ いなばの山の 峰に生ふる', shimo: 'まつとし聞かば 今帰り来む', author: '中納言行平(在原行平)', meaning: '(あなたと)別れて因幡の国へ往くが、稲葉山の峰に生える松のように、(あなたが私を)待つと聞いたらすぐに帰ってこよう。', technique: '掛詞(いなば→因幡・往なば、まつ→松・待つ)／係り結び' },
+  { kami: 'ちはやぶる 神代もきかず 竜田川', shimo: 'から紅に 水くくるとは', author: '在原業平', meaning: '不思議なことが多かったという神代にも聞いたことがない。竜田川が、(紅葉によって)美しい紅色にその水を絞り染めにするとは。', technique: '枕詞(ちはやぶる→神)／倒置' },
+  { kami: '住の江の 岸に寄る波 よるさへや', shimo: '夢の通ひ路 人目よくらむ', author: '藤原敏行', meaning: '住の江の岸に寄る波の、夜さえも、(あなたは)夢の中の通い路まで、人目を避けるのだろうか。', technique: '序詞(住の江の岸に寄る波→よる)／掛詞(よる→夜・寄る)／係り結び' },
+  { kami: '難波潟 短き蘆の 節の間も', shimo: '逢はでこの世を 過ぐしてよとや', author: '伊勢', meaning: '難波潟の蘆の短い節の間のような(わずかな)間さえ、(あなたに)逢わずにこの世を過ごしてしまえというのか。', technique: '序詞(難波潟短き蘆の→節の間)' },
+  { kami: 'わびぬれば 今はた同じ 難波なる', shimo: 'みをつくしても 逢はむとぞ思ふ', author: '元良親王', meaning: 'つらくなってしまったので、今はもう同じことだ。難波の澪標ではないが、身を滅ぼしても(あなたに)逢いたいと思う。', technique: '掛詞(みをつくし→澪標・身を尽くし)／係り結び' }
+];
+
+function buildHyakuninPack() {
+  const unit = { id: 'u-hyakunin-1', subjectId: 'hyakunin', name: '1〜20首', parentId: null };
+  const questions = [];
+  let n = 0;
+  for (const p of HYAKUNIN_SOURCE) {
+    n++;
+    questions.push({
+      id: 'q-hk-' + String(n).padStart(3, '0'),
+      unitId: 'u-hyakunin-1',
+      type: 'hyakunin',
+      no: n,
+      kami: p.kami,
+      shimo: p.shimo,
+      meaning: p.meaning,
+      author: p.author,
+      technique: p.technique,
+      hint: '',
+      sourceNote: '',
+      createdAt: '2026-05-10'
+    });
+  }
+  return { unit, questions };
+}
+
+/* ------------------------------------------------------------
    サンプルデータ (初回起動時のみ投入)
    ------------------------------------------------------------ */
 function buildSampleData() {
@@ -1565,7 +1617,8 @@ function buildSampleData() {
       { id: 'english', name: '英語' },
       { id: 'kanji',   name: '漢字' },
       { id: 'social',  name: '社会' },
-      { id: 'science', name: '理科' }
+      { id: 'science', name: '理科' },
+      { id: 'hyakunin', name: '百人一首' }
     ],
     units: [
       { id: 'u-soc-1', subjectId: 'social',  name: '日本史',     parentId: null },
@@ -1609,6 +1662,9 @@ function buildSampleData() {
   const ejp9 = buildEnglishJprepL9Pack();
   data.units.push(ejp9.unit);
   data.questions.push(...ejp9.questions);
+  const hk = buildHyakuninPack();
+  data.units.push(hk.unit);
+  data.questions.push(...hk.questions);
   return data;
 }
 
@@ -1711,6 +1767,17 @@ function loadState() {
     // 英語 JPREP L9 単語の追加マイグレーション (既存ユーザー向け)
     if (!state.units.some(u => u.id === 'u-eng-jprep-l9')) {
       const pack = buildEnglishJprepL9Pack();
+      state.units.push(pack.unit);
+      state.questions.push(...pack.questions);
+      migrated = true;
+    }
+    // 百人一首 教科・単元の追加マイグレーション (既存ユーザー向け)
+    if (!state.subjects.some(s => s.id === 'hyakunin')) {
+      state.subjects.push({ id: 'hyakunin', name: '百人一首' });
+      migrated = true;
+    }
+    if (!state.units.some(u => u.id === 'u-hyakunin-1')) {
+      const pack = buildHyakuninPack();
       state.units.push(pack.unit);
       state.questions.push(...pack.questions);
       migrated = true;
@@ -1835,6 +1902,13 @@ function questionDisplay(q, direction) {
     }
     // default: en-ja
     return { text: q.en || '', answers: [q.ja || ''], qStyle: '', aStyle: '' };
+  }
+  if (q.type === 'hyakunin') {
+    // 暫定: 上の句 → 下の句 (出題方法は今後実装)
+    if (direction === 'shimo-kami') {
+      return { text: q.shimo || '', answers: [q.kami || ''], qStyle: '', aStyle: '' };
+    }
+    return { text: q.kami || '', answers: [q.shimo || ''], qStyle: '', aStyle: '' };
   }
   return { text: q.question || '', answers: q.answers || [], qStyle: '', aStyle: '' };
 }
@@ -2068,7 +2142,7 @@ function renderHome() {
   if (!profile) { showScreen('profile-select', {}, true); return; }
 
   const initial = (profile.name || '?').charAt(0);
-  const subjectIcons = { english: '🌐', kanji: '✏️', social: '🗾', science: '🔬' };
+  const subjectIcons = { english: '🌐', kanji: '✏️', social: '🗾', science: '🔬', hyakunin: '🎴' };
 
   const tiles = state.subjects.map(s => {
     const qcount = state.questions.filter(q => {
@@ -3354,6 +3428,8 @@ function renderQuestionMgmt() {
           qText = q.yomi || ''; aText = q.kanji || '';
         } else if (q.type === 'english') {
           qText = q.ja || ''; aText = q.en || '';
+        } else if (q.type === 'hyakunin') {
+          qText = (q.no ? q.no + '. ' : '') + (q.kami || ''); aText = (q.shimo || '') + ' — ' + (q.author || '');
         } else {
           qText = q.question || ''; aText = (q.answers || []).join(' / ');
         }
@@ -3432,9 +3508,10 @@ function renderQuestionEdit(questionId, defaultUnitId) {
     ? { id: null, unitId: defaultUnitId || (state.units[0] && state.units[0].id), type: 'qa', question: '', answers: [''], hint: '', sourceNote: '' }
     : Object.assign({}, getQuestion(questionId));
   if (!q) { goBack(); return; }
-  if (q.type !== 'kanji' && q.type !== 'english' && (!q.answers || q.answers.length === 0)) q.answers = [''];
+  if (q.type !== 'kanji' && q.type !== 'english' && q.type !== 'hyakunin' && (!q.answers || q.answers.length === 0)) q.answers = [''];
   const isKanji = q.type === 'kanji';
   const isEnglish = q.type === 'english';
+  const isHyakunin = q.type === 'hyakunin';
 
   // 単元プルダウンを教科ごとにグループ化
   const unitOptionsHtml = state.subjects.map(s => {
@@ -3465,6 +3542,28 @@ function renderQuestionEdit(questionId, defaultUnitId) {
       <div class="field">
         <div class="field-label">日本語</div>
         <input class="input" id="qe-ja" placeholder="例: 建物" value="${escapeHtml(q.ja || '')}">
+      </div>`;
+  } else if (isHyakunin) {
+    fieldsHtml = `
+      <div class="field">
+        <div class="field-label">上の句</div>
+        <textarea class="textarea" id="qe-kami">${escapeHtml(q.kami || '')}</textarea>
+      </div>
+      <div class="field">
+        <div class="field-label">下の句</div>
+        <textarea class="textarea" id="qe-shimo">${escapeHtml(q.shimo || '')}</textarea>
+      </div>
+      <div class="field">
+        <div class="field-label">意味 (現代語訳)</div>
+        <textarea class="textarea" id="qe-meaning">${escapeHtml(q.meaning || '')}</textarea>
+      </div>
+      <div class="field">
+        <div class="field-label">詠み手 (作者)</div>
+        <input class="input" id="qe-author" value="${escapeHtml(q.author || '')}">
+      </div>
+      <div class="field">
+        <div class="field-label">主な表現技法</div>
+        <input class="input" id="qe-technique" value="${escapeHtml(q.technique || '')}">
       </div>`;
   } else {
     fieldsHtml = `
@@ -3508,7 +3607,7 @@ function renderQuestionEdit(questionId, defaultUnitId) {
     const hint = document.getElementById('qe-hint').value.trim();
     const src = document.getElementById('qe-src').value.trim();
     if (!unitId) { showAlert('単元を選んでください'); return; }
-    let question, answer, kanji, yomi, en, ja;
+    let question, answer, kanji, yomi, en, ja, kami, shimo, meaning, author, technique;
     if (isKanji) {
       kanji = document.getElementById('qe-kanji').value.trim();
       yomi = document.getElementById('qe-yomi').value.trim();
@@ -3519,6 +3618,14 @@ function renderQuestionEdit(questionId, defaultUnitId) {
       ja = document.getElementById('qe-ja').value.trim();
       if (!en) { showAlert('英語を入力してください'); return; }
       if (!ja) { showAlert('日本語を入力してください'); return; }
+    } else if (isHyakunin) {
+      kami = document.getElementById('qe-kami').value.trim();
+      shimo = document.getElementById('qe-shimo').value.trim();
+      meaning = document.getElementById('qe-meaning').value.trim();
+      author = document.getElementById('qe-author').value.trim();
+      technique = document.getElementById('qe-technique').value.trim();
+      if (!kami) { showAlert('上の句を入力してください'); return; }
+      if (!shimo) { showAlert('下の句を入力してください'); return; }
     } else {
       question = document.getElementById('qe-q').value.trim();
       answer = document.getElementById('qe-a').value.trim();
@@ -3547,6 +3654,12 @@ function renderQuestionEdit(questionId, defaultUnitId) {
       } else if (isEnglish) {
         target.en = en;
         target.ja = ja;
+      } else if (isHyakunin) {
+        target.kami = kami;
+        target.shimo = shimo;
+        target.meaning = meaning;
+        target.author = author;
+        target.technique = technique;
       } else {
         target.question = question;
         target.answers = [answer];
