@@ -1983,11 +1983,15 @@ function questionDisplay(q, direction) {
     return { text: q.en || '', answers: [q.ja || ''], qStyle: '', aStyle: '' };
   }
   if (q.type === 'hyakunin') {
-    // 暫定: 上の句 → 下の句 (出題方法は今後実装)
-    if (direction === 'shimo-kami') {
-      return { text: q.shimo || '', answers: [q.kami || ''], qStyle: '', aStyle: '' };
+    const au = q.author ? '（' + q.author + '）' : '';
+    if (direction === 'hk-shimo-kami') {
+      return { text: q.shimo || '', answers: [(q.kami || '') + ' ' + au], qStyle: '', aStyle: '' };
     }
-    return { text: q.kami || '', answers: [q.shimo || ''], qStyle: '', aStyle: '' };
+    if (direction === 'hk-technique') {
+      return { text: (q.kami || '') + '\n' + (q.shimo || ''), answers: [q.technique || '特になし'], qStyle: '', aStyle: '' };
+    }
+    // hk-kami-shimo (既定)
+    return { text: q.kami || '', answers: [(q.shimo || '') + ' ' + au], qStyle: '', aStyle: '' };
   }
   return { text: q.question || '', answers: q.answers || [], qStyle: '', aStyle: '' };
 }
@@ -2563,10 +2567,14 @@ function startStudy({ unitId = null, subjectId = null, direction = 'kakitori', l
     const u = getUnit(q.unitId);
     return u && u.subjectId === subjectId;
   });
+  // 百人一首 表現技法モードは技法が登録された首のみ
+  if (direction === 'hk-technique') {
+    pool = pool.filter(q => q.type === 'hyakunin' && q.technique && q.technique.trim());
+  }
   // 復習モード: 直近結果が ○ 以外 (△/× 未学習) だけに絞り込む
   if (reviewMode) {
     pool = pool.filter(q => {
-      const dir = q.type === 'kanji' ? direction : 'kakitori';
+      const dir = (q.type === 'kanji' || q.type === 'english' || q.type === 'hyakunin') ? direction : 'kakitori';
       const r = getLatestResult(q.id, dir, currentProfileId);
       return r !== 'o';
     });
@@ -2675,6 +2683,7 @@ function recordResult(result) {
   };
   if (q.type === 'kanji') entry.direction = s.direction || 'kakitori';
   if (q.type === 'english' && s.direction) entry.direction = s.direction;
+  if (q.type === 'hyakunin' && s.direction) entry.direction = s.direction;
   state.history[currentProfileId].push(entry);
   saveState();
   s.index++;
@@ -3085,6 +3094,23 @@ function hyakuninSegments(q) {
 
 function renderHyakuninDirection(params) {
   const label = params && params.label ? params.label : '百人一首';
+  const reviewMode = !!(params && params.reviewMode);
+
+  const inScope = state.questions.filter(q => {
+    if (q.type !== 'hyakunin') return false;
+    if (params.unitId) return q.unitId === params.unitId;
+    if (params.subjectId) {
+      const u = getUnit(q.unitId);
+      return u && u.subjectId === params.subjectId;
+    }
+    return false;
+  });
+  const ksCnt = inScope.filter(q => getLatestResult(q.id, 'hk-kami-shimo', currentProfileId) !== 'o').length;
+  const skCnt = inScope.filter(q => getLatestResult(q.id, 'hk-shimo-kami', currentProfileId) !== 'o').length;
+  const techPool = inScope.filter(q => q.technique && q.technique.trim());
+  const tcCnt = techPool.filter(q => getLatestResult(q.id, 'hk-technique', currentProfileId) !== 'o').length;
+  const sub = (cnt, total) => reviewMode ? ('復習対象 ' + cnt + '問 / 全' + total + '問') : null;
+
   document.getElementById('screen-hyakunin-direction').innerHTML = `
     <div class="nav-bar">
       <button class="nav-button" id="hd-back">‹ 戻る</button>
@@ -3092,7 +3118,7 @@ function renderHyakuninDirection(params) {
       <span class="nav-spacer"></span>
     </div>
     <div class="content">
-      <div class="section-label">出題のしかたを選んでください</div>
+      <div class="section-label">暗記（採点なし）</div>
       <div class="list-group">
         <button class="list-item list-item-chevron" id="hd-progressive">
           <div class="list-item-main">
@@ -3113,20 +3139,57 @@ function renderHyakuninDirection(params) {
           </div>
         </button>
       </div>
+
+      <div class="section-label">テスト（○△×で採点）</div>
+      <div class="radio-group" id="hd-mode">
+        <label class="radio-item ${!reviewMode ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="hdmode" value="all" hidden>全問</label>
+        <label class="radio-item ${reviewMode ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="hdmode" value="review" hidden>○以外のみ (復習)</label>
+      </div>
+      <div class="list-group">
+        <button class="list-item list-item-chevron" id="hd-ks">
+          <div class="list-item-main">
+            <div class="list-item-title">上の句 → 下の句${reviewMode ? ' (復習)' : ''}</div>
+            <div class="list-item-subtitle">${escapeHtml(sub(ksCnt, inScope.length) || '上の句を見て下の句＋詠み手を答える')}</div>
+          </div>
+        </button>
+        <button class="list-item list-item-chevron" id="hd-sk">
+          <div class="list-item-main">
+            <div class="list-item-title">下の句 → 上の句${reviewMode ? ' (復習)' : ''}</div>
+            <div class="list-item-subtitle">${escapeHtml(sub(skCnt, inScope.length) || '下の句を見て上の句＋詠み手を答える')}</div>
+          </div>
+        </button>
+        <button class="list-item list-item-chevron" id="hd-tech">
+          <div class="list-item-main">
+            <div class="list-item-title">表現技法${reviewMode ? ' (復習)' : ''}</div>
+            <div class="list-item-subtitle">${escapeHtml(sub(tcCnt, techPool.length) || '歌に使われた表現技法を答える（' + techPool.length + '首）')}</div>
+          </div>
+        </button>
+      </div>
+
       <div class="section-label">この範囲を確認する</div>
       <div class="list-group">
         <button class="list-item list-item-chevron" id="hd-list">
           <div class="list-item-main">
             <div class="list-item-title">📋 全首表示</div>
-            <div class="list-item-subtitle">上の句・下の句・詠み手を一覧</div>
+            <div class="list-item-subtitle">上の句・下の句・詠み手と結果を一覧</div>
           </div>
         </button>
       </div>
     </div>`;
   document.getElementById('hd-back').onclick = goBack;
+  document.querySelectorAll('#hd-mode .radio-item').forEach(item => {
+    item.onclick = () => {
+      params.reviewMode = item.querySelector('input').value === 'review';
+      renderHyakuninDirection(params);
+    };
+  });
   document.getElementById('hd-progressive').onclick = () => startHyakuninQuiz({ ...params, mode: 'progressive' });
   document.getElementById('hd-blank').onclick = () => startHyakuninQuiz({ ...params, mode: 'blank' });
   document.getElementById('hd-meaning').onclick = () => startHyakuninQuiz({ ...params, mode: 'meaning' });
+  const startGraded = (dir) => startStudy({ unitId: params.unitId || null, subjectId: params.subjectId || null, direction: dir, reviewMode: !!params.reviewMode });
+  document.getElementById('hd-ks').onclick = () => startGraded('hk-kami-shimo');
+  document.getElementById('hd-sk').onclick = () => startGraded('hk-shimo-kami');
+  document.getElementById('hd-tech').onclick = () => startGraded('hk-technique');
   document.getElementById('hd-list').onclick = () => showScreen('hyakunin-list', params);
 }
 
@@ -3278,17 +3341,32 @@ function renderHyakuninList(params) {
     return u && u.subjectId === params.subjectId;
   });
   pool = pool.slice().sort((a, b) => (a.no || 0) - (b.no || 0));
-  const rows = pool.map(q => `
+  const markCell = (r) => {
+    if (r === 'o') return '<span class="kl-r-o">○</span>';
+    if (r === 'd') return '<span class="kl-r-d">△</span>';
+    if (r === 'x') return '<span class="kl-r-x">×</span>';
+    return '<span class="kl-r-none">−</span>';
+  };
+  const rows = pool.map(q => {
+    const ks = getLatestResult(q.id, 'hk-kami-shimo', currentProfileId);
+    const sk = getLatestResult(q.id, 'hk-shimo-kami', currentProfileId);
+    const tc = (q.technique && q.technique.trim()) ? getLatestResult(q.id, 'hk-technique', currentProfileId) : null;
+    const tcCell = (q.technique && q.technique.trim()) ? markCell(tc) : '<span class="kl-r-none">—</span>';
+    return `
     <tr>
       <td class="hk-list-no">${q.no || ''}</td>
       <td class="hk-list-kami">${escapeHtml(q.kami || '')}</td>
       <td class="hk-list-shimo">${escapeHtml(q.shimo || '')}</td>
       <td class="hk-list-author">${escapeHtml(q.author || '')}</td>
-    </tr>`).join('');
+      <td class="kl-result">${markCell(ks)}</td>
+      <td class="kl-result">${markCell(sk)}</td>
+      <td class="kl-result">${tcCell}</td>
+    </tr>`;
+  }).join('');
   const tableHtml = pool.length === 0
     ? '<div class="card" style="text-align:center;color:var(--text-secondary)">百人一首がありません</div>'
     : `<table class="kanji-list-table hk-list-table">
-        <thead><tr><th>No</th><th>上の句</th><th>下の句</th><th>詠み手</th></tr></thead>
+        <thead><tr><th>No</th><th>上の句</th><th>下の句</th><th>詠み手</th><th>上→下</th><th>下→上</th><th>技法</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>`;
   document.getElementById('screen-hyakunin-list').innerHTML = `
