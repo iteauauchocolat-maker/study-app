@@ -706,6 +706,44 @@ input, textarea, select {
   color: var(--text-secondary);
 }
 
+/* 百人一首 ④⑤ 空間配置 (上の句=上 / 下の句=中央 / 詠み手=下) */
+.hk-test-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 0;
+}
+.hk-zone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: var(--bg-card);
+  border-radius: 14px;
+  padding: 16px 14px;
+  box-shadow: var(--shadow);
+}
+.hk-zone-hidden { background: var(--bg-input); border: 1px dashed var(--border); box-shadow: none; }
+.hk-zone-q { border: 2px solid var(--primary); }
+.hk-zone-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+.hk-zone-q .hk-zone-label { color: var(--primary); font-weight: 700; }
+.hk-zone-text {
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.7;
+  color: var(--text);
+  word-break: break-word;
+}
+.hk-zone-mask { color: var(--text-tertiary); font-size: 28px; }
+
 /* 百人一首 */
 .hk-meaning {
   background: var(--bg-card);
@@ -1273,6 +1311,7 @@ input, textarea, select {
   <div id="screen-english-list" class="screen"></div>
   <div id="screen-hyakunin-direction" class="screen"></div>
   <div id="screen-hyakunin-quiz" class="screen"></div>
+  <div id="screen-hyakunin-test" class="screen"></div>
   <div id="screen-hyakunin-list" class="screen"></div>
   <div id="screen-study" class="screen"></div>
   <div id="screen-result" class="screen"></div>
@@ -2138,6 +2177,7 @@ function showScreen(name, params = {}, replace = false) {
     case 'english-list':    renderEnglishList(params); break;
     case 'hyakunin-direction': renderHyakuninDirection(params); break;
     case 'hyakunin-quiz':   renderHyakuninQuiz(); break;
+    case 'hyakunin-test':   renderHyakuninTest(); break;
     case 'hyakunin-list':   renderHyakuninList(params); break;
     case 'study':           renderStudy(); break;
     case 'result':          renderResult(); break;
@@ -2171,6 +2211,7 @@ function goBack() {
     case 'english-list':    renderEnglishList(prev.params); break;
     case 'hyakunin-direction': renderHyakuninDirection(prev.params); break;
     case 'hyakunin-quiz':   renderHyakuninQuiz(); break;
+    case 'hyakunin-test':   renderHyakuninTest(); break;
     case 'hyakunin-list':   renderHyakuninList(prev.params); break;
     case 'study':           renderStudy(); break;
     case 'result':          renderResult(); break;
@@ -3186,11 +3227,108 @@ function renderHyakuninDirection(params) {
   document.getElementById('hd-progressive').onclick = () => startHyakuninQuiz({ ...params, mode: 'progressive' });
   document.getElementById('hd-blank').onclick = () => startHyakuninQuiz({ ...params, mode: 'blank' });
   document.getElementById('hd-meaning').onclick = () => startHyakuninQuiz({ ...params, mode: 'meaning' });
-  const startGraded = (dir) => startStudy({ unitId: params.unitId || null, subjectId: params.subjectId || null, direction: dir, reviewMode: !!params.reviewMode });
-  document.getElementById('hd-ks').onclick = () => startGraded('hk-kami-shimo');
-  document.getElementById('hd-sk').onclick = () => startGraded('hk-shimo-kami');
-  document.getElementById('hd-tech').onclick = () => startGraded('hk-technique');
+  const baseP = { unitId: params.unitId || null, subjectId: params.subjectId || null, reviewMode: !!params.reviewMode };
+  document.getElementById('hd-ks').onclick = () => startHyakuninGraded({ ...baseP, direction: 'hk-kami-shimo' });
+  document.getElementById('hd-sk').onclick = () => startHyakuninGraded({ ...baseP, direction: 'hk-shimo-kami' });
+  document.getElementById('hd-tech').onclick = () => startStudy({ ...baseP, direction: 'hk-technique' });
   document.getElementById('hd-list').onclick = () => showScreen('hyakunin-list', params);
+}
+
+/* ④上の句→下の句 / ⑤下の句→上の句: 上の句=上・下の句=中央・詠み手=下 の空間配置 */
+function startHyakuninGraded({ unitId = null, subjectId = null, direction, reviewMode = false }) {
+  let pool = state.questions.filter(q => q.type === 'hyakunin');
+  if (unitId) pool = pool.filter(q => q.unitId === unitId);
+  if (subjectId) pool = pool.filter(q => {
+    const u = getUnit(q.unitId);
+    return u && u.subjectId === subjectId;
+  });
+  if (reviewMode) {
+    pool = pool.filter(q => getLatestResult(q.id, direction, currentProfileId) !== 'o');
+  }
+  if (pool.length === 0) {
+    showAlert('問題がありません', reviewMode
+      ? 'この範囲には「○以外」の問題がありません。'
+      : 'この範囲には百人一首がありません。');
+    return;
+  }
+  studySession = {
+    unitId, subjectId, direction, reviewMode,
+    mode: 'hk-graded',
+    questions: shuffle(pool).slice(0, Math.min(SESSION_DEFAULT_SIZE, pool.length)),
+    index: 0,
+    revealed: false,
+    results: [],
+    startedAt: Date.now()
+  };
+  showScreen('hyakunin-test');
+}
+
+function renderHyakuninTest() {
+  const s = studySession;
+  if (!s) { goBack(); return; }
+  if (s.index >= s.questions.length) { showScreen('result', {}, true); return; }
+  const q = s.questions[s.index];
+  const isKS = s.direction === 'hk-kami-shimo'; // ④: 上の句が問題
+  const progress = (s.index / s.questions.length) * 100;
+  // ④では上の句が問題(常時表示)、⑤では下の句が問題(常時表示)
+  const kamiShown = s.revealed || isKS;
+  const shimoShown = s.revealed || !isKS;
+  const authorShown = s.revealed;
+  const zone = (label, text, shown, isQ) =>
+    `<div class="hk-zone ${isQ ? 'hk-zone-q' : ''} ${shown ? '' : 'hk-zone-hidden'}">
+       <div class="hk-zone-label">${label}${isQ ? '（問題）' : ''}</div>
+       <div class="hk-zone-text">${shown ? escapeHtml(text) : '<span class="hk-zone-mask">？</span>'}</div>
+     </div>`;
+  const actions = s.revealed
+    ? `<div class="judge-buttons">
+        <button class="judge-button x" data-r="x"><span class="judge-symbol">×</span><span class="judge-label">できなかった</span></button>
+        <button class="judge-button d" data-r="d"><span class="judge-symbol">△</span><span class="judge-label">あやふや</span></button>
+        <button class="judge-button o" data-r="o"><span class="judge-symbol">○</span><span class="judge-label">できた</span></button>
+      </div>`
+    : `<button class="btn" id="ht-show">答えを見る</button>`;
+
+  document.getElementById('screen-hyakunin-test').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="ht-quit">中断</button>
+      <span class="nav-title">${isKS ? '上の句→下の句' : '下の句→上の句'}</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="study-header">
+      <div class="study-progress">${s.index + 1} / ${s.questions.length}　（第${q.no}首）</div>
+      <div class="study-progress-bar"><div class="study-progress-fill" style="width:${progress}%"></div></div>
+    </div>
+    <div class="content hk-test-body">
+      ${zone('上の句', q.kami || '', kamiShown, isKS)}
+      ${zone('下の句', q.shimo || '', shimoShown, !isKS)}
+      ${zone('詠み手', q.author || '', authorShown, false)}
+    </div>
+    <div class="study-actions" id="ht-actions">${actions}</div>`;
+
+  document.getElementById('ht-quit').onclick = async () => {
+    const ok = await showConfirm('学習を中断', 'これまでの結果は記録されています。中断しますか?', { okText: '中断', danger: true });
+    if (ok) { studySession = null; goBack(); }
+  };
+  if (!s.revealed) {
+    document.getElementById('ht-show').onclick = () => { s.revealed = true; renderHyakuninTest(); };
+  } else {
+    document.querySelectorAll('#ht-actions .judge-button').forEach(b => {
+      b.onclick = () => {
+        const r = b.dataset.r;
+        s.results.push({ questionId: q.id, result: r });
+        state.history[currentProfileId].push({
+          questionId: q.id,
+          profileId: currentProfileId,
+          result: r,
+          direction: s.direction,
+          answeredAt: new Date().toISOString()
+        });
+        saveState();
+        s.index++;
+        s.revealed = false;
+        renderHyakuninTest();
+      };
+    });
+  }
 }
 
 function startHyakuninQuiz({ unitId = null, subjectId = null, mode }) {
@@ -3445,6 +3583,8 @@ function renderResult() {
       startEnglishBatch({ ...params, mode });
     } else if (mode === 'listen') {
       startEnglishListen(params);
+    } else if (mode === 'hk-graded') {
+      startHyakuninGraded(params);
     } else {
       startStudy(params);
     }
