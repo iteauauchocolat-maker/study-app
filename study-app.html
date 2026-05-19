@@ -705,6 +705,79 @@ input, textarea, select {
   margin-top: 6px;
   color: var(--text-secondary);
 }
+
+/* 百人一首 */
+.hk-meaning {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+.hk-poem {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 18px 16px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+.hk-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 0.5px solid var(--separator);
+  flex-wrap: wrap;
+}
+.hk-line:last-child { border-bottom: none; }
+.hk-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: var(--bg-button-secondary);
+  border-radius: 6px;
+  padding: 2px 8px;
+  flex-shrink: 0;
+}
+.hk-text {
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.8;
+  word-break: break-word;
+}
+.hk-seg { display: inline-block; }
+.hk-shown { color: var(--text); }
+.hk-hidden {
+  position: relative;
+  background: var(--bg-button-secondary);
+  border: 1px dashed var(--text-tertiary);
+  border-radius: 5px;
+  padding: 0 4px;
+}
+.hk-hidden .hk-mask { visibility: hidden; }
+.hk-hint {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin: 12px 0 16px;
+}
+.kanji-list-table.hk-list-table .hk-list-no {
+  width: 38px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.kanji-list-table.hk-list-table .hk-list-kami,
+.kanji-list-table.hk-list-table .hk-list-shimo {
+  font-size: 14px;
+}
+.kanji-list-table.hk-list-table .hk-list-author {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
 .study-actions {
   padding: 12px 20px calc(12px + var(--safe-bottom));
   background: var(--bg-elevated);
@@ -1198,6 +1271,9 @@ input, textarea, select {
   <div id="screen-english-batch" class="screen"></div>
   <div id="screen-english-listen" class="screen"></div>
   <div id="screen-english-list" class="screen"></div>
+  <div id="screen-hyakunin-direction" class="screen"></div>
+  <div id="screen-hyakunin-quiz" class="screen"></div>
+  <div id="screen-hyakunin-list" class="screen"></div>
   <div id="screen-study" class="screen"></div>
   <div id="screen-result" class="screen"></div>
   <div id="screen-print" class="screen"></div>
@@ -1584,7 +1660,7 @@ const HYAKUNIN_SOURCE = [
 ];
 
 function buildHyakuninPack() {
-  const unit = { id: 'u-hyakunin-1', subjectId: 'hyakunin', name: '1〜20首', parentId: null };
+  const unit = { id: 'u-hyakunin-1', subjectId: 'hyakunin', name: '1〜20', parentId: null };
   const questions = [];
   let n = 0;
   for (const p of HYAKUNIN_SOURCE) {
@@ -1781,6 +1857,9 @@ function loadState() {
       state.units.push(pack.unit);
       state.questions.push(...pack.questions);
       migrated = true;
+    } else {
+      const hu = state.units.find(u => u.id === 'u-hyakunin-1');
+      if (hu && hu.name === '1〜20首') { hu.name = '1〜20'; migrated = true; }
     }
     // 旧 qa 形式の英語問題 (JPREP L7) を english 形式に変換
     state.questions.forEach(q => {
@@ -2053,6 +2132,9 @@ function showScreen(name, params = {}, replace = false) {
     case 'english-batch':   renderEnglishBatch(); break;
     case 'english-listen':  renderEnglishListen(); break;
     case 'english-list':    renderEnglishList(params); break;
+    case 'hyakunin-direction': renderHyakuninDirection(params); break;
+    case 'hyakunin-quiz':   renderHyakuninQuiz(); break;
+    case 'hyakunin-list':   renderHyakuninList(params); break;
     case 'study':           renderStudy(); break;
     case 'result':          renderResult(); break;
     case 'print':           renderPrint(params); break;
@@ -2083,6 +2165,9 @@ function goBack() {
     case 'english-batch':   renderEnglishBatch(); break;
     case 'english-listen':  renderEnglishListen(); break;
     case 'english-list':    renderEnglishList(prev.params); break;
+    case 'hyakunin-direction': renderHyakuninDirection(prev.params); break;
+    case 'hyakunin-quiz':   renderHyakuninQuiz(); break;
+    case 'hyakunin-list':   renderHyakuninList(prev.params); break;
     case 'study':           renderStudy(); break;
     case 'result':          renderResult(); break;
     case 'print':           renderPrint(prev.params); break;
@@ -2304,6 +2389,8 @@ function renderUnits(subjectId) {
       showScreen('study-direction', { subjectId, label: subject.name + ' 全単元', reviewMode: unitsReviewMode });
     } else if (isEnglishSubject(subjectId)) {
       showScreen('english-direction', { subjectId, label: subject.name + ' 全単元', reviewMode: unitsReviewMode });
+    } else if (subjectId === 'hyakunin') {
+      showScreen('hyakunin-direction', { subjectId, label: subject.name + ' 全単元' });
     } else {
       startStudy({ subjectId, reviewMode: unitsReviewMode });
     }
@@ -2311,12 +2398,13 @@ function renderUnits(subjectId) {
   document.querySelectorAll('#screen-units .list-item[data-uid]').forEach(b => {
     b.onclick = () => {
       const uid = b.dataset.uid;
+      const u = getUnit(uid);
       if (isKanjiUnit(uid)) {
-        const u = getUnit(uid);
         showScreen('study-direction', { unitId: uid, label: u.name, reviewMode: unitsReviewMode });
       } else if (isEnglishUnit(uid)) {
-        const u = getUnit(uid);
         showScreen('english-direction', { unitId: uid, label: u.name, reviewMode: unitsReviewMode });
+      } else if (u && u.subjectId === 'hyakunin') {
+        showScreen('hyakunin-direction', { unitId: uid, label: u.name });
       } else {
         startStudy({ unitId: uid, reviewMode: unitsReviewMode });
       }
@@ -2982,6 +3070,238 @@ function renderEnglishList(params) {
       ${tableHtml}
     </div>`;
   document.getElementById('el-list-back').onclick = goBack;
+}
+
+/* ------------------------------------------------------------
+   百人一首: 出題方法の選択 / 3モード / 全首表示
+   ------------------------------------------------------------ */
+function hyakuninSegments(q) {
+  return {
+    kami: (q.kami || '').split(/\s+/).filter(Boolean),
+    shimo: (q.shimo || '').split(/\s+/).filter(Boolean),
+    author: q.author || ''
+  };
+}
+
+function renderHyakuninDirection(params) {
+  const label = params && params.label ? params.label : '百人一首';
+  document.getElementById('screen-hyakunin-direction').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="hd-back">‹ 戻る</button>
+      <span class="nav-title">${escapeHtml(label)}</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="content">
+      <div class="section-label">出題のしかたを選んでください</div>
+      <div class="list-group">
+        <button class="list-item list-item-chevron" id="hd-progressive">
+          <div class="list-item-main">
+            <div class="list-item-title">🪄 少しずつ表示</div>
+            <div class="list-item-subtitle">タップで一文節ずつ → 上の句・下の句・詠み手</div>
+          </div>
+        </button>
+        <button class="list-item list-item-chevron" id="hd-blank">
+          <div class="list-item-main">
+            <div class="list-item-title">🕳 虫食い</div>
+            <div class="list-item-subtitle">約半分を隠し、タップした所だけ表示</div>
+          </div>
+        </button>
+        <button class="list-item list-item-chevron" id="hd-meaning">
+          <div class="list-item-main">
+            <div class="list-item-title">📖 訳を表示</div>
+            <div class="list-item-subtitle">現代語訳から上の句・下の句・詠み手</div>
+          </div>
+        </button>
+      </div>
+      <div class="section-label">この範囲を確認する</div>
+      <div class="list-group">
+        <button class="list-item list-item-chevron" id="hd-list">
+          <div class="list-item-main">
+            <div class="list-item-title">📋 全首表示</div>
+            <div class="list-item-subtitle">上の句・下の句・詠み手を一覧</div>
+          </div>
+        </button>
+      </div>
+    </div>`;
+  document.getElementById('hd-back').onclick = goBack;
+  document.getElementById('hd-progressive').onclick = () => startHyakuninQuiz({ ...params, mode: 'progressive' });
+  document.getElementById('hd-blank').onclick = () => startHyakuninQuiz({ ...params, mode: 'blank' });
+  document.getElementById('hd-meaning').onclick = () => startHyakuninQuiz({ ...params, mode: 'meaning' });
+  document.getElementById('hd-list').onclick = () => showScreen('hyakunin-list', params);
+}
+
+function startHyakuninQuiz({ unitId = null, subjectId = null, mode }) {
+  let pool = state.questions.filter(q => q.type === 'hyakunin');
+  if (unitId) pool = pool.filter(q => q.unitId === unitId);
+  if (subjectId) pool = pool.filter(q => {
+    const u = getUnit(q.unitId);
+    return u && u.subjectId === subjectId;
+  });
+  if (pool.length === 0) {
+    showAlert('問題がありません', 'この範囲には百人一首がありません。');
+    return;
+  }
+  studySession = {
+    unitId, subjectId, mode,
+    questions: shuffle(pool),
+    index: 0,
+    startedAt: Date.now()
+  };
+  initHyakuninState();
+  showScreen('hyakunin-quiz');
+}
+
+function initHyakuninState() {
+  const s = studySession;
+  if (!s || s.index >= s.questions.length) return;
+  const seg = hyakuninSegments(s.questions[s.index]);
+  const allLen = seg.kami.length + seg.shimo.length + 1;
+  s.showAll = false;
+  if (s.mode === 'progressive') {
+    s.totalSteps = allLen;
+    s.revealCount = 1;
+  } else if (s.mode === 'blank') {
+    const idxs = [];
+    for (let i = 0; i < allLen; i++) idxs.push(i);
+    const hideCount = Math.round(allLen / 2);
+    s.hidden = new Set(shuffle(idxs).slice(0, hideCount));
+    s.revealed = new Set();
+  } else if (s.mode === 'meaning') {
+    s.revealStep = 0; // 0:なし 1:上の句 2:+下の句 3:+詠み手
+  }
+}
+
+function renderHyakuninQuiz() {
+  const s = studySession;
+  if (!s) { goBack(); return; }
+  if (s.index >= s.questions.length) {
+    document.getElementById('screen-hyakunin-quiz').innerHTML = `
+      <div class="nav-bar">
+        <button class="nav-button" id="hq-quit">‹ 戻る</button>
+        <span class="nav-title">おわり</span>
+        <span class="nav-spacer"></span>
+      </div>
+      <div class="content" style="text-align:center;padding-top:48px">
+        <div style="font-size:52px;margin-bottom:12px">🎴</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:6px">全${s.questions.length}首 おわり</div>
+        <div style="color:var(--text-secondary);margin-bottom:28px">おつかれさま！</div>
+        <button class="btn" id="hq-again">もう一度（シャッフル）</button>
+        <button class="btn secondary" id="hq-home">単元へ戻る</button>
+      </div>`;
+    document.getElementById('hq-quit').onclick = goBack;
+    document.getElementById('hq-home').onclick = goBack;
+    document.getElementById('hq-again').onclick = () => startHyakuninQuiz({ unitId: s.unitId, subjectId: s.subjectId, mode: s.mode });
+    return;
+  }
+  const q = s.questions[s.index];
+  const seg = hyakuninSegments(q);
+  const kamiN = seg.kami.length, shimoN = seg.shimo.length;
+  const authorIdx = kamiN + shimoN;
+  const modeTitle = s.mode === 'progressive' ? '少しずつ表示' : (s.mode === 'blank' ? '虫食い' : '訳を表示');
+
+  const isRevealed = (gi) => {
+    if (s.showAll) return true;
+    if (s.mode === 'progressive') return gi < s.revealCount;
+    if (s.mode === 'blank') return !s.hidden.has(gi) || s.revealed.has(gi);
+    if (s.mode === 'meaning') {
+      if (gi < kamiN) return s.revealStep >= 1;
+      if (gi < authorIdx) return s.revealStep >= 2;
+      return s.revealStep >= 3;
+    }
+    return false;
+  };
+  const segSpan = (text, gi) => {
+    if (isRevealed(gi)) return `<span class="hk-seg hk-shown">${escapeHtml(text)}</span>`;
+    const tappable = (s.mode === 'blank');
+    return `<span class="hk-seg hk-hidden"${tappable ? ' data-gi="' + gi + '"' : ''}><span class="hk-mask">${escapeHtml(text)}</span></span>`;
+  };
+
+  let gi = 0;
+  const kamiHtml = seg.kami.map(t => segSpan(t, gi++)).join(' ');
+  const shimoHtml = seg.shimo.map(t => segSpan(t, gi++)).join(' ');
+  const authorHtml = segSpan(seg.author, authorIdx);
+  const meaningBlock = (s.mode === 'meaning')
+    ? `<div class="hk-meaning"><div class="hk-label">現代語訳</div>${escapeHtml(q.meaning || '')}</div>`
+    : '';
+  const hint = s.mode === 'blank' ? '隠れた部分をタップすると表示' : 'タップで次を表示';
+
+  document.getElementById('screen-hyakunin-quiz').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="hq-quit">中断</button>
+      <span class="nav-title">${modeTitle}</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="study-header">
+      <div class="study-progress">${s.index + 1} / ${s.questions.length}　（第${q.no}首）</div>
+    </div>
+    <div class="content">
+      ${meaningBlock}
+      <div class="hk-poem" id="hq-poem">
+        <div class="hk-line"><span class="hk-label">上の句</span><span class="hk-text">${kamiHtml}</span></div>
+        <div class="hk-line"><span class="hk-label">下の句</span><span class="hk-text">${shimoHtml}</span></div>
+        <div class="hk-line"><span class="hk-label">詠み手</span><span class="hk-text">${authorHtml}</span></div>
+      </div>
+      <div class="hk-hint">${hint}</div>
+      <button class="btn" id="hq-showall">全文表示</button>
+      <button class="btn secondary" id="hq-next">次の問題へ ›</button>
+    </div>`;
+
+  document.getElementById('hq-quit').onclick = async () => {
+    const ok = await showConfirm('中断', '単元の選択画面に戻りますか?', { okText: '戻る' });
+    if (ok) { studySession = null; goBack(); }
+  };
+  document.getElementById('hq-showall').onclick = () => { s.showAll = true; renderHyakuninQuiz(); };
+  document.getElementById('hq-next').onclick = () => {
+    s.index++;
+    if (s.index < s.questions.length) initHyakuninState();
+    renderHyakuninQuiz();
+  };
+  if (s.mode === 'blank') {
+    document.querySelectorAll('#hq-poem .hk-hidden[data-gi]').forEach(el => {
+      el.onclick = () => { s.revealed.add(parseInt(el.dataset.gi, 10)); renderHyakuninQuiz(); };
+    });
+  } else {
+    document.getElementById('hq-poem').onclick = () => {
+      if (s.showAll) return;
+      if (s.mode === 'progressive' && s.revealCount < s.totalSteps) { s.revealCount++; renderHyakuninQuiz(); }
+      else if (s.mode === 'meaning' && s.revealStep < 3) { s.revealStep++; renderHyakuninQuiz(); }
+    };
+  }
+}
+
+function renderHyakuninList(params) {
+  const label = params && params.label ? params.label : '百人一首';
+  let pool = state.questions.filter(q => q.type === 'hyakunin');
+  if (params && params.unitId) pool = pool.filter(q => q.unitId === params.unitId);
+  if (params && params.subjectId) pool = pool.filter(q => {
+    const u = getUnit(q.unitId);
+    return u && u.subjectId === params.subjectId;
+  });
+  pool = pool.slice().sort((a, b) => (a.no || 0) - (b.no || 0));
+  const rows = pool.map(q => `
+    <tr>
+      <td class="hk-list-no">${q.no || ''}</td>
+      <td class="hk-list-kami">${escapeHtml(q.kami || '')}</td>
+      <td class="hk-list-shimo">${escapeHtml(q.shimo || '')}</td>
+      <td class="hk-list-author">${escapeHtml(q.author || '')}</td>
+    </tr>`).join('');
+  const tableHtml = pool.length === 0
+    ? '<div class="card" style="text-align:center;color:var(--text-secondary)">百人一首がありません</div>'
+    : `<table class="kanji-list-table hk-list-table">
+        <thead><tr><th>No</th><th>上の句</th><th>下の句</th><th>詠み手</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  document.getElementById('screen-hyakunin-list').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="hl-back">‹ 戻る</button>
+      <span class="nav-title">${escapeHtml(label)} 全首</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="content">
+      <div class="section-label">${pool.length}首</div>
+      ${tableHtml}
+    </div>`;
+  document.getElementById('hl-back').onclick = goBack;
 }
 
 /* ------------------------------------------------------------
