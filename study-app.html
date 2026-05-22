@@ -1671,6 +1671,42 @@ function buildEnglishJprepL9Pack() {
 }
 
 /* ------------------------------------------------------------
+   英語 JPREP L10 単語 (10問)
+   ------------------------------------------------------------ */
+const ENGLISH_JPREP_L10_SOURCE = [
+  ['一生懸命に、熱心に', 'hard'],
+  ['〜を建てる', 'build'],
+  ['友だち', 'friend'],
+  ['若い、幼い', 'young'],
+  ['冬', 'winter'],
+  ['店', 'store'],
+  ['夏', 'summer'],
+  ['いつも', 'always'],
+  ['歩く', 'walk'],
+  ['兄、弟', 'brother']
+];
+
+function buildEnglishJprepL10Pack() {
+  const unit = { id: 'u-eng-jprep-l10', subjectId: 'english', name: 'JPREP L10 単語', parentId: null };
+  const questions = [];
+  let n = 0;
+  for (const [ja, en] of ENGLISH_JPREP_L10_SOURCE) {
+    n++;
+    questions.push({
+      id: 'q-ejp10-' + String(n).padStart(3, '0'),
+      unitId: 'u-eng-jprep-l10',
+      type: 'english',
+      ja: ja,
+      en: en,
+      hint: '',
+      sourceNote: '',
+      createdAt: '2026-05-12'
+    });
+  }
+  return { unit, questions };
+}
+
+/* ------------------------------------------------------------
    百人一首 1〜20首
    各エントリ: { kami(上の句), shimo(下の句), meaning(意味),
                  author(詠み手), technique(主な表現技法) }
@@ -1777,6 +1813,9 @@ function buildSampleData() {
   const ejp9 = buildEnglishJprepL9Pack();
   data.units.push(ejp9.unit);
   data.questions.push(...ejp9.questions);
+  const ejp10 = buildEnglishJprepL10Pack();
+  data.units.push(ejp10.unit);
+  data.questions.push(...ejp10.questions);
   const hk = buildHyakuninPack();
   data.units.push(hk.unit);
   data.questions.push(...hk.questions);
@@ -1882,6 +1921,13 @@ function loadState() {
     // 英語 JPREP L9 単語の追加マイグレーション (既存ユーザー向け)
     if (!state.units.some(u => u.id === 'u-eng-jprep-l9')) {
       const pack = buildEnglishJprepL9Pack();
+      state.units.push(pack.unit);
+      state.questions.push(...pack.questions);
+      migrated = true;
+    }
+    // 英語 JPREP L10 単語の追加マイグレーション (既存ユーザー向け)
+    if (!state.units.some(u => u.id === 'u-eng-jprep-l10')) {
+      const pack = buildEnglishJprepL10Pack();
       state.units.push(pack.unit);
       state.questions.push(...pack.questions);
       migrated = true;
