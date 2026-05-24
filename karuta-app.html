@@ -1173,30 +1173,71 @@ function startReveal(q) {
   const kamiEl = document.getElementById('kami-text');
   kamiEl.innerHTML = '';
 
-  // タイプライター
+  const text = q.kami;
+  const yomi = q.yomi || q.kami;
+
+  // 音声オン時は音声の所要時間に合わせて表示間隔を決める。
+  // rate=0.3 のとき よみがな1文字 ≈ 312ms (iOS Safari 実測)。
+  let interval = settings.charIntervalMs;
+  if (settings.audio && settings.typewriter) {
+    const rate = settings.ttsRate || 0.3;
+    const msPerYomiChar = 312 * (0.3 / rate);
+    const estimatedAudioMs = yomi.length * msPerYomiChar;
+    interval = Math.max(120, Math.round(estimatedAudioMs / text.length));
+  }
+
+  // タイプライター。onboundary 側で先に出ている可能性があるので DOM の現在数を見る
   if (settings.typewriter) {
-    const text = q.kami;
-    let i = 0;
     revealTimer = setInterval(() => {
-      if (i >= text.length) { clearInterval(revealTimer); revealTimer = null; return; }
-      const ch = text[i++];
+      const shown = kamiEl.childElementCount;
+      if (shown >= text.length) { clearInterval(revealTimer); revealTimer = null; return; }
       const span = document.createElement('span');
       span.className = 'reveal';
-      span.textContent = ch;
+      span.textContent = text[shown] || '';
       kamiEl.appendChild(span);
-    }, settings.charIntervalMs);
+    }, interval);
   } else {
-    kamiEl.textContent = q.kami;
+    kamiEl.textContent = text;
   }
 
   // TTS
   if (settings.audio && 'speechSynthesis' in window) {
     try {
       window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(q.yomi || q.kami);
+      const u = new SpeechSynthesisUtterance(yomi);
       u.lang = 'ja-JP';
       u.rate = settings.ttsRate || 0.3;
       u.pitch = 1.0;
+      // 実際の音声境界に応じて文字進捗を補正 (対応端末のみ)
+      u.onboundary = (e) => {
+        if (!settings.typewriter) return;
+        if (typeof e.charIndex !== 'number' || yomi.length === 0) return;
+        const yomiProgress = Math.min(1, (e.charIndex + (e.charLength || 1)) / yomi.length);
+        const targetShown = Math.min(text.length, Math.ceil(yomiProgress * text.length));
+        const shown = kamiEl.childElementCount;
+        if (targetShown > shown) {
+          for (let k = shown; k < targetShown; k++) {
+            const span = document.createElement('span');
+            span.className = 'reveal';
+            span.textContent = text[k] || '';
+            kamiEl.appendChild(span);
+          }
+        }
+      };
+      u.onend = () => {
+        // 音声終了時に表示が追いついていなければ残り全部を出す
+        if (!settings.typewriter) return;
+        const shown = kamiEl.childElementCount;
+        if (shown < text.length) {
+          for (let k = shown; k < text.length; k++) {
+            const span = document.createElement('span');
+            span.className = 'reveal';
+            span.textContent = text[k] || '';
+            kamiEl.appendChild(span);
+          }
+          if (revealTimer) { clearInterval(revealTimer); revealTimer = null; }
+        }
+      };
       currentUtterance = u;
       window.speechSynthesis.speak(u);
     } catch (e) { console.warn('TTS failed', e); }
