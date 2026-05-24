@@ -700,6 +700,12 @@ body::before {
         <button class="option-tile" data-cards="9">9枚<div class="option-tile-sub">むずかしい</div></button>
       </div>
 
+      <div class="section-title">読み上げ・表示の速さ</div>
+      <div class="option-grid">
+        <button class="option-tile" data-speed="fast">はやい<div class="option-tile-sub">音声に合わせる</div></button>
+        <button class="option-tile" data-speed="slow">ゆっくり<div class="option-tile-sub">じっくり聞く</div></button>
+      </div>
+
       <div class="section-title">読み上げ・表示</div>
       <div class="toggle-row">
         <div>
@@ -944,10 +950,12 @@ const DEFAULT_SETTINGS = {
   cards: 6,
   audio: true,
   typewriter: true,
-  charIntervalMs: 750,      // 一文字表示間隔 (3倍ゆっくり)
-  questionLimitMs: 18000,   // 1問の制限時間 (読み上げを待てる長さ)
-  ttsRate: 0.3              // TTS の話速 (3倍ゆっくり)
+  speed: 'fast',            // 'fast' (音声基準) | 'slow' (文字基準)
+  questionLimitMs: 18000
 };
+const TTS_RATE_BASE = 0.3;     // rate=0.3 のとき よみがな 1文字 ≈ 312ms (iOS Safari 実測)
+const TTS_MS_AT_BASE = 312;
+const SLOW_MS_PER_KAMI = 750;  // ゆっくりモード時の上の句 1文字あたり時間
 
 let settings = loadSettings();
 let history = loadHistory();
@@ -964,14 +972,28 @@ function loadSettings() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { ...DEFAULT_SETTINGS };
     const s = Object.assign({ ...DEFAULT_SETTINGS }, JSON.parse(raw));
-    // チューニング値は常にデフォルトに揃える (旧 localStorage を上書き)
-    s.charIntervalMs = DEFAULT_SETTINGS.charIntervalMs;
     s.questionLimitMs = DEFAULT_SETTINGS.questionLimitMs;
-    s.ttsRate = DEFAULT_SETTINGS.ttsRate;
-    // 札数の旧オプション (5枚) は 6枚 に寄せる
+    delete s.charIntervalMs;
+    delete s.ttsRate;
     if (![4, 6, 9].includes(s.cards)) s.cards = 6;
+    if (!['fast', 'slow'].includes(s.speed)) s.speed = 'fast';
     return s;
   } catch { return { ...DEFAULT_SETTINGS }; }
+}
+
+/* 速度モードに応じて各歌の所要時間とテキスト/音声タイミングを算出 */
+function computeTiming(q) {
+  const text = q.kami;
+  const yomi = q.yomi || q.kami;
+  const baseAudioMs = yomi.length * TTS_MS_AT_BASE;  // rate=0.3 の音声長
+  const targetMs = settings.speed === 'slow'
+    ? text.length * SLOW_MS_PER_KAMI
+    : baseAudioMs;
+  return {
+    targetMs,
+    charIntervalMs: Math.max(120, Math.round(targetMs / text.length)),
+    ttsRate: Math.max(0.1, Math.min(1.0, TTS_RATE_BASE * baseAudioMs / targetMs))
+  };
 }
 function saveSettings() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(settings)); } catch {}
@@ -1036,6 +1058,13 @@ function renderSettings() {
     const n = parseInt(el.dataset.cards, 10);
     el.classList.toggle('active', settings.cards === n);
     el.onclick = () => { settings.cards = n; saveSettings(); renderSettings(); };
+  });
+
+  // 速さ
+  document.querySelectorAll('[data-speed]').forEach(el => {
+    const v = el.dataset.speed;
+    el.classList.toggle('active', settings.speed === v);
+    el.onclick = () => { settings.speed = v; saveSettings(); renderSettings(); };
   });
 
   // トグル
@@ -1175,16 +1204,7 @@ function startReveal(q) {
 
   const text = q.kami;
   const yomi = q.yomi || q.kami;
-
-  // 音声オン時は音声の所要時間に合わせて表示間隔を決める。
-  // rate=0.3 のとき よみがな1文字 ≈ 312ms (iOS Safari 実測)。
-  let interval = settings.charIntervalMs;
-  if (settings.audio && settings.typewriter) {
-    const rate = settings.ttsRate || 0.3;
-    const msPerYomiChar = 312 * (0.3 / rate);
-    const estimatedAudioMs = yomi.length * msPerYomiChar;
-    interval = Math.max(120, Math.round(estimatedAudioMs / text.length));
-  }
+  const timing = computeTiming(q);
 
   // タイプライター。onboundary 側で先に出ている可能性があるので DOM の現在数を見る
   if (settings.typewriter) {
@@ -1195,7 +1215,7 @@ function startReveal(q) {
       span.className = 'reveal';
       span.textContent = text[shown] || '';
       kamiEl.appendChild(span);
-    }, interval);
+    }, timing.charIntervalMs);
   } else {
     kamiEl.textContent = text;
   }
@@ -1206,7 +1226,7 @@ function startReveal(q) {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(yomi);
       u.lang = 'ja-JP';
-      u.rate = settings.ttsRate || 0.3;
+      u.rate = timing.ttsRate;
       u.pitch = 1.0;
       // 実際の音声境界に応じて文字進捗を補正 (対応端末のみ)
       u.onboundary = (e) => {
@@ -1225,7 +1245,6 @@ function startReveal(q) {
         }
       };
       u.onend = () => {
-        // 音声終了時に表示が追いついていなければ残り全部を出す
         if (!settings.typewriter) return;
         const shown = kamiEl.childElementCount;
         if (shown < text.length) {
