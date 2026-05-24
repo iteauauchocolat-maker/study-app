@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="お手伝い">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)">
+<meta name="format-detection" content="telephone=no">
+<title>お手伝いアプリ</title>
+<style>
+/* ==========================================================
+   テーマ変数 (ライト/ダークモード対応)
+   ========================================================== */
+:root {
+  --bg: #f2f2f7;
+  --bg-elevated: #ffffff;
+  --bg-card: #ffffff;
+  --bg-input: #ffffff;
+  --bg-button-secondary: #e5e5ea;
+  --text: #000000;
+  --text-secondary: #6c6c70;
+  --text-tertiary: #aeaeb2;
+  --border: rgba(60, 60, 67, 0.15);
+  --separator: rgba(60, 60, 67, 0.08);
+  --primary: #007aff;
+  --success: #34c759;
+  --warning: #ff9500;
+  --danger: #ff3b30;
+  --gold: #ffcc00;
+  --overlay: rgba(0, 0, 0, 0.4);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --bg-elevated: #1c1c1e;
+    --bg-card: #1c1c1e;
+    --bg-input: #2c2c2e;
+    --bg-button-secondary: #2c2c2e;
+    --text: #ffffff;
+    --text-secondary: #98989d;
+    --text-tertiary: #6c6c70;
+    --border: rgba(84, 84, 88, 0.4);
+    --separator: rgba(84, 84, 88, 0.25);
+    --primary: #0a84ff;
+    --success: #30d158;
+    --warning: #ff9f0a;
+    --danger: #ff453a;
+    --gold: #ffd60a;
+    --overlay: rgba(0, 0, 0, 0.6);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  overflow: hidden;
+  background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, sans-serif;
+  font-size: 16px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+button { font-family: inherit; font-size: inherit; cursor: pointer; border: none; background: none; color: inherit; padding: 0; }
+input, textarea, select { font-family: inherit; font-size: 16px; color: var(--text); }
+
+#app { height: 100%; width: 100%; position: relative; overflow: hidden; }
+.screen {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  background: var(--bg);
+  animation: fadeIn 0.18s ease-out;
+}
+.screen.active { display: flex; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.nav-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: calc(var(--safe-top) + 8px) 12px 8px;
+  background: var(--bg-elevated);
+  border-bottom: 0.5px solid var(--separator);
+  min-height: calc(var(--safe-top) + 44px);
+  flex-shrink: 0;
+}
+.nav-title { font-size: 17px; font-weight: 600; text-align: center; flex: 1; margin: 0 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav-button { min-width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 16px; padding: 0 8px; }
+.nav-button.icon { font-size: 22px; }
+.nav-spacer { min-width: 44px; }
+
+.content {
+  flex: 1; overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
+  padding-bottom: calc(16px + var(--safe-bottom));
+}
+
+.card { background: var(--bg-card); border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow); }
+.list-group { background: var(--bg-card); border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
+.list-item {
+  display: flex; align-items: center;
+  padding: 14px 16px;
+  border-bottom: 0.5px solid var(--separator);
+  min-height: 50px; width: 100%; text-align: left;
+  background: var(--bg-card);
+  transition: background 0.1s;
+}
+.list-item:last-child { border-bottom: none; }
+.list-item:active { background: var(--bg-button-secondary); }
+.list-item-main { flex: 1; min-width: 0; }
+.list-item-title { font-size: 16px; font-weight: 400; color: var(--text); }
+.list-item-subtitle { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+.list-item-trailing { color: var(--text-tertiary); font-size: 14px; margin-left: 8px; }
+.list-item-chevron::after { content: "›"; color: var(--text-tertiary); font-size: 22px; margin-left: 4px; font-weight: 300; }
+.section-label { font-size: 13px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin: 8px 16px 6px; font-weight: 500; }
+
+.btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; min-height: 50px;
+  padding: 12px 16px; border-radius: 12px;
+  font-size: 17px; font-weight: 600;
+  background: var(--primary); color: #ffffff;
+  margin-bottom: 12px;
+  transition: opacity 0.1s;
+}
+.btn:active { opacity: 0.7; }
+.btn.secondary { background: var(--bg-button-secondary); color: var(--text); }
+.btn.danger { background: var(--danger); color: #ffffff; }
+.btn.success { background: var(--success); color: #ffffff; }
+.btn.outline { background: transparent; border: 1.5px solid var(--primary); color: var(--primary); }
+.btn.small { min-height: 36px; padding: 6px 14px; font-size: 14px; width: auto; margin-bottom: 0; }
+
+.field { margin-bottom: 16px; }
+.field-label { font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500; }
+.input, .textarea, .select {
+  width: 100%; padding: 12px 14px;
+  border-radius: 10px; border: 1px solid var(--border);
+  background: var(--bg-input); color: var(--text);
+  outline: none; -webkit-appearance: none; appearance: none;
+}
+.input:focus, .textarea:focus, .select:focus { border-color: var(--primary); }
+.textarea { min-height: 80px; resize: vertical; font-family: inherit; }
+.select {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path fill='gray' d='M6 9L1 4h10z'/></svg>");
+  background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px;
+}
+
+/* ==========================================================
+   プロフィール選択画面
+   ========================================================== */
+.profile-select-wrap {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 24px; gap: 24px;
+}
+.profile-select-title { font-size: 28px; font-weight: 700; margin-bottom: 4px; text-align: center; }
+.profile-select-subtitle { font-size: 15px; color: var(--text-secondary); margin-bottom: 16px; text-align: center; }
+.profile-buttons { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 320px; }
+.profile-button {
+  display: flex; align-items: center; gap: 16px;
+  padding: 20px 24px; border-radius: 16px;
+  background: var(--bg-card); box-shadow: var(--shadow);
+  font-size: 20px; font-weight: 600; color: var(--text);
+  width: 100%; text-align: left;
+  transition: transform 0.1s, opacity 0.1s;
+}
+.profile-button:active { transform: scale(0.98); opacity: 0.85; }
+.profile-avatar {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #ffffff; font-size: 28px; font-weight: 700; flex-shrink: 0;
+}
+.profile-button-meta { font-size: 13px; color: var(--text-secondary); font-weight: 400; margin-top: 2px; }
+.profile-admin-button {
+  margin-top: 8px;
+  background: transparent; color: var(--text-secondary);
+  font-size: 14px; padding: 8px 16px;
+}
+
+/* ==========================================================
+   ホーム画面
+   ========================================================== */
+.home-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 4px 4px 16px;
+}
+.home-profile-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 12px 6px 6px;
+  background: var(--bg-card); border-radius: 999px;
+  box-shadow: var(--shadow);
+  font-size: 14px; font-weight: 600;
+}
+.home-profile-chip .profile-avatar { width: 32px; height: 32px; font-size: 16px; }
+
+.hero-card {
+  background: linear-gradient(135deg, var(--primary), #5856d6);
+  color: #fff; border-radius: 20px;
+  padding: 22px 22px 20px; margin-bottom: 20px;
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.25);
+}
+.hero-label { font-size: 13px; opacity: 0.85; font-weight: 500; letter-spacing: 0.5px; }
+.hero-points {
+  font-size: 44px; font-weight: 800; line-height: 1.1;
+  margin: 6px 0 4px; letter-spacing: -1px;
+}
+.hero-points .unit { font-size: 18px; font-weight: 600; opacity: 0.9; margin-left: 4px; }
+.hero-yen { font-size: 14px; opacity: 0.9; }
+.hero-meta { display: flex; gap: 16px; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.18); }
+.hero-meta-item { flex: 1; }
+.hero-meta-num { font-size: 20px; font-weight: 700; }
+.hero-meta-label { font-size: 11px; opacity: 0.85; letter-spacing: 0.5px; }
+
+.task-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px; margin-bottom: 20px;
+}
+.task-tile {
+  background: var(--bg-card); border-radius: 16px;
+  padding: 16px 14px; min-height: 120px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  box-shadow: var(--shadow);
+  transition: transform 0.1s, opacity 0.1s;
+  text-align: left;
+  position: relative;
+}
+.task-tile:active { transform: scale(0.97); opacity: 0.85; }
+.task-tile-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+.task-tile-title { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.3; }
+.task-tile-points {
+  margin-top: 8px;
+  font-size: 13px; color: var(--primary); font-weight: 700;
+}
+.task-tile-points .pt-num { font-size: 18px; }
+
+.empty-state {
+  text-align: center; padding: 32px 16px;
+  color: var(--text-secondary);
+}
+.empty-state-icon { font-size: 42px; margin-bottom: 8px; opacity: 0.6; }
+.empty-state-text { font-size: 14px; }
+
+/* ==========================================================
+   タスク詳細 / 完了ダイアログ
+   ========================================================== */
+.modal-backdrop {
+  position: absolute; inset: 0;
+  background: var(--overlay);
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.2s ease-out;
+}
+.modal-backdrop.active { display: flex; }
+.modal-sheet {
+  background: var(--bg-elevated);
+  border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 480px;
+  padding: 20px 20px calc(20px + var(--safe-bottom));
+  animation: slideUp 0.25s ease-out;
+  max-height: 90%; overflow-y: auto;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.modal-handle {
+  width: 36px; height: 5px; border-radius: 3px;
+  background: var(--text-tertiary); opacity: 0.4;
+  margin: -4px auto 12px;
+}
+.modal-title { font-size: 20px; font-weight: 700; margin: 0 0 4px; }
+.modal-subtitle { font-size: 14px; color: var(--text-secondary); margin: 0 0 16px; }
+
+/* ==========================================================
+   履歴
+   ========================================================== */
+.history-day-label {
+  font-size: 13px; color: var(--text-secondary);
+  font-weight: 600; margin: 16px 4px 8px;
+}
+.history-item {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--bg-card); border-radius: 12px;
+  padding: 12px 14px; margin-bottom: 8px;
+  box-shadow: var(--shadow);
+}
+.history-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.history-main { flex: 1; min-width: 0; }
+.history-title { font-size: 15px; font-weight: 600; color: var(--text); }
+.history-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.history-points { font-size: 16px; font-weight: 700; color: var(--success); flex-shrink: 0; margin-left: 4px; }
+.history-delete {
+  margin-left: 8px; color: var(--danger);
+  font-size: 18px; padding: 4px 8px;
+  opacity: 0.7;
+}
+
+/* ==========================================================
+   ランキング
+   ========================================================== */
+.rank-card {
+  background: var(--bg-card); border-radius: 14px;
+  padding: 14px 16px; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: var(--shadow);
+}
+.rank-position {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 16px;
+  background: var(--bg-button-secondary);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+.rank-position.gold { background: var(--gold); color: #5a4500; }
+.rank-position.silver { background: #c0c0c5; color: #444; }
+.rank-position.bronze { background: #cd7f32; color: #fff; }
+.rank-main { flex: 1; }
+.rank-name { font-size: 16px; font-weight: 700; }
+.rank-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.rank-points { font-size: 18px; font-weight: 800; color: var(--primary); }
+
+/* ==========================================================
+   セグメント切り替え
+   ========================================================== */
+.segment {
+  display: flex; background: var(--bg-button-secondary);
+  border-radius: 9px; padding: 2px; margin-bottom: 14px;
+}
+.segment-item {
+  flex: 1; padding: 7px 8px;
+  text-align: center; font-size: 13px; font-weight: 600;
+  color: var(--text); border-radius: 7px;
+  transition: background 0.15s;
+}
+.segment-item.active {
+  background: var(--bg-elevated);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* ==========================================================
+   完了アニメーション (祝福オーバーレイ)
+   ========================================================== */
+.celebrate {
+  position: fixed; inset: 0;
+  display: none; align-items: center; justify-content: center;
+  pointer-events: none; z-index: 200;
+}
+.celebrate.active { display: flex; }
+.celebrate-burst {
+  font-size: 100px;
+  animation: burst 0.9s ease-out forwards;
+}
+@keyframes burst {
+  0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+  40% { transform: scale(1.3) rotate(10deg); opacity: 1; }
+  70% { transform: scale(1.1) rotate(-5deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); opacity: 0; }
+}
+.celebrate-points {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, 30px);
+  font-size: 32px; font-weight: 800;
+  color: var(--success);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  animation: floatUp 1.0s ease-out forwards;
+}
+@keyframes floatUp {
+  0% { transform: translate(-50%, 30px); opacity: 0; }
+  30% { transform: translate(-50%, 0); opacity: 1; }
+  100% { transform: translate(-50%, -40px); opacity: 0; }
+}
+
+/* ==========================================================
+   管理画面用
+   ========================================================== */
+.admin-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px; margin-bottom: 16px;
+}
+.icon-picker {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.icon-option {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-button-secondary);
+  font-size: 22px;
+}
+.icon-option.active {
+  background: var(--primary);
+}
+.color-swatch {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2px solid transparent;
+}
+.color-swatch.active {
+  border-color: var(--text);
+}
+.color-picker { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.danger-zone { margin-top: 32px; }
+
+/* トースト */
+.toast {
+  position: fixed; left: 50%; bottom: calc(40px + var(--safe-bottom));
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.85); color: #fff;
+  padding: 10px 18px; border-radius: 999px;
+  font-size: 14px; font-weight: 600;
+  z-index: 300; opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ プロフィール選択 ============ -->
+  <div id="screen-profile" class="screen active">
+    <div class="profile-select-wrap">
+      <div>
+        <div class="profile-select-title">お手伝いアプリ</div>
+        <div class="profile-select-subtitle">だれが お手伝いしますか？</div>
+      </div>
+      <div id="profile-buttons" class="profile-buttons"></div>
+      <button class="profile-admin-button" onclick="goAdmin()">⚙️ 管理</button>
+    </div>
+  </div>
+
+  <!-- ============ ホーム ============ -->
+  <div id="screen-home" class="screen">
+    <div class="nav-bar">
+      <button class="nav-button" onclick="goProfile()">‹ 戻る</button>
+      <div class="nav-title">お手伝い</div>
+      <button class="nav-button icon" onclick="goAdmin()">⚙️</button>
+    </div>
+    <div class="content">
+      <div class="home-header">
+        <div class="home-profile-chip" id="home-profile-chip"></div>
+        <button class="btn small secondary" onclick="goHistory()">📜 履歴</button>
+      </div>
+
+      <div class="hero-card" id="hero-card"></div>
+
+      <div class="section-label">今日のお手伝い</div>
+      <div id="task-grid" class="task-grid"></div>
+
+      <button class="btn outline" onclick="goRanking()">🏆 ランキングをみる</button>
+    </div>
+  </div>
+
+  <!-- ============ 履歴 ============ -->
+  <div id="screen-history" class="screen">
+    <div class="nav-bar">
+      <button class="nav-button" onclick="goHome()">‹ 戻る</button>
+      <div class="nav-title">履歴</div>
+      <div class="nav-spacer"></div>
+    </div>
+    <div class="content">
+      <div class="segment" id="history-segment">
+        <div class="segment-item active" data-range="week">今週</div>
+        <div class="segment-item" data-range="month">今月</div>
+        <div class="segment-item" data-range="all">すべて</div>
+      </div>
+      <div id="history-summary" class="card"></div>
+      <div id="history-list"></div>
+    </div>
+  </div>
+
+  <!-- ============ ランキング ============ -->
+  <div id="screen-ranking" class="screen">
+    <div class="nav-bar">
+      <button class="nav-button" onclick="goHome()">‹ 戻る</button>
+      <div class="nav-title">ランキング</div>
+      <div class="nav-spacer"></div>
+    </div>
+    <div class="content">
+      <div class="segment" id="ranking-segment">
+        <div class="segment-item active" data-range="week">今週</div>
+        <div class="segment-item" data-range="month">今月</div>
+        <div class="segment-item" data-range="all">通算</div>
+      </div>
+      <div id="ranking-list"></div>
+    </div>
+  </div>
+
+  <!-- ============ 管理 ============ -->
+  <div id="screen-admin" class="screen">
+    <div class="nav-bar">
+      <button class="nav-button" onclick="goProfile()">‹ 戻る</button>
+      <div class="nav-title">管理</div>
+      <div class="nav-spacer"></div>
+    </div>
+    <div class="content">
+      <div class="section-label">タスク</div>
+      <div id="admin-task-list" class="list-group"></div>
+      <button class="btn outline" onclick="openTaskEditor()">+ タスクを追加</button>
+
+      <div class="section-label" style="margin-top:24px;">設定</div>
+      <div class="card">
+        <div class="field">
+          <div class="field-label">1ポイント = 何円？</div>
+          <input id="setting-yen" type="number" min="0" class="input" />
+        </div>
+        <label style="display:flex; align-items:center; gap:10px; padding:8px 0;">
+          <input id="setting-show-yen" type="checkbox" style="width:18px; height:18px;" />
+          <span>ポイントを円換算で表示する</span>
+        </label>
+      </div>
+
+      <div class="section-label" style="margin-top:24px;">プロフィール</div>
+      <div id="admin-profile-list" class="list-group"></div>
+
+      <div class="section-label" style="margin-top:24px;">データ</div>
+      <button class="btn secondary" onclick="exportData()">📤 エクスポート</button>
+      <button class="btn secondary" onclick="document.getElementById('import-file').click()">📥 インポート</button>
+      <input id="import-file" type="file" accept="application/json" style="display:none;" onchange="importData(event)" />
+
+      <div class="danger-zone">
+        <div class="section-label">危険な操作</div>
+        <button class="btn danger" onclick="confirmReset()">⚠️ 全データを初期化</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ タスク編集 ============ -->
+  <div id="screen-task-editor" class="screen">
+    <div class="nav-bar">
+      <button class="nav-button" onclick="goAdmin()">‹ 戻る</button>
+      <div class="nav-title" id="task-editor-title">タスクを追加</div>
+      <button class="nav-button" onclick="saveTask()">保存</button>
+    </div>
+    <div class="content">
+      <div class="field">
+        <div class="field-label">タスク名</div>
+        <input id="task-input-title" class="input" placeholder="例: 食器洗い" />
+      </div>
+      <div class="field">
+        <div class="field-label">ポイント</div>
+        <input id="task-input-points" type="number" min="1" class="input" />
+      </div>
+      <div class="field">
+        <div class="field-label">アイコン</div>
+        <div id="task-icon-picker" class="icon-picker"></div>
+      </div>
+      <div class="field">
+        <div class="field-label">カテゴリ色</div>
+        <div id="task-color-picker" class="color-picker"></div>
+      </div>
+      <div class="field">
+        <div class="field-label">メモ (任意)</div>
+        <textarea id="task-input-note" class="textarea" placeholder="やり方の説明や注意点など"></textarea>
+      </div>
+      <button id="task-delete-btn" class="btn danger" style="display:none;" onclick="deleteCurrentTask()">このタスクを削除</button>
+    </div>
+  </div>
+
+  <!-- ============ プロフィール編集 ============ -->
+  <div id="screen-profile-editor" class="screen">
+    <div class="nav-bar">
+      <button class="nav-button" onclick="goAdmin()">‹ 戻る</button>
+      <div class="nav-title">プロフィール編集</div>
+      <button class="nav-button" onclick="saveProfile()">保存</button>
+    </div>
+    <div class="content">
+      <div class="field">
+        <div class="field-label">名前</div>
+        <input id="profile-input-name" class="input" />
+      </div>
+      <div class="field">
+        <div class="field-label">アイコン</div>
+        <div id="profile-icon-picker" class="icon-picker"></div>
+      </div>
+      <div class="field">
+        <div class="field-label">テーマ色</div>
+        <div id="profile-color-picker" class="color-picker"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ タスク完了モーダル ============ -->
+  <div id="task-modal" class="modal-backdrop" onclick="closeTaskModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div id="task-modal-icon" style="font-size:48px; text-align:center; margin-bottom:8px;"></div>
+      <div id="task-modal-title" class="modal-title" style="text-align:center;"></div>
+      <div id="task-modal-subtitle" class="modal-subtitle" style="text-align:center;"></div>
+      <div id="task-modal-note" style="background:var(--bg); border-radius:10px; padding:12px; margin-bottom:16px; font-size:14px; color:var(--text-secondary); display:none; white-space:pre-wrap;"></div>
+      <button class="btn success" onclick="completeTask()">✓ 完了した！</button>
+      <button class="btn secondary" onclick="closeTaskModal()">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- ============ 祝福オーバーレイ ============ -->
+  <div id="celebrate" class="celebrate">
+    <div class="celebrate-burst">🎉</div>
+    <div id="celebrate-points" class="celebrate-points"></div>
+  </div>
+
+  <!-- トースト -->
+  <div id="toast" class="toast"></div>
+</div>
+
+<script>
+'use strict';
+
+// ==========================================================
+// 定数・ヘルパ
+// ==========================================================
+const STORAGE_KEY = 'chore-app:v1';
+const ICON_CHOICES = ['🍽️', '🧹', '🧺', '👕', '🛒', '🗑️', '🚿', '🪥', '🐾', '🌱', '📚', '✏️', '🛏️', '🍳', '🧴', '⭐', '🧒', '🧑', '👧', '👦', '👩', '👨', '🧓', '🦊', '🐱', '🐶'];
+const COLOR_CHOICES = ['#007aff', '#5856d6', '#34c759', '#ff9500', '#ff3b30', '#af52de', '#ff2d55', '#5ac8fa', '#ffcc00', '#a2845e'];
+
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+const $ = (id) => document.getElementById(id);
+const fmtDate = (iso) => {
+  const d = new Date(iso);
+  const days = ['日','月','火','水','木','金','土'];
+  return `${d.getMonth()+1}/${d.getDate()}(${days[d.getDay()]})`;
+};
+const fmtTime = (iso) => {
+  const d = new Date(iso);
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+};
+const dayKey = (iso) => iso.slice(0, 10);
+const todayKey = () => new Date().toISOString().slice(0, 10);
+const startOfWeek = () => {
+  const d = new Date();
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day; // 月曜始まり
+  d.setDate(d.getDate() + diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+const startOfMonth = () => {
+  const d = new Date();
+  d.setDate(1);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+// ==========================================================
+// データ
+// ==========================================================
+function buildSampleData() {
+  return {
+    version: 1,
+    profiles: [
+      { id: 'jhs', name: '中学',  icon: '🧒', color: '#007aff' },
+      { id: 'hs',  name: '高校',  icon: '🧑', color: '#5856d6' }
+    ],
+    tasks: [
+      { id: uid(), title: '食器洗い',       points: 10, icon: '🍽️', color: '#ff9500', note: '夕食後の食器をぜんぶ洗う' },
+      { id: uid(), title: '洗濯物たたみ',   points: 5,  icon: '🧺', color: '#5ac8fa', note: '' },
+      { id: uid(), title: '洗濯物干し',     points: 5,  icon: '👕', color: '#5ac8fa', note: '' },
+      { id: uid(), title: '風呂掃除',       points: 15, icon: '🚿', color: '#34c759', note: '床と浴槽をていねいに' },
+      { id: uid(), title: 'ゴミ出し',       points: 5,  icon: '🗑️', color: '#34c759', note: '' },
+      { id: uid(), title: '部屋掃除',       points: 10, icon: '🧹', color: '#34c759', note: '自分の部屋を掃除機がけ' },
+      { id: uid(), title: '玄関掃除',       points: 5,  icon: '🪥', color: '#34c759', note: '' },
+      { id: uid(), title: '買い物手伝い',   points: 10, icon: '🛒', color: '#ff3b30', note: '' },
+      { id: uid(), title: '食事の準備',     points: 10, icon: '🍳', color: '#ff9500', note: '' },
+      { id: uid(), title: 'ペットのお世話', points: 5,  icon: '🐾', color: '#af52de', note: 'えさやり・水替え' }
+    ],
+    records: [],
+    settings: {
+      pointsPerYen: 1,
+      showYen: true
+    }
+  };
+}
+
+let state = loadState();
+let currentProfileId = null;
+let pendingTaskId = null;       // 完了モーダルで選択中
+let editingTaskId = null;       // タスク編集中
+let editingProfileId = null;    // プロフィール編集中
+let editorIcon = '🍽️';
+let editorColor = '#007aff';
+let historyRange = 'week';
+let rankingRange = 'week';
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return buildSampleData();
+    const data = JSON.parse(raw);
+    // 軽い正規化
+    if (!data.profiles || !data.tasks || !data.records || !data.settings) {
+      return buildSampleData();
+    }
+    return data;
+  } catch (e) {
+    console.error(e);
+    return buildSampleData();
+  }
+}
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch (e) { console.error(e); toast('保存に失敗しました'); }
+}
+
+// ==========================================================
+// 画面切り替え
+// ==========================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+function goProfile() { showScreen('screen-profile'); renderProfileSelect(); }
+function goHome()    { showScreen('screen-home');    renderHome(); }
+function goHistory() { showScreen('screen-history'); renderHistory(); }
+function goRanking() { showScreen('screen-ranking'); renderRanking(); }
+function goAdmin()   { showScreen('screen-admin');   renderAdmin(); }
+
+// ==========================================================
+// プロフィール選択
+// ==========================================================
+function renderProfileSelect() {
+  const wrap = $('profile-buttons');
+  wrap.innerHTML = '';
+  state.profiles.forEach(p => {
+    const total = totalPoints(p.id);
+    const btn = document.createElement('button');
+    btn.className = 'profile-button';
+    btn.onclick = () => { currentProfileId = p.id; goHome(); };
+    btn.innerHTML = `
+      <div class="profile-avatar" style="background:${p.color}">${p.icon}</div>
+      <div>
+        <div>${escapeHtml(p.name)}</div>
+        <div class="profile-button-meta">通算 ${total} pt</div>
+      </div>
+    `;
+    wrap.appendChild(btn);
+  });
+}
+
+// ==========================================================
+// ホーム
+// ==========================================================
+function renderHome() {
+  const profile = getProfile(currentProfileId);
+  if (!profile) { goProfile(); return; }
+
+  // ヘッダ chip
+  const chip = $('home-profile-chip');
+  chip.innerHTML = `
+    <div class="profile-avatar" style="background:${profile.color}">${profile.icon}</div>
+    <span>${escapeHtml(profile.name)}</span>
+  `;
+
+  // hero
+  const week = pointsInRange(profile.id, startOfWeek().toISOString());
+  const month = pointsInRange(profile.id, startOfMonth().toISOString());
+  const total = totalPoints(profile.id);
+  const yenLine = state.settings.showYen && state.settings.pointsPerYen > 0
+    ? `<div class="hero-yen">≒ ${week * state.settings.pointsPerYen} 円</div>` : '';
+  $('hero-card').innerHTML = `
+    <div class="hero-label">今週のポイント</div>
+    <div class="hero-points">${week}<span class="unit">pt</span></div>
+    ${yenLine}
+    <div class="hero-meta">
+      <div class="hero-meta-item">
+        <div class="hero-meta-num">${month}</div>
+        <div class="hero-meta-label">今月</div>
+      </div>
+      <div class="hero-meta-item">
+        <div class="hero-meta-num">${total}</div>
+        <div class="hero-meta-label">通算</div>
+      </div>
+      <div class="hero-meta-item">
+        <div class="hero-meta-num">${todayCount(profile.id)}</div>
+        <div class="hero-meta-label">今日の回数</div>
+      </div>
+    </div>
+  `;
+
+  // タスク
+  const grid = $('task-grid');
+  if (state.tasks.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1;">
+        <div class="empty-state-icon">📋</div>
+        <div class="empty-state-text">タスクがまだありません<br>管理画面で追加してください</div>
+      </div>`;
+    return;
+  }
+  grid.innerHTML = '';
+  state.tasks.forEach(t => {
+    const tile = document.createElement('button');
+    tile.className = 'task-tile';
+    tile.onclick = () => openTaskModal(t.id);
+    tile.innerHTML = `
+      <div class="task-tile-icon" style="background:${withAlpha(t.color, 0.15)}; color:${t.color}">${t.icon}</div>
+      <div class="task-tile-title">${escapeHtml(t.title)}</div>
+      <div class="task-tile-points"><span class="pt-num">+${t.points}</span> pt</div>
+    `;
+    grid.appendChild(tile);
+  });
+}
+
+// ==========================================================
+// タスク完了
+// ==========================================================
+function openTaskModal(taskId) {
+  const task = state.tasks.find(t => t.id === taskId);
+  if (!task) return;
+  pendingTaskId = taskId;
+  $('task-modal-icon').textContent = task.icon;
+  $('task-modal-icon').style.color = task.color;
+  $('task-modal-title').textContent = task.title;
+  $('task-modal-subtitle').textContent = `${task.points} pt もらえるよ`;
+  const noteEl = $('task-modal-note');
+  if (task.note && task.note.trim()) {
+    noteEl.textContent = task.note;
+    noteEl.style.display = 'block';
+  } else {
+    noteEl.style.display = 'none';
+  }
+  $('task-modal').classList.add('active');
+}
+function closeTaskModal(e) {
+  if (e && e.target.id !== 'task-modal') return;
+  $('task-modal').classList.remove('active');
+  pendingTaskId = null;
+}
+function completeTask() {
+  const task = state.tasks.find(t => t.id === pendingTaskId);
+  if (!task || !currentProfileId) return;
+  const rec = {
+    id: uid(),
+    taskId: task.id,
+    profileId: currentProfileId,
+    points: task.points,
+    title: task.title,
+    icon: task.icon,
+    color: task.color,
+    completedAt: new Date().toISOString()
+  };
+  state.records.push(rec);
+  saveState();
+  $('task-modal').classList.remove('active');
+  pendingTaskId = null;
+  celebrate(task.points);
+  renderHome();
+}
+function celebrate(points) {
+  const el = $('celebrate');
+  $('celebrate-points').textContent = `+${points} pt`;
+  el.classList.add('active');
+  setTimeout(() => el.classList.remove('active'), 1000);
+}
+
+// ==========================================================
+// 履歴
+// ==========================================================
+function renderHistory() {
+  const profile = getProfile(currentProfileId);
+  if (!profile) { goProfile(); return; }
+
+  document.querySelectorAll('#history-segment .segment-item').forEach(it => {
+    it.classList.toggle('active', it.dataset.range === historyRange);
+    it.onclick = () => { historyRange = it.dataset.range; renderHistory(); };
+  });
+
+  const since = rangeStart(historyRange);
+  const records = state.records
+    .filter(r => r.profileId === profile.id)
+    .filter(r => !since || r.completedAt >= since)
+    .sort((a, b) => b.completedAt.localeCompare(a.completedAt));
+
+  const total = records.reduce((s, r) => s + r.points, 0);
+  const yenLine = state.settings.showYen && state.settings.pointsPerYen > 0
+    ? `<div style="font-size:14px; color:var(--text-secondary); margin-top:4px;">≒ ${total * state.settings.pointsPerYen} 円</div>` : '';
+  $('history-summary').innerHTML = `
+    <div style="font-size:13px; color:var(--text-secondary); font-weight:500;">${rangeLabel(historyRange)} の合計</div>
+    <div style="font-size:34px; font-weight:800; color:var(--primary); line-height:1.1; margin-top:2px;">${total}<span style="font-size:16px; font-weight:600;">pt</span></div>
+    <div style="font-size:13px; color:var(--text-secondary); margin-top:6px;">${records.length} 回の お手伝い</div>
+    ${yenLine}
+  `;
+
+  const list = $('history-list');
+  if (records.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <div class="empty-state-text">この期間の履歴はまだないよ</div>
+      </div>`;
+    return;
+  }
+
+  // 日付ごとにグループ化
+  const groups = {};
+  records.forEach(r => {
+    const key = dayKey(r.completedAt);
+    (groups[key] = groups[key] || []).push(r);
+  });
+
+  list.innerHTML = '';
+  Object.keys(groups).sort((a, b) => b.localeCompare(a)).forEach(key => {
+    const dayLabel = document.createElement('div');
+    dayLabel.className = 'history-day-label';
+    dayLabel.textContent = fmtDate(key + 'T00:00:00');
+    list.appendChild(dayLabel);
+    groups[key].forEach(r => {
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      const color = r.color || '#007aff';
+      item.innerHTML = `
+        <div class="history-icon" style="background:${withAlpha(color, 0.15)}; color:${color}">${r.icon || '⭐'}</div>
+        <div class="history-main">
+          <div class="history-title">${escapeHtml(r.title || '(削除されたタスク)')}</div>
+          <div class="history-meta">${fmtTime(r.completedAt)}</div>
+        </div>
+        <div class="history-points">+${r.points}</div>
+        <button class="history-delete" data-id="${r.id}" title="削除">✕</button>
+      `;
+      item.querySelector('.history-delete').onclick = () => deleteRecord(r.id);
+      list.appendChild(item);
+    });
+  });
+}
+function deleteRecord(id) {
+  if (!confirm('この記録を削除しますか？')) return;
+  state.records = state.records.filter(r => r.id !== id);
+  saveState();
+  renderHistory();
+}
+
+// ==========================================================
+// ランキング
+// ==========================================================
+function renderRanking() {
+  document.querySelectorAll('#ranking-segment .segment-item').forEach(it => {
+    it.classList.toggle('active', it.dataset.range === rankingRange);
+    it.onclick = () => { rankingRange = it.dataset.range; renderRanking(); };
+  });
+  const since = rangeStart(rankingRange);
+  const rows = state.profiles.map(p => {
+    const recs = state.records.filter(r => r.profileId === p.id && (!since || r.completedAt >= since));
+    return {
+      profile: p,
+      points: recs.reduce((s, r) => s + r.points, 0),
+      count: recs.length
+    };
+  }).sort((a, b) => b.points - a.points);
+
+  const list = $('ranking-list');
+  list.innerHTML = '';
+  rows.forEach((row, i) => {
+    const card = document.createElement('div');
+    card.className = 'rank-card';
+    const posClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    const posIcon = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i+1);
+    card.innerHTML = `
+      <div class="rank-position ${posClass}">${posIcon}</div>
+      <div class="profile-avatar" style="width:42px; height:42px; font-size:20px; background:${row.profile.color}">${row.profile.icon}</div>
+      <div class="rank-main">
+        <div class="rank-name">${escapeHtml(row.profile.name)}</div>
+        <div class="rank-meta">${row.count} 回 お手伝い</div>
+      </div>
+      <div class="rank-points">${row.points} pt</div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+// ==========================================================
+// 管理画面
+// ==========================================================
+function renderAdmin() {
+  // タスク一覧
+  const taskList = $('admin-task-list');
+  taskList.innerHTML = '';
+  if (state.tasks.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'list-item';
+    empty.style.color = 'var(--text-secondary)';
+    empty.textContent = 'タスクがありません';
+    taskList.appendChild(empty);
+  } else {
+    state.tasks.forEach(t => {
+      const item = document.createElement('button');
+      item.className = 'list-item list-item-chevron';
+      item.onclick = () => openTaskEditor(t.id);
+      item.innerHTML = `
+        <div class="history-icon" style="background:${withAlpha(t.color, 0.15)}; color:${t.color}; margin-right:12px;">${t.icon}</div>
+        <div class="list-item-main">
+          <div class="list-item-title">${escapeHtml(t.title)}</div>
+          <div class="list-item-subtitle">${t.points} pt</div>
+        </div>
+      `;
+      taskList.appendChild(item);
+    });
+  }
+
+  // 設定
+  $('setting-yen').value = state.settings.pointsPerYen;
+  $('setting-yen').oninput = (e) => {
+    const v = parseInt(e.target.value, 10);
+    state.settings.pointsPerYen = isFinite(v) && v >= 0 ? v : 0;
+    saveState();
+  };
+  $('setting-show-yen').checked = !!state.settings.showYen;
+  $('setting-show-yen').onchange = (e) => {
+    state.settings.showYen = e.target.checked;
+    saveState();
+  };
+
+  // プロフィール一覧
+  const pList = $('admin-profile-list');
+  pList.innerHTML = '';
+  state.profiles.forEach(p => {
+    const item = document.createElement('button');
+    item.className = 'list-item list-item-chevron';
+    item.onclick = () => openProfileEditor(p.id);
+    item.innerHTML = `
+      <div class="profile-avatar" style="width:36px; height:36px; font-size:18px; margin-right:12px; background:${p.color}">${p.icon}</div>
+      <div class="list-item-main">
+        <div class="list-item-title">${escapeHtml(p.name)}</div>
+        <div class="list-item-subtitle">通算 ${totalPoints(p.id)} pt</div>
+      </div>
+    `;
+    pList.appendChild(item);
+  });
+}
+
+// ==========================================================
+// タスク編集
+// ==========================================================
+function openTaskEditor(taskId) {
+  editingTaskId = taskId || null;
+  const task = taskId ? state.tasks.find(t => t.id === taskId) : null;
+  $('task-editor-title').textContent = task ? 'タスクを編集' : 'タスクを追加';
+  $('task-input-title').value = task ? task.title : '';
+  $('task-input-points').value = task ? task.points : 10;
+  $('task-input-note').value = task ? (task.note || '') : '';
+  editorIcon = task ? task.icon : ICON_CHOICES[0];
+  editorColor = task ? task.color : COLOR_CHOICES[0];
+  renderIconPicker('task-icon-picker', editorIcon, (icon) => { editorIcon = icon; });
+  renderColorPicker('task-color-picker', editorColor, (color) => { editorColor = color; });
+  $('task-delete-btn').style.display = task ? 'flex' : 'none';
+  showScreen('screen-task-editor');
+}
+function saveTask() {
+  const title = $('task-input-title').value.trim();
+  const points = parseInt($('task-input-points').value, 10);
+  if (!title) { toast('タスク名を入力してください'); return; }
+  if (!isFinite(points) || points <= 0) { toast('ポイントは1以上で'); return; }
+  const note = $('task-input-note').value.trim();
+  if (editingTaskId) {
+    const t = state.tasks.find(t => t.id === editingTaskId);
+    if (t) { t.title = title; t.points = points; t.note = note; t.icon = editorIcon; t.color = editorColor; }
+  } else {
+    state.tasks.push({ id: uid(), title, points, note, icon: editorIcon, color: editorColor });
+  }
+  saveState();
+  toast('保存しました');
+  goAdmin();
+}
+function deleteCurrentTask() {
+  if (!editingTaskId) return;
+  if (!confirm('このタスクを削除しますか？\n（履歴は残ります）')) return;
+  state.tasks = state.tasks.filter(t => t.id !== editingTaskId);
+  editingTaskId = null;
+  saveState();
+  goAdmin();
+}
+
+// ==========================================================
+// プロフィール編集
+// ==========================================================
+function openProfileEditor(profileId) {
+  editingProfileId = profileId;
+  const p = state.profiles.find(x => x.id === profileId);
+  if (!p) return;
+  $('profile-input-name').value = p.name;
+  editorIcon = p.icon;
+  editorColor = p.color;
+  renderIconPicker('profile-icon-picker', editorIcon, (icon) => { editorIcon = icon; });
+  renderColorPicker('profile-color-picker', editorColor, (color) => { editorColor = color; });
+  showScreen('screen-profile-editor');
+}
+function saveProfile() {
+  const p = state.profiles.find(x => x.id === editingProfileId);
+  if (!p) { goAdmin(); return; }
+  const name = $('profile-input-name').value.trim();
+  if (!name) { toast('名前を入力してください'); return; }
+  p.name = name;
+  p.icon = editorIcon;
+  p.color = editorColor;
+  saveState();
+  toast('保存しました');
+  goAdmin();
+}
+
+// ==========================================================
+// アイコン / 色ピッカー
+// ==========================================================
+function renderIconPicker(containerId, current, onPick) {
+  const c = $(containerId);
+  c.innerHTML = '';
+  ICON_CHOICES.forEach(icon => {
+    const b = document.createElement('button');
+    b.className = 'icon-option' + (icon === current ? ' active' : '');
+    b.textContent = icon;
+    b.onclick = () => {
+      onPick(icon);
+      c.querySelectorAll('.icon-option').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+    };
+    c.appendChild(b);
+  });
+}
+function renderColorPicker(containerId, current, onPick) {
+  const c = $(containerId);
+  c.innerHTML = '';
+  COLOR_CHOICES.forEach(color => {
+    const b = document.createElement('button');
+    b.className = 'color-swatch' + (color === current ? ' active' : '');
+    b.style.background = color;
+    b.onclick = () => {
+      onPick(color);
+      c.querySelectorAll('.color-swatch').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+    };
+    c.appendChild(b);
+  });
+}
+
+// ==========================================================
+// データ入出力
+// ==========================================================
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const ts = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `chore-app-${ts}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('エクスポートしました');
+}
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.profiles || !data.tasks) throw new Error('不正な形式');
+      if (!confirm('現在のデータを置き換えますか？')) { event.target.value = ''; return; }
+      data.records = data.records || [];
+      data.settings = Object.assign({ pointsPerYen: 1, showYen: true }, data.settings || {});
+      state = data;
+      saveState();
+      toast('インポートしました');
+      goAdmin();
+    } catch (err) {
+      toast('読み込み失敗: ' + err.message);
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+function confirmReset() {
+  if (!confirm('本当に全データを初期化しますか？\n（取り消せません）')) return;
+  if (!confirm('もう一度確認します。本当によろしいですか？')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  state = buildSampleData();
+  saveState();
+  toast('初期化しました');
+  goProfile();
+}
+
+// ==========================================================
+// ユーティリティ
+// ==========================================================
+function getProfile(id) { return state.profiles.find(p => p.id === id); }
+function totalPoints(profileId) {
+  return state.records.filter(r => r.profileId === profileId).reduce((s, r) => s + r.points, 0);
+}
+function pointsInRange(profileId, sinceIso) {
+  return state.records
+    .filter(r => r.profileId === profileId && r.completedAt >= sinceIso)
+    .reduce((s, r) => s + r.points, 0);
+}
+function todayCount(profileId) {
+  const k = todayKey();
+  return state.records.filter(r => r.profileId === profileId && dayKey(r.completedAt) === k).length;
+}
+function rangeStart(range) {
+  if (range === 'week') return startOfWeek().toISOString();
+  if (range === 'month') return startOfMonth().toISOString();
+  return null;
+}
+function rangeLabel(range) {
+  if (range === 'week') return '今週';
+  if (range === 'month') return '今月';
+  return '通算';
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function withAlpha(hex, alpha) {
+  const m = /^#([0-9a-f]{6})$/i.exec(hex);
+  if (!m) return hex;
+  const n = parseInt(m[1], 16);
+  const r = (n >> 16) & 0xff, g = (n >> 8) & 0xff, b = n & 0xff;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+let toastTimer = null;
+function toast(msg) {
+  const el = $('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+// ==========================================================
+// 初期化
+// ==========================================================
+renderProfileSelect();
+</script>
+</body>
+</html>
