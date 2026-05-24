@@ -250,15 +250,36 @@ body::before {
   background: var(--washi);
 }
 .game-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: calc(var(--safe-top) + 8px) 14px 6px;
+  display: flex; align-items: center;
+  padding: calc(var(--safe-top) + 8px) 12px 6px;
   flex-shrink: 0;
   font-size: 13px;
   font-weight: 600;
   color: var(--sumi-soft);
   letter-spacing: 0.1em;
+  gap: 10px;
 }
-.game-header-item { display: flex; flex-direction: column; gap: 1px; }
+.game-header-quit {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--vermillion);
+  border: 1px solid var(--vermillion);
+  border-radius: 4px;
+  padding: 6px 10px;
+  letter-spacing: 0.1em;
+  background: transparent;
+  font-family: "Shippori Mincho", serif;
+}
+.game-header-quit:active { opacity: 0.6; }
+.game-header-stats {
+  flex: 1;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 8px;
+}
+.game-header-item { display: flex; flex-direction: column; gap: 1px; align-items: center; }
 .game-header-label { font-size: 10px; opacity: 0.6; letter-spacing: 0.25em; }
 .game-header-value { font-size: 16px; color: var(--sumi); font-weight: 700; }
 .game-header-value.score { color: var(--vermillion); }
@@ -309,45 +330,59 @@ body::before {
   opacity: 0.85;
 }
 
-/* 札 (縦長カード) */
+/* 札 (縦長・縦書きカード) */
 .cards-wrap {
   flex: 1;
   padding: 4px 14px 14px;
-  display: grid;
-  gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   align-content: center;
+  gap: 10px;
   padding-bottom: calc(14px + var(--safe-bottom));
+  overflow: hidden;
 }
-.cards-wrap[data-count="4"] { grid-template-columns: 1fr 1fr; }
-.cards-wrap[data-count="5"] { grid-template-columns: 1fr 1fr 1fr; }
-.cards-wrap[data-count="6"] { grid-template-columns: 1fr 1fr 1fr; }
+.cards-wrap[data-count="4"] .card-fuda { flex: 0 0 calc((100% - 10px) / 2); max-width: calc((100% - 10px) / 2); }
+.cards-wrap[data-count="5"] .card-fuda { flex: 0 0 calc((100% - 20px) / 3); max-width: calc((100% - 20px) / 3); }
+.cards-wrap[data-count="6"] .card-fuda { flex: 0 0 calc((100% - 20px) / 3); max-width: calc((100% - 20px) / 3); }
 .card-fuda {
   background: linear-gradient(135deg, var(--paper) 0%, #f1e6c5 100%);
   border: 1.5px solid var(--paper-shadow);
   border-radius: 4px;
-  padding: 14px 8px;
-  min-height: 110px;
+  padding: 10px 6px;
+  aspect-ratio: 5 / 7;
+  max-height: 230px;
   display: flex;
+  flex-direction: row-reverse;  /* 1行目を右、2行目を左に (縦書き読み順) */
   align-items: center;
   justify-content: center;
-  text-align: center;
-  font-family: "Klee One", "Hiragino Mincho ProN", serif;
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--sumi);
-  letter-spacing: 0.08em;
-  line-height: 1.5;
+  gap: 2px;
   position: relative;
   box-shadow:
     0 2px 4px rgba(74, 63, 42, 0.15),
     inset 0 1px 0 rgba(255,255,255,0.6);
   transition: transform 0.12s, box-shadow 0.12s;
-  word-break: keep-all;
+  overflow: hidden;
 }
 .card-fuda:active {
   transform: scale(0.96);
   box-shadow: 0 1px 2px rgba(74, 63, 42, 0.2);
 }
+.fuda-col {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-family: "Klee One", "Hiragino Mincho ProN", serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--sumi);
+  letter-spacing: 0.06em;
+  line-height: 1;
+  white-space: nowrap;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+.cards-wrap[data-count="4"] .fuda-col { font-size: 19px; letter-spacing: 0.1em; }
 .card-fuda.correct {
   background: linear-gradient(135deg, #d4e8c8 0%, #b8d8a0 100%);
   border-color: #6b8a4e;
@@ -620,17 +655,20 @@ body::before {
   <!-- ============ ゲーム ============ -->
   <div id="screen-game" class="screen game-screen">
     <div class="game-header">
-      <div class="game-header-item">
-        <div class="game-header-label">問</div>
-        <div class="game-header-value" id="game-progress">1 / 20</div>
-      </div>
-      <div class="game-header-item" style="align-items:center;">
-        <div class="game-header-label">残時間</div>
-        <div class="game-header-value" id="game-timer">10.0</div>
-      </div>
-      <div class="game-header-item" style="align-items:flex-end;">
-        <div class="game-header-label">得点</div>
-        <div class="game-header-value score" id="game-score">0</div>
+      <button class="game-header-quit" onclick="quitGame()">中止</button>
+      <div class="game-header-stats">
+        <div class="game-header-item">
+          <div class="game-header-label">問</div>
+          <div class="game-header-value" id="game-progress">1 / 20</div>
+        </div>
+        <div class="game-header-item">
+          <div class="game-header-label">残時間</div>
+          <div class="game-header-value" id="game-timer">15.0</div>
+        </div>
+        <div class="game-header-item">
+          <div class="game-header-label">得点</div>
+          <div class="game-header-value score" id="game-score">0</div>
+        </div>
       </div>
     </div>
     <div class="kami-area">
@@ -639,7 +677,6 @@ body::before {
     </div>
     <div class="cards-wrap" id="cards-wrap"></div>
     <div class="countdown" id="countdown">3</div>
-    <button id="game-quit" class="nav-button" style="position:absolute; top:calc(var(--safe-top) + 6px); right:6px;" onclick="quitGame()">中止</button>
   </div>
 
   <!-- ============ 結果 ============ -->
@@ -825,8 +862,9 @@ const DEFAULT_SETTINGS = {
   cards: 5,
   audio: true,
   typewriter: true,
-  charIntervalMs: 250,
-  questionLimitMs: 10000
+  charIntervalMs: 750,      // 一文字表示間隔 (3倍ゆっくり)
+  questionLimitMs: 18000,   // 1問の制限時間 (読み上げを待てる長さ)
+  ttsRate: 0.3              // TTS の話速 (3倍ゆっくり)
 };
 
 let settings = loadSettings();
@@ -843,7 +881,12 @@ function loadSettings() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { ...DEFAULT_SETTINGS };
-    return Object.assign({ ...DEFAULT_SETTINGS }, JSON.parse(raw));
+    const s = Object.assign({ ...DEFAULT_SETTINGS }, JSON.parse(raw));
+    // チューニング値は常にデフォルトに揃える (旧 localStorage を上書き)
+    s.charIntervalMs = DEFAULT_SETTINGS.charIntervalMs;
+    s.questionLimitMs = DEFAULT_SETTINGS.questionLimitMs;
+    s.ttsRate = DEFAULT_SETTINGS.ttsRate;
+    return s;
   } catch { return { ...DEFAULT_SETTINGS }; }
 }
 function saveSettings() {
@@ -1015,7 +1058,9 @@ function renderCards(q) {
     const el = document.createElement('button');
     el.className = 'card-fuda';
     el.dataset.no = String(c.no);
-    el.innerHTML = splitShimoForCard(c.shimo).map(s => `<span>${escapeHtml(s)}</span>`).join('<br>');
+    // 縦書き 2行の札。row-reverse なので最初の要素が右側に配置される
+    el.innerHTML = splitShimoForCard(c.shimo)
+      .map(s => `<div class="fuda-col">${escapeHtml(s)}</div>`).join('');
     el.onclick = () => onCardTap(el, c, q);
     wrap.appendChild(el);
   });
@@ -1066,7 +1111,7 @@ function startReveal(q) {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(q.yomi || q.kami);
       u.lang = 'ja-JP';
-      u.rate = 0.85;
+      u.rate = settings.ttsRate || 0.3;
       u.pitch = 1.0;
       currentUtterance = u;
       window.speechSynthesis.speak(u);
