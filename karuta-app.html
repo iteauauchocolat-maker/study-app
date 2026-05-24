@@ -330,21 +330,28 @@ body::before {
   opacity: 0.85;
 }
 
-/* 札 (縦長・縦書きカード) */
+/* 札 (縦長・縦書きカード)
+   全カウントで列幅 = (cards-wrap 幅 - 2*gap) / 3 に統一して札サイズを揃える。
+   - 4枚: 2列 × 2行 (中央寄せ)
+   - 6枚: 3列 × 2行
+   - 9枚: 3列 × 3行 (上下はみ出し防止のため小さめ) */
 .cards-wrap {
   flex: 1;
   padding: 4px 14px 14px;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  gap: 10px;
   justify-content: center;
   align-content: center;
-  gap: 10px;
   padding-bottom: calc(14px + var(--safe-bottom));
   overflow: hidden;
+  min-height: 0;
 }
-.cards-wrap[data-count="4"] .card-fuda { flex: 0 0 calc((100% - 10px) / 2); max-width: calc((100% - 10px) / 2); }
-.cards-wrap[data-count="5"] .card-fuda { flex: 0 0 calc((100% - 20px) / 3); max-width: calc((100% - 20px) / 3); }
-.cards-wrap[data-count="6"] .card-fuda { flex: 0 0 calc((100% - 20px) / 3); max-width: calc((100% - 20px) / 3); }
+.cards-wrap[data-count="4"] { grid-template-columns: repeat(2, calc((100% - 20px) / 3)); }
+.cards-wrap[data-count="6"] { grid-template-columns: repeat(3, calc((100% - 20px) / 3)); }
+.cards-wrap[data-count="9"] {
+  grid-template-columns: repeat(3, calc((100% - 20px) / 3));
+  align-content: stretch;
+}
 .card-fuda {
   background: linear-gradient(135deg, var(--paper) 0%, #f1e6c5 100%);
   border: 1.5px solid var(--paper-shadow);
@@ -352,8 +359,9 @@ body::before {
   padding: 10px 6px;
   aspect-ratio: 5 / 7;
   max-height: 230px;
+  min-height: 0;
   display: flex;
-  flex-direction: row-reverse;  /* 1行目を右、2行目を左に (縦書き読み順) */
+  flex-direction: row-reverse;
   align-items: center;
   justify-content: center;
   gap: 2px;
@@ -367,6 +375,12 @@ body::before {
 .card-fuda:active {
   transform: scale(0.96);
   box-shadow: 0 1px 2px rgba(74, 63, 42, 0.2);
+}
+/* 9枚モード時は札を小さく (3行分の縦スペースを確保) */
+.cards-wrap[data-count="9"] .card-fuda {
+  aspect-ratio: 5 / 6;
+  max-height: 150px;
+  padding: 6px 4px;
 }
 .fuda-col {
   writing-mode: vertical-rl;
@@ -382,7 +396,7 @@ body::before {
   display: flex;
   align-items: center;
 }
-.cards-wrap[data-count="4"] .fuda-col { font-size: 19px; letter-spacing: 0.1em; }
+.cards-wrap[data-count="9"] .fuda-col { font-size: 13px; letter-spacing: 0.02em; }
 .card-fuda.correct {
   background: linear-gradient(135deg, #d4e8c8 0%, #b8d8a0 100%);
   border-color: #6b8a4e;
@@ -542,6 +556,61 @@ body::before {
 }
 
 /* ==========================================================
+   百首一覧
+   ========================================================== */
+.poem-card {
+  background: var(--paper);
+  border: 1px solid var(--paper-shadow);
+  border-radius: 4px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-family: "Klee One", "Hiragino Mincho ProN", serif;
+}
+.poem-no {
+  font-family: "Shippori Mincho", serif;
+  font-size: 12px;
+  color: var(--vermillion);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  background: rgba(181, 61, 47, 0.08);
+  border-radius: 4px;
+  padding: 4px 6px;
+  min-width: 38px;
+  text-align: center;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+.poem-no .poem-no-num {
+  display: block;
+  font-size: 16px;
+  margin-top: 1px;
+}
+.poem-body { flex: 1; min-width: 0; }
+.poem-kami { font-size: 14px; font-weight: 600; color: var(--sumi); line-height: 1.5; word-break: keep-all; }
+.poem-shimo { font-size: 14px; color: var(--sumi-soft); margin-top: 2px; line-height: 1.5; word-break: keep-all; }
+.poem-author {
+  font-family: "Shippori Mincho", serif;
+  font-size: 11px;
+  color: var(--vermillion);
+  margin-top: 6px;
+  letter-spacing: 0.15em;
+}
+.poem-section-label {
+  font-family: "Shippori Mincho", serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--vermillion);
+  letter-spacing: 0.3em;
+  margin: 14px 4px 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(181, 61, 47, 0.25);
+}
+.poem-section-label:first-child { margin-top: 0; }
+
+/* ==========================================================
    ダイアログ
    ========================================================== */
 .toast {
@@ -608,6 +677,7 @@ body::before {
       <div class="title-buttons">
         <button class="btn vermillion" onclick="goSettings()">はじめる</button>
         <button class="btn outline" onclick="goHistory()">対局の記録</button>
+        <button class="btn outline" onclick="goPoemList()">百首一覧</button>
       </div>
     </div>
   </div>
@@ -626,8 +696,8 @@ body::before {
       <div class="section-title">表示する札の枚数</div>
       <div class="option-grid three">
         <button class="option-tile" data-cards="4">4枚<div class="option-tile-sub">かんたん</div></button>
-        <button class="option-tile" data-cards="5">5枚<div class="option-tile-sub">ふつう</div></button>
-        <button class="option-tile" data-cards="6">6枚<div class="option-tile-sub">むずかしい</div></button>
+        <button class="option-tile" data-cards="6">6枚<div class="option-tile-sub">ふつう</div></button>
+        <button class="option-tile" data-cards="9">9枚<div class="option-tile-sub">むずかしい</div></button>
       </div>
 
       <div class="section-title">読み上げ・表示</div>
@@ -699,6 +769,18 @@ body::before {
       </div>
       <div class="section-title">問題ごとの結果</div>
       <div class="result-list" id="result-list"></div>
+    </div>
+  </div>
+
+  <!-- ============ 百首一覧 ============ -->
+  <div id="screen-poems" class="screen">
+    <div class="nav-bar">
+      <button class="nav-button" onclick="goTitle()">‹ 戻る</button>
+      <div class="nav-title">百首一覧</div>
+      <div class="nav-spacer"></div>
+    </div>
+    <div class="content">
+      <div id="poems-list"></div>
     </div>
   </div>
 
@@ -859,7 +941,7 @@ const RANGE_LABEL = Object.fromEntries(RANGE_DEFS.map(r => [r.id, r.label]));
 
 const DEFAULT_SETTINGS = {
   range: 'r1-20',
-  cards: 5,
+  cards: 6,
   audio: true,
   typewriter: true,
   charIntervalMs: 750,      // 一文字表示間隔 (3倍ゆっくり)
@@ -886,6 +968,8 @@ function loadSettings() {
     s.charIntervalMs = DEFAULT_SETTINGS.charIntervalMs;
     s.questionLimitMs = DEFAULT_SETTINGS.questionLimitMs;
     s.ttsRate = DEFAULT_SETTINGS.ttsRate;
+    // 札数の旧オプション (5枚) は 6枚 に寄せる
+    if (![4, 6, 9].includes(s.cards)) s.cards = 6;
     return s;
   } catch { return { ...DEFAULT_SETTINGS }; }
 }
@@ -1304,6 +1388,38 @@ function goResultBack() {
 function goHistory() {
   showScreen('screen-history');
   renderHistoryList();
+}
+function goPoemList() {
+  showScreen('screen-poems');
+  renderPoemList();
+}
+
+function renderPoemList() {
+  const list = document.getElementById('poems-list');
+  list.innerHTML = '';
+  // 1-20, 21-40 ... のセクションごとにまとめて表示
+  const sections = [
+    [1, 20], [21, 40], [41, 60], [61, 80], [81, 100]
+  ];
+  sections.forEach(([from, to]) => {
+    const label = document.createElement('div');
+    label.className = 'poem-section-label';
+    label.textContent = `${from} 〜 ${to}`;
+    list.appendChild(label);
+    KARUTA_SOURCE.filter(p => p.no >= from && p.no <= to).forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'poem-card';
+      card.innerHTML = `
+        <div class="poem-no">第<span class="poem-no-num">${p.no}</span>番</div>
+        <div class="poem-body">
+          <div class="poem-kami">${escapeHtml(p.kami)}</div>
+          <div class="poem-shimo">${escapeHtml(p.shimo)}</div>
+          <div class="poem-author">― ${escapeHtml(p.author || '')} ―</div>
+        </div>
+      `;
+      list.appendChild(card);
+    });
+  });
 }
 function renderHistoryList() {
   const list = document.getElementById('history-list');
