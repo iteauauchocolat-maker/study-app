@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="百人一首">
+<meta name="theme-color" content="#f3e7c9">
+<meta name="format-detection" content="telephone=no">
+<title>百人一首 札取りゲーム</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Shippori+Mincho:wght@500;700;800&display=swap">
+<style>
+/* ==========================================================
+   和の色合い・墨書きフォント
+   ========================================================== */
+:root {
+  --washi: #f3e7c9;          /* 和紙の地 */
+  --washi-deep: #e8d8b0;
+  --paper: #fbf5e1;          /* 札の紙 */
+  --paper-shadow: #c9b88e;
+  --sumi: #2a2418;           /* 墨 */
+  --sumi-soft: #4a3f2a;
+  --vermillion: #b53d2f;     /* 朱 */
+  --vermillion-light: #d65a47;
+  --indigo: #2d5783;         /* 藍 */
+  --gold: #b89253;           /* 金 */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  overflow: hidden;
+  background: var(--washi);
+  color: var(--sumi);
+  font-family: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+button { font-family: inherit; font-size: inherit; cursor: pointer; border: none; background: none; color: inherit; padding: 0; }
+input, select, textarea { font-family: inherit; font-size: 16px; color: var(--sumi); }
+
+/* 和紙の質感 (薄いノイズ風グラデーション) */
+body::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse at 20% 10%, rgba(255,255,255,0.5) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 90%, rgba(184, 146, 83, 0.10) 0%, transparent 60%),
+    repeating-linear-gradient(0deg, rgba(74, 63, 42, 0.02) 0 2px, transparent 2px 4px);
+  opacity: 1;
+}
+
+#app { position: relative; height: 100%; width: 100%; z-index: 1; }
+.screen {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  animation: fadeIn 0.25s ease-out;
+}
+.screen.active { display: flex; }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.nav-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: calc(var(--safe-top) + 10px) 14px 10px;
+  border-bottom: 1px solid rgba(74, 63, 42, 0.18);
+  background: linear-gradient(180deg, rgba(243,231,201,0.95), rgba(243,231,201,0.85));
+  min-height: calc(var(--safe-top) + 48px);
+  flex-shrink: 0;
+  backdrop-filter: blur(6px);
+}
+.nav-title { font-size: 17px; font-weight: 700; text-align: center; flex: 1; letter-spacing: 0.1em; }
+.nav-button {
+  min-width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--sumi-soft);
+  font-size: 15px;
+  padding: 0 10px;
+  font-weight: 600;
+}
+.nav-spacer { min-width: 44px; }
+
+.content {
+  flex: 1; overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 18px 20px;
+  padding-bottom: calc(20px + var(--safe-bottom));
+}
+
+/* ==========================================================
+   タイトル画面
+   ========================================================== */
+.title-wrap {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 24px;
+  text-align: center;
+  gap: 18px;
+}
+.title-main {
+  font-family: "Shippori Mincho", serif;
+  font-weight: 800;
+  font-size: 56px;
+  letter-spacing: 0.18em;
+  color: var(--sumi);
+  line-height: 1.1;
+  text-shadow: 1px 1px 0 rgba(184, 146, 83, 0.2);
+}
+.title-sub {
+  font-size: 16px;
+  color: var(--vermillion);
+  letter-spacing: 0.4em;
+  font-weight: 600;
+  border-top: 1px solid var(--vermillion);
+  border-bottom: 1px solid var(--vermillion);
+  padding: 6px 14px;
+  margin: 4px 0 14px;
+}
+.title-poem {
+  font-family: "Klee One", "Hiragino Mincho ProN", serif;
+  font-size: 14px;
+  color: var(--sumi-soft);
+  line-height: 1.9;
+  margin: 8px 0 18px;
+  letter-spacing: 0.08em;
+}
+.title-buttons {
+  display: flex; flex-direction: column;
+  gap: 12px; width: 100%; max-width: 320px;
+}
+
+/* ==========================================================
+   ボタン (和風)
+   ========================================================== */
+.btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; min-height: 52px;
+  padding: 12px 18px;
+  border-radius: 4px;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  background: var(--sumi);
+  color: var(--paper);
+  border: 1px solid var(--sumi);
+  transition: opacity 0.12s, transform 0.08s;
+  font-family: "Shippori Mincho", serif;
+}
+.btn:active { opacity: 0.75; transform: translateY(1px); }
+.btn.vermillion {
+  background: var(--vermillion);
+  border-color: var(--vermillion);
+}
+.btn.outline {
+  background: transparent;
+  color: var(--sumi);
+  border: 1px solid var(--sumi);
+}
+.btn.small {
+  min-height: 38px; padding: 6px 14px;
+  font-size: 13px; width: auto;
+}
+
+/* ==========================================================
+   設定画面
+   ========================================================== */
+.section-title {
+  font-size: 14px;
+  color: var(--vermillion);
+  letter-spacing: 0.3em;
+  font-weight: 700;
+  margin: 8px 4px 10px;
+  padding-left: 8px;
+  border-left: 3px solid var(--vermillion);
+}
+.option-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; margin-bottom: 22px;
+}
+.option-grid.single { grid-template-columns: 1fr; }
+.option-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+.option-tile {
+  background: var(--paper);
+  border: 1px solid var(--paper-shadow);
+  padding: 14px 12px;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--sumi);
+  text-align: center;
+  letter-spacing: 0.1em;
+  transition: all 0.15s;
+  box-shadow: 0 1px 0 rgba(74, 63, 42, 0.08);
+  font-family: "Shippori Mincho", serif;
+}
+.option-tile.active {
+  background: var(--sumi);
+  color: var(--paper);
+  border-color: var(--sumi);
+}
+.option-tile-sub {
+  font-size: 11px;
+  opacity: 0.7;
+  margin-top: 2px;
+  letter-spacing: 0;
+}
+.toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--paper);
+  border: 1px solid var(--paper-shadow);
+  padding: 14px 16px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+.toggle-row-label { font-weight: 600; font-size: 15px; }
+.toggle-row-desc { font-size: 12px; color: var(--sumi-soft); margin-top: 2px; }
+.toggle-switch {
+  width: 50px; height: 30px;
+  background: var(--paper-shadow);
+  border-radius: 15px;
+  position: relative; flex-shrink: 0;
+  transition: background 0.2s;
+}
+.toggle-switch.on { background: var(--vermillion); }
+.toggle-switch::after {
+  content: ""; position: absolute;
+  top: 3px; left: 3px;
+  width: 24px; height: 24px;
+  background: #fff;
+  border-radius: 50%;
+  transition: left 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.toggle-switch.on::after { left: 23px; }
+
+/* ==========================================================
+   ゲーム画面
+   ========================================================== */
+.game-screen {
+  background: var(--washi);
+}
+.game-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: calc(var(--safe-top) + 8px) 14px 6px;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sumi-soft);
+  letter-spacing: 0.1em;
+}
+.game-header-item { display: flex; flex-direction: column; gap: 1px; }
+.game-header-label { font-size: 10px; opacity: 0.6; letter-spacing: 0.25em; }
+.game-header-value { font-size: 16px; color: var(--sumi); font-weight: 700; }
+.game-header-value.score { color: var(--vermillion); }
+
+.kami-area {
+  margin: 8px 16px 14px;
+  padding: 20px 16px;
+  background: linear-gradient(180deg, var(--paper) 0%, #f6efd5 100%);
+  border: 1px solid var(--paper-shadow);
+  border-radius: 6px;
+  min-height: 130px;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(74, 63, 42, 0.1), inset 0 1px 0 rgba(255,255,255,0.5);
+  position: relative;
+}
+.kami-area::before, .kami-area::after {
+  content: ""; position: absolute;
+  width: 12px; height: 12px;
+  border: 1px solid var(--vermillion);
+}
+.kami-area::before { top: 6px; left: 6px; border-right: none; border-bottom: none; }
+.kami-area::after { bottom: 6px; right: 6px; border-left: none; border-top: none; }
+.kami-text {
+  font-family: "Klee One", "Hiragino Mincho ProN", serif;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  line-height: 1.7;
+  color: var(--sumi);
+  white-space: pre-wrap;
+  word-break: keep-all;
+}
+.kami-text .reveal {
+  display: inline-block;
+  animation: revealCh 0.25s ease-out;
+}
+@keyframes revealCh {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.kami-author {
+  font-size: 12px;
+  color: var(--vermillion);
+  letter-spacing: 0.2em;
+  margin-top: 10px;
+  opacity: 0.85;
+}
+
+/* 札 (縦長カード) */
+.cards-wrap {
+  flex: 1;
+  padding: 4px 14px 14px;
+  display: grid;
+  gap: 10px;
+  align-content: center;
+  padding-bottom: calc(14px + var(--safe-bottom));
+}
+.cards-wrap[data-count="4"] { grid-template-columns: 1fr 1fr; }
+.cards-wrap[data-count="5"] { grid-template-columns: 1fr 1fr 1fr; }
+.cards-wrap[data-count="6"] { grid-template-columns: 1fr 1fr 1fr; }
+.card-fuda {
+  background: linear-gradient(135deg, var(--paper) 0%, #f1e6c5 100%);
+  border: 1.5px solid var(--paper-shadow);
+  border-radius: 4px;
+  padding: 14px 8px;
+  min-height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: "Klee One", "Hiragino Mincho ProN", serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--sumi);
+  letter-spacing: 0.08em;
+  line-height: 1.5;
+  position: relative;
+  box-shadow:
+    0 2px 4px rgba(74, 63, 42, 0.15),
+    inset 0 1px 0 rgba(255,255,255,0.6);
+  transition: transform 0.12s, box-shadow 0.12s;
+  word-break: keep-all;
+}
+.card-fuda:active {
+  transform: scale(0.96);
+  box-shadow: 0 1px 2px rgba(74, 63, 42, 0.2);
+}
+.card-fuda.correct {
+  background: linear-gradient(135deg, #d4e8c8 0%, #b8d8a0 100%);
+  border-color: #6b8a4e;
+  animation: correctFlash 0.5s ease-out;
+}
+.card-fuda.wrong {
+  background: linear-gradient(135deg, #f0c8c0 0%, #e0a098 100%);
+  border-color: var(--vermillion);
+  animation: wrongShake 0.4s;
+}
+.card-fuda.fade {
+  opacity: 0.4;
+  pointer-events: none;
+}
+@keyframes correctFlash {
+  0%, 100% { transform: scale(1); }
+  30% { transform: scale(1.06); }
+}
+@keyframes wrongShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+/* ==========================================================
+   結果画面
+   ========================================================== */
+.result-hero {
+  background: linear-gradient(180deg, var(--paper), #f0e3bf);
+  border: 1px solid var(--paper-shadow);
+  border-radius: 6px;
+  padding: 24px 18px;
+  text-align: center;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 6px rgba(74,63,42,0.1);
+  position: relative;
+}
+.result-hero::before, .result-hero::after {
+  content: ""; position: absolute;
+  width: 14px; height: 14px;
+  border: 1px solid var(--vermillion);
+}
+.result-hero::before { top: 8px; left: 8px; border-right: none; border-bottom: none; }
+.result-hero::after { bottom: 8px; right: 8px; border-left: none; border-top: none; }
+.result-title {
+  font-size: 14px;
+  color: var(--vermillion);
+  letter-spacing: 0.4em;
+  margin-bottom: 8px;
+}
+.result-score {
+  font-size: 56px;
+  font-weight: 800;
+  color: var(--sumi);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.result-score-unit { font-size: 18px; margin-left: 6px; color: var(--sumi-soft); }
+.result-meta {
+  display: flex; justify-content: center; gap: 24px;
+  margin-top: 14px;
+  font-size: 13px; color: var(--sumi-soft);
+}
+.result-meta strong { color: var(--sumi); font-size: 18px; display: block; }
+
+.result-list { margin-top: 12px; }
+.result-row {
+  display: flex; align-items: stretch;
+  background: var(--paper);
+  border: 1px solid var(--paper-shadow);
+  border-radius: 4px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  text-align: left;
+  width: 100%;
+}
+.result-row-mark {
+  width: 44px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.result-row.correct .result-row-mark { background: #d4e8c8; color: #3a6a1c; }
+.result-row.wrong   .result-row-mark { background: #f0c8c0; color: var(--vermillion); }
+.result-row-main { flex: 1; padding: 10px 12px; min-width: 0; }
+.result-row-no { font-size: 11px; color: var(--vermillion); letter-spacing: 0.2em; font-weight: 700; }
+.result-row-kami { font-family: "Klee One", serif; font-size: 14px; font-weight: 600; margin-top: 2px; }
+.result-row-shimo { font-family: "Klee One", serif; font-size: 13px; color: var(--sumi-soft); margin-top: 2px; }
+.result-row-author { font-size: 11px; color: var(--vermillion); margin-top: 4px; letter-spacing: 0.1em; }
+.result-row-score {
+  width: 60px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 800;
+  border-left: 1px dashed var(--paper-shadow);
+  flex-shrink: 0;
+}
+.result-row-score .pt-label { font-size: 10px; opacity: 0.6; font-weight: 500; }
+.result-row.correct .result-row-score { color: #3a6a1c; }
+.result-row.wrong   .result-row-score { color: var(--vermillion); }
+
+/* ==========================================================
+   履歴一覧
+   ========================================================== */
+.hist-stats-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
+}
+.hist-stats-grid > div {
+  display: flex; flex-direction: column; align-items: center;
+  font-size: 11px; color: var(--sumi-soft); letter-spacing: 0.2em;
+}
+.hist-stats-grid strong {
+  font-size: 24px; font-weight: 800;
+  color: var(--vermillion);
+  font-family: "Shippori Mincho", serif;
+}
+.history-row {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%;
+  background: var(--paper);
+  border: 1px solid var(--paper-shadow);
+  border-radius: 4px;
+  padding: 12px 12px;
+  margin-bottom: 8px;
+  text-align: left;
+  font-family: "Shippori Mincho", serif;
+  transition: transform 0.08s, opacity 0.1s;
+}
+.history-row:active { transform: scale(0.98); opacity: 0.85; }
+.hist-row-date {
+  flex-shrink: 0;
+  border-right: 1px dashed var(--paper-shadow);
+  padding-right: 10px;
+  min-width: 78px;
+  text-align: center;
+}
+.hist-row-date-main { font-size: 12px; font-weight: 700; color: var(--sumi); letter-spacing: 0.05em; }
+.hist-row-date-time { font-size: 11px; color: var(--sumi-soft); margin-top: 1px; }
+.hist-row-main { flex: 1; min-width: 0; }
+.hist-row-range { font-size: 15px; font-weight: 700; color: var(--sumi); letter-spacing: 0.1em; }
+.hist-row-meta { font-size: 11px; color: var(--sumi-soft); margin-top: 2px; letter-spacing: 0.08em; }
+.hist-row-score {
+  display: flex; flex-direction: column; align-items: center;
+  flex-shrink: 0;
+  font-weight: 800; color: var(--vermillion);
+}
+.hist-row-score > span:first-child { font-size: 20px; line-height: 1; }
+.hist-row-score .pt-label { font-size: 10px; opacity: 0.7; font-weight: 500; margin-top: 1px; }
+.hist-row-chevron { color: var(--sumi-soft); font-size: 22px; flex-shrink: 0; opacity: 0.6; }
+
+.empty-history {
+  text-align: center; padding: 50px 16px;
+  color: var(--sumi-soft);
+  font-size: 14px;
+  font-family: "Shippori Mincho", serif;
+}
+
+/* ==========================================================
+   ダイアログ
+   ========================================================== */
+.toast {
+  position: fixed;
+  left: 50%; bottom: calc(40px + var(--safe-bottom));
+  transform: translateX(-50%);
+  background: rgba(42,36,24,0.92);
+  color: var(--paper);
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+.countdown {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center; justify-content: center;
+  z-index: 50;
+  background: rgba(243, 231, 201, 0.92);
+  font-family: "Shippori Mincho", serif;
+  font-size: 120px;
+  font-weight: 800;
+  color: var(--vermillion);
+  animation: countPulse 1s ease-out;
+}
+.countdown.active { display: flex; }
+@keyframes countPulse {
+  0% { opacity: 0; transform: scale(0.7); }
+  30% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0.8; transform: scale(1); }
+}
+
+/* ==========================================================
+   レスポンシブ
+   ========================================================== */
+@media (max-width: 360px) {
+  .title-main { font-size: 44px; }
+  .kami-text { font-size: 20px; }
+  .card-fuda { font-size: 15px; padding: 10px 6px; min-height: 90px; }
+}
+@media (min-height: 700px) {
+  .card-fuda { min-height: 130px; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ タイトル ============ -->
+  <div id="screen-title" class="screen active">
+    <div class="title-wrap">
+      <div class="title-main">百人一首</div>
+      <div class="title-sub">札 取 り</div>
+      <div class="title-poem">
+        ちはやぶる 神代もきかず 竜田川<br>
+        から紅に 水くくるとは
+      </div>
+      <div class="title-buttons">
+        <button class="btn vermillion" onclick="goSettings()">はじめる</button>
+        <button class="btn outline" onclick="goHistory()">対局の記録</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 設定 ============ -->
+  <div id="screen-settings" class="screen">
+    <div class="nav-bar">
+      <button class="nav-button" onclick="goTitle()">‹ 戻る</button>
+      <div class="nav-title">対局の設定</div>
+      <div class="nav-spacer"></div>
+    </div>
+    <div class="content">
+      <div class="section-title">出題範囲</div>
+      <div id="range-options" class="option-grid"></div>
+
+      <div class="section-title">表示する札の枚数</div>
+      <div class="option-grid three">
+        <button class="option-tile" data-cards="4">4枚<div class="option-tile-sub">かんたん</div></button>
+        <button class="option-tile" data-cards="5">5枚<div class="option-tile-sub">ふつう</div></button>
+        <button class="option-tile" data-cards="6">6枚<div class="option-tile-sub">むずかしい</div></button>
+      </div>
+
+      <div class="section-title">読み上げ・表示</div>
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-row-label">音声で読み上げる</div>
+          <div class="toggle-row-desc">上の句を音声で詠み上げます</div>
+        </div>
+        <div id="toggle-audio" class="toggle-switch on" onclick="toggleAudio()"></div>
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-row-label">一文字ずつ表示する</div>
+          <div class="toggle-row-desc">上の句を一文字ずつ表示します</div>
+        </div>
+        <div id="toggle-typewriter" class="toggle-switch on" onclick="toggleTypewriter()"></div>
+      </div>
+
+      <div style="margin-top:24px;">
+        <button class="btn vermillion" onclick="startGame()">対局開始</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ゲーム ============ -->
+  <div id="screen-game" class="screen game-screen">
+    <div class="game-header">
+      <div class="game-header-item">
+        <div class="game-header-label">問</div>
+        <div class="game-header-value" id="game-progress">1 / 20</div>
+      </div>
+      <div class="game-header-item" style="align-items:center;">
+        <div class="game-header-label">残時間</div>
+        <div class="game-header-value" id="game-timer">10.0</div>
+      </div>
+      <div class="game-header-item" style="align-items:flex-end;">
+        <div class="game-header-label">得点</div>
+        <div class="game-header-value score" id="game-score">0</div>
+      </div>
+    </div>
+    <div class="kami-area">
+      <div class="kami-text" id="kami-text"></div>
+      <div class="kami-author" id="kami-author"></div>
+    </div>
+    <div class="cards-wrap" id="cards-wrap"></div>
+    <div class="countdown" id="countdown">3</div>
+    <button id="game-quit" class="nav-button" style="position:absolute; top:calc(var(--safe-top) + 6px); right:6px;" onclick="quitGame()">中止</button>
+  </div>
+
+  <!-- ============ 結果 ============ -->
+  <div id="screen-result" class="screen">
+    <div class="nav-bar">
+      <button class="nav-button" id="result-nav-back" onclick="goResultBack()">‹ タイトル</button>
+      <div class="nav-title">結果</div>
+      <button class="nav-button" id="result-nav-replay" onclick="goSettings()">もう一度</button>
+    </div>
+    <div class="content">
+      <div class="result-hero">
+        <div class="result-title">合 計 得 点</div>
+        <div><span class="result-score" id="result-score">0</span><span class="result-score-unit">点</span></div>
+        <div class="result-meta">
+          <div><strong id="result-correct">0</strong>正解</div>
+          <div><strong id="result-wrong">0</strong>不正解</div>
+          <div><strong id="result-best">0</strong>最高点</div>
+        </div>
+        <div id="result-played-at" style="margin-top:12px; font-size:12px; color:var(--sumi-soft); letter-spacing:0.1em;"></div>
+      </div>
+      <div class="section-title">問題ごとの結果</div>
+      <div class="result-list" id="result-list"></div>
+    </div>
+  </div>
+
+  <!-- ============ 履歴一覧 ============ -->
+  <div id="screen-history" class="screen">
+    <div class="nav-bar">
+      <button class="nav-button" onclick="goTitle()">‹ 戻る</button>
+      <div class="nav-title">対局の記録</div>
+      <button class="nav-button" onclick="confirmClearHistory()">消去</button>
+    </div>
+    <div class="content">
+      <div id="history-stats" class="result-hero" style="padding:18px 14px; margin-bottom:14px;"></div>
+      <div id="history-list"></div>
+      <div id="history-empty" class="empty-history">
+        <div style="font-size:48px; margin-bottom:8px; opacity:0.5;">🎴</div>
+        <div>まだ対局の記録はありません</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+</div>
+
+<script>
+'use strict';
+
+/* ==========================================================
+   百人一首データ
+   ※歌番号順。データは KARUTA_SOURCE 配列に集約。
+   フィールド:
+     no:     歌番号 (1〜100)
+     kami:   上の句 (漢字仮名交じり、表示用)
+     shimo:  下の句 (漢字仮名交じり、札に表示)
+     yomi:   上の句のひらがな読み (TTS 用)
+     yomiShimo: 下の句のひらがな読み (ふりがな・予備)
+     author: 作者
+   ※21〜100首はユーザーが追記して埋める想定。
+   ========================================================== */
+const KARUTA_SOURCE = [
+  { no:  1, author: '天智天皇',   kami: '秋の田のかりほの庵の苫をあらみ',     yomi: 'あきのたのかりおのいおのとまをあらみ',     shimo: 'わが衣手は露にぬれつつ',             yomiShimo: 'わがころもではつゆにぬれつつ' },
+  { no:  2, author: '持統天皇',   kami: '春すぎて夏来にけらし白妙の',         yomi: 'はるすぎてなつきにけらししろたえの',       shimo: '衣ほすてふ天の香具山',               yomiShimo: 'ころもほすちょうあまのかぐやま' },
+  { no:  3, author: '柿本人麻呂', kami: 'あしびきの山鳥の尾のしだり尾の',     yomi: 'あしびきのやまどりのおのしだりおの',       shimo: 'ながながし夜をひとりかも寝む',       yomiShimo: 'ながながしよをひとりかもねん' },
+  { no:  4, author: '山部赤人',   kami: '田子の浦にうち出でてみれば白妙の',   yomi: 'たごのうらにうちいでてみればしろたえの',   shimo: '富士の高嶺に雪は降りつつ',           yomiShimo: 'ふじのたかねにゆきはふりつつ' },
+  { no:  5, author: '猿丸大夫',   kami: '奥山に紅葉踏みわけ鳴く鹿の',         yomi: 'おくやまにもみじふみわけなくしかの',       shimo: '声きく時ぞ秋は悲しき',               yomiShimo: 'こえきくときぞあきはかなしき' },
+  { no:  6, author: '中納言家持', kami: 'かささぎの渡せる橋に置く霜の',       yomi: 'かささぎのわたせるはしにおくしもの',       shimo: '白きを見れば夜ぞ更けにける',         yomiShimo: 'しろきをみればよぞふけにける' },
+  { no:  7, author: '阿倍仲麻呂', kami: '天の原ふりさけ見れば春日なる',       yomi: 'あまのはらふりさけみればかすがなる',       shimo: '三笠の山に出でし月かも',             yomiShimo: 'みかさのやまにいでしつきかも' },
+  { no:  8, author: '喜撰法師',   kami: 'わが庵は都のたつみしかぞ住む',       yomi: 'わがいおはみやこのたつみしかぞすむ',       shimo: '世をうぢ山と人はいふなり',           yomiShimo: 'よをうじやまとひとはいうなり' },
+  { no:  9, author: '小野小町',   kami: '花の色はうつりにけりないたづらに',   yomi: 'はなのいろはうつりにけりないたずらに',     shimo: 'わが身世にふるながめせしまに',       yomiShimo: 'わがみよにふるながめせしまに' },
+  { no: 10, author: '蝉丸',       kami: 'これやこの行くも帰るも別れては',     yomi: 'これやこのゆくもかえるもわかれては',       shimo: '知るも知らぬも逢坂の関',             yomiShimo: 'しるもしらぬもおうさかのせき' },
+  { no: 11, author: '参議篁',     kami: 'わたの原八十島かけて漕ぎ出でぬと',   yomi: 'わたのはらやそしまかけてこぎいでぬと',     shimo: '人には告げよ海人の釣舟',             yomiShimo: 'ひとにはつげよあまのつりぶね' },
+  { no: 12, author: '僧正遍昭',   kami: '天つ風雲の通ひ路吹きとぢよ',         yomi: 'あまつかぜくものかよいじふきとじよ',       shimo: '乙女の姿しばしとどめむ',             yomiShimo: 'おとめのすがたしばしとどめん' },
+  { no: 13, author: '陽成院',     kami: '筑波嶺の峰より落つる男女川',         yomi: 'つくばねのみねよりおつるみなのがわ',       shimo: '恋ぞつもりて淵となりぬる',           yomiShimo: 'こいぞつもりてふちとなりぬる' },
+  { no: 14, author: '河原左大臣', kami: '陸奥のしのぶもぢずり誰ゆゑに',       yomi: 'みちのくのしのぶもじずりたれゆえに',       shimo: '乱れそめにし我ならなくに',           yomiShimo: 'みだれそめにしわれならなくに' },
+  { no: 15, author: '光孝天皇',   kami: '君がため春の野に出でて若菜摘む',     yomi: 'きみがためはるののにいでてわかなつむ',     shimo: 'わが衣手に雪は降りつつ',             yomiShimo: 'わがころもでにゆきはふりつつ' },
+  { no: 16, author: '中納言行平', kami: '立ち別れいなばの山の峰に生ふる',     yomi: 'たちわかれいなばのやまのみねにおうる',     shimo: 'まつとし聞かば今帰り来む',           yomiShimo: 'まつとしきかばいまかえりこん' },
+  { no: 17, author: '在原業平朝臣', kami: 'ちはやぶる神代も聞かず竜田川',     yomi: 'ちはやぶるかみよもきかずたつたがわ',       shimo: 'からくれなゐに水くくるとは',         yomiShimo: 'からくれないにみずくくるとは' },
+  { no: 18, author: '藤原敏行朝臣', kami: '住の江の岸に寄る波よるさへや',     yomi: 'すみのえのきしによるなみよるさえや',       shimo: '夢の通ひ路人目よくらむ',             yomiShimo: 'ゆめのかよいじひとめよくらん' },
+  { no: 19, author: '伊勢',       kami: '難波潟短き葦のふしの間も',           yomi: 'なにわがたみじかきあしのふしのまも',       shimo: '逢はでこの世を過ぐしてよとや',       yomiShimo: 'あわでこのよをすぐしてよとや' },
+  { no: 20, author: '元良親王',   kami: 'わびぬれば今はた同じ難波なる',       yomi: 'わびぬればいまはたおなじなにわなる',       shimo: 'みをつくしても逢はむとぞ思ふ',       yomiShimo: 'みをつくしてもあわんとぞおもう' },
+  { no: 21, author: '素性法師',   kami: '今来むといひしばかりに長月の',       yomi: 'いまこんといったばかりにながつきの',       shimo: '有明の月を待ち出でつるかな',         yomiShimo: 'ありあけのつきをまちいでつるかな' },
+  { no: 22, author: '文屋康秀',   kami: '吹くからに秋の草木のしをるれば',     yomi: 'ふくからにあきのくさきのしおるれば',       shimo: 'むべ山風を嵐といふらむ',             yomiShimo: 'むべやまかぜをあらしというらん' },
+  { no: 23, author: '大江千里',   kami: '月見ればちぢにものこそ悲しけれ',     yomi: 'つきみればちじにものこそかなしけれ',       shimo: 'わが身ひとつの秋にはあらねど',       yomiShimo: 'わがみひとつのあきにはあらねど' },
+  { no: 24, author: '菅家',       kami: 'このたびは幣もとりあへず手向山',     yomi: 'このたびはぬさもとりあえずたむけやま',     shimo: '紅葉の錦神のまにまに',               yomiShimo: 'もみじのにしきかみのまにまに' },
+  { no: 25, author: '三条右大臣', kami: '名にし負はば逢坂山のさねかづら',     yomi: 'なにしおわばおうさかやまのさねかずら',     shimo: '人に知られでくるよしもがな',         yomiShimo: 'ひとにしられでくるよしもがな' },
+  { no: 26, author: '貞信公',     kami: '小倉山峰のもみぢ葉心あらば',         yomi: 'おぐらやまみねのもみじばこころあらば',     shimo: '今ひとたびのみゆき待たなむ',         yomiShimo: 'いまひとたびのみゆきまたなん' },
+  { no: 27, author: '中納言兼輔', kami: 'みかの原わきて流るるいづみ川',       yomi: 'みかのはらわきてながるるいずみがわ',       shimo: 'いつ見きとてか恋しかるらむ',         yomiShimo: 'いつみきとてかこいしかるらん' },
+  { no: 28, author: '源宗于朝臣', kami: '山里は冬ぞ寂しさまさりける',         yomi: 'やまざとはふゆぞさびしさまさりける',       shimo: '人目も草もかれぬと思へば',           yomiShimo: 'ひとめもくさもかれぬとおもえば' },
+  { no: 29, author: '凡河内躬恒', kami: '心あてに折らばや折らむ初霜の',       yomi: 'こころあてにおらばやおらんはつしもの',     shimo: '置きまどはせる白菊の花',             yomiShimo: 'おきまどわせるしらぎくのはな' },
+  { no: 30, author: '壬生忠岑',   kami: '有明のつれなく見えし別れより',       yomi: 'ありあけのつれなくみえしわかれより',       shimo: '暁ばかり憂きものはなし',             yomiShimo: 'あかつきばかりうきものはなし' },
+  { no: 31, author: '坂上是則',   kami: '朝ぼらけ有明の月と見るまでに',       yomi: 'あさぼらけありあけのつきとみるまでに',     shimo: '吉野の里に降れる白雪',               yomiShimo: 'よしののさとにかふれるしらゆき' },
+  { no: 32, author: '春道列樹',   kami: '山川に風のかけたるしがらみは',       yomi: 'やまがわにかぜのかけたるしがらみは',       shimo: '流れもあへぬ紅葉なりけり',           yomiShimo: 'ながれもあえぬもみじなりけり' },
+  { no: 33, author: '紀友則',     kami: 'ひさかたの光のどけき春の日に',       yomi: 'ひさかたのひかりのどけきはるのひに',       shimo: 'しづ心なく花の散るらむ',             yomiShimo: 'しずごころなくはなのちるらん' },
+  { no: 34, author: '藤原興風',   kami: '誰をかも知る人にせむ高砂の',         yomi: 'たれをかもしるひとにせんたかさごの',       shimo: '松も昔の友ならなくに',               yomiShimo: 'まつもむかしのともならなくに' },
+  { no: 35, author: '紀貫之',     kami: '人はいさ心も知らずふるさとは',       yomi: 'ひとはいさこころもしらずふるさとは',       shimo: '花ぞ昔の香ににほひける',             yomiShimo: 'はなぞむかしのかににおいける' },
+  { no: 36, author: '清原深養父', kami: '夏の夜はまだ宵ながら明けぬるを',     yomi: 'なつのよはまだよいながらあけぬるを',       shimo: '雲のいづこに月宿るらむ',             yomiShimo: 'くものいずこにつきやどるらん' },
+  { no: 37, author: '文屋朝康',   kami: '白露に風の吹きしく秋の野は',         yomi: 'しらつゆにかぜのふきしくあきののは',       shimo: 'つらぬきとめぬ玉ぞ散りける',         yomiShimo: 'つらぬきとめぬたまぞちりける' },
+  { no: 38, author: '右近',       kami: '忘らるる身をば思はず誓ひてし',       yomi: 'わすらるるみをばおもわずちかいてし',       shimo: '人の命の惜しくもあるかな',           yomiShimo: 'ひとのいのちのおしくもあるかな' },
+  { no: 39, author: '参議等',     kami: '浅茅生の小野の篠原忍ぶれど',         yomi: 'あさじうのおののしのはらしのぶれど',       shimo: 'あまりてなどか人の恋しき',           yomiShimo: 'あまりてなどかひとのこいしき' },
+  { no: 40, author: '平兼盛',     kami: 'しのぶれど色に出でにけりわが恋は',   yomi: 'しのぶれどいろにいでにけりわがこいは',     shimo: '物や思ふと人の問ふまで',             yomiShimo: 'ものやおもうとひとのとうまで' },
+  { no: 41, author: '壬生忠見',   kami: '恋すてふわが名はまだき立ちにけり',   yomi: 'こいすちょうわがなはまだきたちにけり',     shimo: '人知れずこそ思ひそめしか',           yomiShimo: 'ひとしれずこそおもいそめしか' },
+  { no: 42, author: '清原元輔',   kami: '契りきな形見に袖をしぼりつつ',       yomi: 'ちぎりきなかたみにそでをしぼりつつ',       shimo: '末の松山波越さじとは',               yomiShimo: 'すえのまつやまなみこさじとは' },
+  { no: 43, author: '権中納言敦忠', kami: '逢ひ見てののちの心にくらぶれば',   yomi: 'あいみてののちのこころにくらぶれば',       shimo: '昔はものを思はざりけり',             yomiShimo: 'むかしはものをおもわざりけり' },
+  { no: 44, author: '中納言朝忠', kami: '逢ふことの絶えてしなくはなかなかに', yomi: 'あうことのたえてしなくはなかなかに',       shimo: '人をも身をも恨みざらまし',           yomiShimo: 'ひとをもみをもうらみざらまし' },
+  { no: 45, author: '謙徳公',     kami: 'あはれともいふべき人は思ほえで',     yomi: 'あわれともいうべきひとはおもおえで',       shimo: '身のいたづらになりぬべきかな',       yomiShimo: 'みのいたずらになりぬべきかな' },
+  { no: 46, author: '曾禰好忠',   kami: '由良の戸を渡る舟人かぢを絶え',       yomi: 'ゆらのとをわたるふなびとかじをたえ',       shimo: 'ゆくへも知らぬ恋の道かな',           yomiShimo: 'ゆくえもしらぬこいのみちかな' },
+  { no: 47, author: '恵慶法師',   kami: '八重むぐら茂れる宿のさびしきに',     yomi: 'やえむぐらしげれるやどのさびしきに',       shimo: '人こそ見えね秋は来にけり',           yomiShimo: 'ひとこそみえねあきはきにけり' },
+  { no: 48, author: '源重之',     kami: '風をいたみ岩打つ波のおのれのみ',     yomi: 'かぜをいたみいわうつなみのおのれのみ',     shimo: 'くだけてものを思ふころかな',         yomiShimo: 'くだけてものをおもうころかな' },
+  { no: 49, author: '大中臣能宣朝臣', kami: '御垣守衛士のたく火の夜は燃え',   yomi: 'みかきもりえじのたくひのよるはもえ',       shimo: '昼は消えつつものをこそ思へ',         yomiShimo: 'ひるはきえつつものをこそおもえ' },
+  { no: 50, author: '藤原義孝',   kami: '君がため惜しからざりし命さへ',       yomi: 'きみがためおしからざりしいのちさえ',       shimo: '長くもがなと思ひけるかな',           yomiShimo: 'ながくもがなとおもいけるかな' },
+  { no: 51, author: '藤原実方朝臣', kami: 'かくとだにえやはいぶきのさしも草', yomi: 'かくとだにえやはいぶきのさしもぐさ',       shimo: 'さしも知らじな燃ゆる思ひを',         yomiShimo: 'さしもしらじなもゆるおもいを' },
+  { no: 52, author: '藤原道信朝臣', kami: '明けぬれば暮るるものとは知りながら', yomi: 'あけぬればくるるものとはしりながら',     shimo: 'なほ恨めしき朝ぼらけかな',           yomiShimo: 'なおうらめしきあさぼらけかな' },
+  { no: 53, author: '右大将道綱母', kami: '嘆きつつひとり寝る夜の明くる間は', yomi: 'なげきつつひとりぬるよのあくるまは',       shimo: 'いかに久しきものとかは知る',         yomiShimo: 'いかにひさしきものとかはしる' },
+  { no: 54, author: '儀同三司母', kami: '忘れじの行く末まではかたければ',     yomi: 'わすれじのゆくすえまではかたければ',       shimo: '今日を限りの命ともがな',             yomiShimo: 'きょうをかぎりのいのちともがな' },
+  { no: 55, author: '大納言公任', kami: '滝の音は絶えて久しくなりぬれど',     yomi: 'たきのおとはたえてひさしくなりぬれど',     shimo: '名こそ流れてなほ聞こえけれ',         yomiShimo: 'なこそながれてなおきこえけれ' },
+  { no: 56, author: '和泉式部',   kami: 'あらざらむこの世のほかの思ひ出に',   yomi: 'あらざらんこのよのほかのおもいでに',       shimo: '今ひとたびの逢ふこともがな',         yomiShimo: 'いまひとたびのあうこともがな' },
+  { no: 57, author: '紫式部',     kami: 'めぐり逢ひて見しやそれとも分かぬ間に', yomi: 'めぐりあいてみしやそれともわかぬまに',   shimo: '雲隠れにし夜半の月かな',             yomiShimo: 'くもがくれにしよわのつきかな' },
+  { no: 58, author: '大弐三位',   kami: '有馬山猪名の笹原風吹けば',           yomi: 'ありまやまゐなのささはらかぜふけば',       shimo: 'いでそよ人を忘れやはする',           yomiShimo: 'いでそよひとをわすれやはする' },
+  { no: 59, author: '赤染衛門',   kami: 'やすらはで寝なましものをさ夜ふけて', yomi: 'やすらわでねなましものをさよふけて',       shimo: '傾くまでの月を見しかな',             yomiShimo: 'かたぶくまでのつきをみしかな' },
+  { no: 60, author: '小式部内侍', kami: '大江山いく野の道の遠ければ',         yomi: 'おおえやまいくののみちのとをければ',       shimo: 'まだふみも見ず天の橋立',             yomiShimo: 'まだふみもみずあまのはしだて' },
+  { no: 61, author: '伊勢大輔',   kami: 'いにしへの奈良の都の八重桜',         yomi: 'いにしえのならのみやこのやえざくら',       shimo: '今日九重に匂ひぬるかな',             yomiShimo: 'きょうここのえににおいぬるかな' },
+  { no: 62, author: '清少納言',   kami: '夜をこめて鳥のそら音ははかるとも',   yomi: 'よをこめてとりのそらねははかるとも',       shimo: 'よに逢坂の関は許さじ',               yomiShimo: 'よにおうさかのせきはゆるさじ' },
+  { no: 63, author: '左京大夫道雅', kami: '今はただ思ひ絶えなむとばかりを',   yomi: 'いまはただおもいたえなんとばかりを',       shimo: '人づてならで言ふよしもがな',         yomiShimo: 'ひとづてならでいうよしもがな' },
+  { no: 64, author: '権中納言定頼', kami: '朝ぼらけ宇治の川霧たえだえに',     yomi: 'あさぼらけうじのかわぎりたえだえに',       shimo: 'あらはれわたる瀬々の網代木',         yomiShimo: 'あらわれわたるせぜのあじろぎ' },
+  { no: 65, author: '相模',       kami: '恨みわびほさぬ袖だにあるものを',     yomi: 'うらみわびほさぬそでだにあるものを',       shimo: '恋に朽ちなむ名こそ惜しけれ',         yomiShimo: 'こいにくちなんなこそおしけれ' },
+  { no: 66, author: '大僧正行尊', kami: 'もろともにあはれと思へ山桜',         yomi: 'もろともにあわれとおもえやまざくら',       shimo: '花よりほかに知る人もなし',           yomiShimo: 'はなよりほかにしるひともなし' },
+  { no: 67, author: '周防内侍',   kami: '春の夜の夢ばかりなる手枕に',         yomi: 'はるのよのゆめばかりなるたまくらに',       shimo: 'かひなく立たむ名こそ惜しけれ',       yomiShimo: 'かいなくたたんなこそおしけれ' },
+  { no: 68, author: '三条院',     kami: '心にもあらでうき世に長らへば',       yomi: 'こころにもあらでうきよにながらえば',       shimo: '恋しかるべき夜半の月かな',           yomiShimo: 'こいしかるべきよわのつきかな' },
+  { no: 69, author: '能因法師',   kami: '嵐吹く三室の山のもみぢ葉は',         yomi: 'あらしふくみむろのやまのもみじばは',       shimo: '竜田の川の錦なりけり',               yomiShimo: 'たつたのかわのにしきなりけり' },
+  { no: 70, author: '良暹法師',   kami: '寂しさに宿を立ち出でてながむれば',   yomi: 'さびしさにやどをたちいでてながむれば',     shimo: 'いづくも同じ秋の夕暮れ',             yomiShimo: 'いずくもおなじあきのゆうぐれ' },
+  { no: 71, author: '大納言経信', kami: '夕されば門田の稲葉おとづれて',       yomi: 'ゆうさればかどたのいなばおとずれて',       shimo: '葦のまろやに秋風ぞ吹く',             yomiShimo: 'あしのまろやにあきかぜぞふく' },
+  { no: 72, author: '祐子内親王家紀伊', kami: '音に聞く高師の浜のあだ波は', yomi: 'おとにきくたかしのはまのあだなみは',       shimo: 'かけじや袖のぬれもこそすれ',         yomiShimo: 'かけじやそでのぬれもこそすれ' },
+  { no: 73, author: '権中納言匡房', kami: '高砂の尾の上の桜咲きにけり',       yomi: 'たかさごのおのえのさくらさきにけり',       shimo: '外山の霞立たずもあらなむ',           yomiShimo: 'とやまのかすみたてずもあらなん' },
+  { no: 74, author: '源俊頼朝臣', kami: '憂かりける人を初瀬の山おろしよ',     yomi: 'うかりけるひとをはつせのやまおろしよ',     shimo: 'はげしかれとは祈らぬものを',         yomiShimo: 'はげしかれとはいのらぬものを' },
+  { no: 75, author: '藤原基俊',   kami: '契りおきしさせもが露を命にて',       yomi: 'ちぎりおきしさしもがつゆをいのちにて',     shimo: 'あはれ今年の秋もいぬめり',           yomiShimo: 'あわれことしのあきもいぬめり' },
+  { no: 76, author: '法性寺入道前関白太政大臣', kami: 'わたの原漕ぎ出でて見ればひさかたの', yomi: 'わたのはらこぎいでてみればひさかたの', shimo: '雲居にまがふ沖つ白波', yomiShimo: 'くもいにまがうおきつしらなみ' },
+  { no: 77, author: '崇徳院',     kami: '瀬をはやみ岩にせかるる滝川の',       yomi: 'せをはやみいわにせかるるたきがわの',       shimo: '割れても末に逢はむとぞ思ふ',         yomiShimo: 'われてもすえにあわんとぞおもう' },
+  { no: 78, author: '源兼昌',     kami: '淡路島通ふ千鳥の鳴く声に',           yomi: 'あわじしまかようちどりのなくこえに',       shimo: '幾夜寝覚めぬ須磨の関守',             yomiShimo: 'いくよねざめぬすまのせきもり' },
+  { no: 79, author: '左京大夫顕輔', kami: '秋風にたなびく雲の絶え間より',     yomi: 'あきかぜにたなびくくものたえまより',       shimo: 'もれ出づる月の影のさやけさ',         yomiShimo: 'もれいずるつきのかげのさやけさ' },
+  { no: 80, author: '待賢門院堀河', kami: '長からむ心も知らず黒髪の',         yomi: 'ながからんこころもしらずくろかみの',       shimo: '乱れてけさはものをこそ思へ',         yomiShimo: 'みだれてけさはものをこそおもえ' },
+  { no: 81, author: '後徳大寺左大臣', kami: 'ほととぎす鳴きつる方をながむれば', yomi: 'ほととぎすなきつるかたをながむれば',     shimo: 'ただ有明の月ぞ残れる',               yomiShimo: 'ただありあけのつきぞのこれる' },
+  { no: 82, author: '道因法師',   kami: '思ひわびさても命はあるものを',       yomi: 'おもいわびさてもいのちはあるものを',       shimo: '憂きに堪へぬは涙なりけり',           yomiShimo: 'うきにたえぬはなみだなりけり' },
+  { no: 83, author: '皇太后宮大夫俊成', kami: '世の中よ道こそなけれ思ひ入る', yomi: 'よのなかよみちこそなけれおもいいる',       shimo: '山の奥にも鹿ぞ鳴くなる',             yomiShimo: 'やまのおくにもしかぞなくなる' },
+  { no: 84, author: '藤原清輔朝臣', kami: 'ながらへばまたこのごろやしのばれむ', yomi: 'ながらえばまたこのごろやしのばれん',     shimo: '憂しと見し世ぞ今は恋しき',           yomiShimo: 'うしとみしよぞいまはこいしき' },
+  { no: 85, author: '俊恵法師',   kami: '夜もすがら物思ふころは明けやらで',   yomi: 'よもすがらものおもうころはあけやらで',     shimo: '閨のひまさへつれなかりけり',         yomiShimo: 'ねやのひまさえつれなかりけり' },
+  { no: 86, author: '西行法師',   kami: '嘆けとて月やはものを思はする',       yomi: 'なげけとてつきやはものをおもわせる',       shimo: 'かこち顔なるわが涙かな',             yomiShimo: 'かこちがおなるわがなみだかな' },
+  { no: 87, author: '寂蓮法師',   kami: '村雨の露もまだひぬ真木の葉に',       yomi: 'むらさめのつゆもまだひぬまきのはに',       shimo: '霧立ちのぼる秋の夕暮れ',             yomiShimo: 'きりたちのぼるあきのゆうぐれ' },
+  { no: 88, author: '皇嘉門院別当', kami: '難波江の葦のかりねの一夜ゆゑ',     yomi: 'なにわえのあしのかりねのひとよゆえ',       shimo: 'みをつくしてや恋ひわたるべき',       yomiShimo: 'みをつくしてやこいわたるべき' },
+  { no: 89, author: '式子内親王', kami: '玉の緒よ絶えなば絶えねながらへば',   yomi: 'たまのおよたえなばたえねながらえば',       shimo: '忍ぶることの弱りもぞする',           yomiShimo: 'しのぶることのよわりもぞする' },
+  { no: 90, author: '殷富門院大輔', kami: '見せばやな雄島の海人の袖だにも',   yomi: 'みせばやなおじまのあまのそでだにも',       shimo: 'ぬれにぞぬれし色は変はらず',         yomiShimo: 'ぬれにぞぬれしいろはかわらず' },
+  { no: 91, author: '後京極摂政前太政大臣', kami: 'きりぎりす鳴くや霜夜のさむしろに', yomi: 'きりぎりすなくやしもよのさむしろに', shimo: '衣片敷きひとりかも寝む', yomiShimo: 'ころもかたしきひとりかもねん' },
+  { no: 92, author: '二条院讃岐', kami: 'わが袖は潮干に見えぬ沖の石の',       yomi: 'わがそではしおいにみえぬおきのいしの',     shimo: '人こそ知らね乾く間もなし',           yomiShimo: 'ひとこそしらねかわくまもなし' },
+  { no: 93, author: '鎌倉右大臣', kami: '世の中は常にもがもな渚こぐ',         yomi: 'よのなかはつねにもがもななぎさこぐ',       shimo: '海人の小舟の綱手かなしも',           yomiShimo: 'あまのおぶねのつなでかなしも' },
+  { no: 94, author: '参議雅経',   kami: 'み吉野の山の秋風さ夜ふけて',         yomi: 'みよしののやまのあきかぜさよふけて',       shimo: 'ふるさと寒く衣打つなり',             yomiShimo: 'ふるさとさむくころもうつなり' },
+  { no: 95, author: '前大僧正慈円', kami: 'おほけなくうき世の民におほふかな', yomi: 'おおけなくうきよのたみにおおうかな',       shimo: 'わが立つ杣に墨染の袖',               yomiShimo: 'わがたつそまにすみぞめのそで' },
+  { no: 96, author: '入道前太政大臣', kami: '花さそふ嵐の庭の雪ならで',       yomi: 'はなさそうあらしのにわのゆきならで',       shimo: 'ふりゆくものはわが身なりけり',       yomiShimo: 'ふりゆくものはわがみなりけり' },
+  { no: 97, author: '権中納言定家', kami: '来ぬ人をまつほの浦の夕なぎに',     yomi: 'こぬひとをまつおのうらのゆうなぎに',       shimo: '焼くや藻塩の身もこがれつつ',         yomiShimo: 'やくやもしおのみもこがれつつ' },
+  { no: 98, author: '従二位家隆', kami: '風そよぐならの小川の夕暮れは',       yomi: 'かぜそよぐならのおがわのゆうぐれは',       shimo: 'みそぎぞ夏のしるしなりける',         yomiShimo: 'みそぎぞなつのしるしなりける' },
+  { no: 99, author: '後鳥羽院',   kami: '人もをし人も恨めしあぢきなく',       yomi: 'ひともおしひともうらめしあじきなく',       shimo: '世を思ふゆゑにもの思ふ身は',         yomiShimo: 'よをおもうゆえにものおもうみは' },
+  { no:100, author: '順徳院',     kami: '百敷や古き軒端のしのぶにも',         yomi: 'ももしきやふるきのきばのしのぶにも',       shimo: 'なほあまりある昔なりけり',           yomiShimo: 'なおあまりあるむかしなりけり' }
+];
+
+/* ==========================================================
+   状態
+   ========================================================== */
+const STORAGE_KEY = 'karuta-app:v1';
+const HISTORY_KEY = 'karuta-app:history:v1';
+const HISTORY_LIMIT = 200;  // 直近200試合まで保存
+
+const RANGE_DEFS = [
+  { id: 'r1-20',   label: '1〜20',   from: 1,  to: 20 },
+  { id: 'r21-40',  label: '21〜40',  from: 21, to: 40 },
+  { id: 'r41-60',  label: '41〜60',  from: 41, to: 60 },
+  { id: 'r61-80',  label: '61〜80',  from: 61, to: 80 },
+  { id: 'r81-100', label: '81〜100', from: 81, to: 100 },
+  { id: 'random',  label: '全100首ランダム', from: 1, to: 100, full: true }
+];
+const RANGE_LABEL = Object.fromEntries(RANGE_DEFS.map(r => [r.id, r.label]));
+
+const DEFAULT_SETTINGS = {
+  range: 'r1-20',
+  cards: 5,
+  audio: true,
+  typewriter: true,
+  charIntervalMs: 250,
+  questionLimitMs: 10000
+};
+
+let settings = loadSettings();
+let history = loadHistory();
+let game = null;
+let revealTimer = null;
+let questionTimer = null;
+let questionStartedAt = 0;
+let currentUtterance = null;
+let resultViewMode = 'live';   // 'live' (直近の対局) | 'history' (履歴閲覧)
+let currentResult = null;       // 表示中の結果
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { ...DEFAULT_SETTINGS };
+    return Object.assign({ ...DEFAULT_SETTINGS }, JSON.parse(raw));
+  } catch { return { ...DEFAULT_SETTINGS }; }
+}
+function saveSettings() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(settings)); } catch {}
+}
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch { return []; }
+}
+function saveHistory() {
+  try {
+    const trimmed = history.slice(-HISTORY_LIMIT);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed));
+  } catch {}
+}
+
+/* ==========================================================
+   画面遷移
+   ========================================================== */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function goTitle() {
+  stopGame();
+  showScreen('screen-title');
+}
+function goSettings() {
+  stopGame();
+  showScreen('screen-settings');
+  renderSettings();
+}
+
+/* ==========================================================
+   設定画面
+   ========================================================== */
+function renderSettings() {
+  const wrap = document.getElementById('range-options');
+  wrap.innerHTML = '';
+  RANGE_DEFS.forEach(r => {
+    const available = KARUTA_SOURCE.filter(q => q.no >= r.from && q.no <= r.to).length;
+    const ready = r.full ? KARUTA_SOURCE.length >= 20 : available >= 1;
+    const t = document.createElement('button');
+    t.className = 'option-tile' + (settings.range === r.id ? ' active' : '');
+    t.innerHTML = `${r.label}<div class="option-tile-sub">${available}首登録</div>`;
+    if (!ready) { t.style.opacity = '0.45'; }
+    t.onclick = () => {
+      if (!ready) { toast('この範囲はまだ登録がありません'); return; }
+      settings.range = r.id;
+      saveSettings();
+      renderSettings();
+    };
+    if (r.full) t.style.gridColumn = '1 / -1';
+    wrap.appendChild(t);
+  });
+
+  // 札枚数
+  document.querySelectorAll('[data-cards]').forEach(el => {
+    const n = parseInt(el.dataset.cards, 10);
+    el.classList.toggle('active', settings.cards === n);
+    el.onclick = () => { settings.cards = n; saveSettings(); renderSettings(); };
+  });
+
+  // トグル
+  document.getElementById('toggle-audio').classList.toggle('on', settings.audio);
+  document.getElementById('toggle-typewriter').classList.toggle('on', settings.typewriter);
+}
+function toggleAudio() {
+  settings.audio = !settings.audio;
+  if (!settings.audio && !settings.typewriter) { settings.typewriter = true; }
+  saveSettings(); renderSettings();
+}
+function toggleTypewriter() {
+  settings.typewriter = !settings.typewriter;
+  if (!settings.audio && !settings.typewriter) { settings.audio = true; }
+  saveSettings(); renderSettings();
+}
+
+/* ==========================================================
+   ゲーム開始 / 進行
+   ========================================================== */
+function pickPool() {
+  const def = RANGE_DEFS.find(r => r.id === settings.range);
+  if (!def) return [];
+  return KARUTA_SOURCE.filter(q => q.no >= def.from && q.no <= def.to);
+}
+function startGame() {
+  const pool = pickPool();
+  if (pool.length === 0) {
+    toast('出題できる歌がありません');
+    return;
+  }
+  // 20問用意 (足りなければ繰り返し)
+  const questions = [];
+  let basis = shuffle([...pool]);
+  while (questions.length < 20) {
+    if (basis.length === 0) basis = shuffle([...pool]);
+    questions.push(basis.shift());
+  }
+  game = {
+    pool,
+    questions,
+    index: 0,
+    score: 0,
+    results: []
+  };
+  showScreen('screen-game');
+  countdownThen(() => playRound());
+}
+
+function countdownThen(cb) {
+  const el = document.getElementById('countdown');
+  let n = 3;
+  el.textContent = n;
+  el.classList.add('active');
+  const tick = () => {
+    n--;
+    if (n <= 0) {
+      el.classList.remove('active');
+      cb();
+    } else {
+      el.textContent = n;
+      el.classList.remove('active');
+      void el.offsetWidth;
+      el.classList.add('active');
+      setTimeout(tick, 800);
+    }
+  };
+  setTimeout(tick, 800);
+}
+
+function playRound() {
+  if (!game) return;
+  if (game.index >= 20) { endGame(); return; }
+  const q = game.questions[game.index];
+  questionStartedAt = performance.now();
+
+  // ヘッダ
+  document.getElementById('game-progress').textContent = `${game.index + 1} / 20`;
+  document.getElementById('game-score').textContent = String(game.score);
+  document.getElementById('game-timer').textContent = (settings.questionLimitMs / 1000).toFixed(1);
+
+  // 上の句クリア
+  const kamiEl = document.getElementById('kami-text');
+  const authorEl = document.getElementById('kami-author');
+  kamiEl.innerHTML = '';
+  authorEl.textContent = '';
+
+  // 札を準備 (正解1枚 + ランダム distractors)
+  renderCards(q);
+
+  // 上の句表示と音声
+  startReveal(q);
+  startQuestionTimer();
+}
+
+function renderCards(q) {
+  const distractorPool = game.pool.filter(p => p.no !== q.no);
+  const distractors = shuffle(distractorPool).slice(0, Math.max(0, settings.cards - 1));
+  const allCards = shuffle([q, ...distractors]);
+  const wrap = document.getElementById('cards-wrap');
+  wrap.setAttribute('data-count', String(settings.cards));
+  wrap.innerHTML = '';
+  allCards.forEach(c => {
+    const el = document.createElement('button');
+    el.className = 'card-fuda';
+    el.dataset.no = String(c.no);
+    el.innerHTML = splitShimoForCard(c.shimo).map(s => `<span>${escapeHtml(s)}</span>`).join('<br>');
+    el.onclick = () => onCardTap(el, c, q);
+    wrap.appendChild(el);
+  });
+}
+
+/* 下の句を札上で2行表示するため、空白がなければ中央付近で分割する */
+function splitShimoForCard(shimo) {
+  if (shimo.includes(' ')) return shimo.split(' ').filter(Boolean);
+  const len = shimo.length;
+  if (len <= 7) return [shimo];
+  // 中央付近のなるべく自然な位置で分割
+  const ideal = Math.ceil(len / 2);
+  const breakChars = ['に', 'を', 'の', 'は', 'と', 'て', 'も', 'が', 'ば', 'ど'];
+  for (let off = 0; off <= 2; off++) {
+    for (const sign of [0, -1, 1]) {
+      const idx = ideal + sign * off;
+      if (idx > 0 && idx < len && breakChars.includes(shimo[idx - 1])) {
+        return [shimo.slice(0, idx), shimo.slice(idx)];
+      }
+    }
+  }
+  return [shimo.slice(0, ideal), shimo.slice(ideal)];
+}
+
+function startReveal(q) {
+  const kamiEl = document.getElementById('kami-text');
+  kamiEl.innerHTML = '';
+
+  // タイプライター
+  if (settings.typewriter) {
+    const text = q.kami;
+    let i = 0;
+    revealTimer = setInterval(() => {
+      if (i >= text.length) { clearInterval(revealTimer); revealTimer = null; return; }
+      const ch = text[i++];
+      const span = document.createElement('span');
+      span.className = 'reveal';
+      span.textContent = ch;
+      kamiEl.appendChild(span);
+    }, settings.charIntervalMs);
+  } else {
+    kamiEl.textContent = q.kami;
+  }
+
+  // TTS
+  if (settings.audio && 'speechSynthesis' in window) {
+    try {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(q.yomi || q.kami);
+      u.lang = 'ja-JP';
+      u.rate = 0.85;
+      u.pitch = 1.0;
+      currentUtterance = u;
+      window.speechSynthesis.speak(u);
+    } catch (e) { console.warn('TTS failed', e); }
+  }
+}
+
+function startQuestionTimer() {
+  if (questionTimer) clearInterval(questionTimer);
+  const limit = settings.questionLimitMs;
+  questionTimer = setInterval(() => {
+    const elapsed = performance.now() - questionStartedAt;
+    const remain = Math.max(0, limit - elapsed);
+    document.getElementById('game-timer').textContent = (remain / 1000).toFixed(1);
+    if (remain <= 0) {
+      stopQuestionTimer();
+      onTimeup();
+    }
+  }, 100);
+}
+function stopQuestionTimer() {
+  if (questionTimer) { clearInterval(questionTimer); questionTimer = null; }
+}
+function stopReveal() {
+  if (revealTimer) { clearInterval(revealTimer); revealTimer = null; }
+  try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
+  currentUtterance = null;
+}
+
+function onCardTap(el, picked, q) {
+  if (!game) return;
+  // 二重タップ防止
+  document.querySelectorAll('.card-fuda').forEach(c => c.style.pointerEvents = 'none');
+  stopQuestionTimer();
+  stopReveal();
+
+  const elapsed = performance.now() - questionStartedAt;
+  const isCorrect = picked.no === q.no;
+  const points = isCorrect ? calcPoints(elapsed) : 0;
+
+  el.classList.add(isCorrect ? 'correct' : 'wrong');
+  if (!isCorrect) {
+    // 正解札もハイライト
+    document.querySelectorAll('.card-fuda').forEach(c => {
+      if (c !== el && c.dataset.no === String(q.no)) {
+        c.classList.add('correct');
+      }
+    });
+  }
+  // 上の句を全部出す (見える化)
+  document.getElementById('kami-text').textContent = q.kami;
+  document.getElementById('kami-author').textContent = q.author ? `― ${q.author} ―` : '';
+
+  // 結果記録
+  game.score += points;
+  game.results.push({
+    no: q.no, kami: q.kami, shimo: q.shimo, author: q.author,
+    correct: isCorrect, picked: picked.shimo, points, elapsedMs: Math.round(elapsed)
+  });
+  document.getElementById('game-score').textContent = String(game.score);
+
+  // 次へ
+  setTimeout(() => {
+    game.index++;
+    if (game.index >= 20) { endGame(); }
+    else { playRound(); }
+  }, 1500);
+}
+
+function onTimeup() {
+  if (!game) return;
+  stopReveal();
+  document.querySelectorAll('.card-fuda').forEach(c => c.style.pointerEvents = 'none');
+  const q = game.questions[game.index];
+  // 正解札をハイライト
+  document.querySelectorAll('.card-fuda').forEach(c => {
+    if (c.dataset.no === String(q.no)) {
+      c.classList.add('correct');
+    } else {
+      c.classList.add('fade');
+    }
+  });
+  document.getElementById('kami-text').textContent = q.kami;
+  document.getElementById('kami-author').textContent = q.author ? `― ${q.author} ―` : '';
+  game.results.push({
+    no: q.no, kami: q.kami, shimo: q.shimo, author: q.author,
+    correct: false, picked: '(時間切れ)', points: 0, elapsedMs: settings.questionLimitMs
+  });
+  setTimeout(() => {
+    game.index++;
+    if (game.index >= 20) { endGame(); }
+    else { playRound(); }
+  }, 1800);
+}
+
+function calcPoints(elapsedMs) {
+  // 早いほど高得点。最大100点、最低10点。
+  // 1.0秒: 95点、3.0秒: 75点、5.0秒: 55点、10.0秒: 10点
+  const t = elapsedMs / 1000;
+  const pts = Math.round(100 - t * 9);
+  return Math.max(10, Math.min(100, pts));
+}
+
+function quitGame() {
+  if (!confirm('対局を中止しますか？')) return;
+  stopGame();
+  goSettings();
+}
+function stopGame() {
+  stopReveal();
+  stopQuestionTimer();
+}
+
+/* ==========================================================
+   結果画面 / 履歴
+   ========================================================== */
+function endGame() {
+  if (!game) return;
+  const correctCount = game.results.filter(r => r.correct).length;
+  const wrongCount = game.results.length - correctCount;
+  const best = game.results.reduce((m, r) => Math.max(m, r.points), 0);
+
+  const record = {
+    id: 'g-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    playedAt: new Date().toISOString(),
+    rangeId: settings.range,
+    rangeLabel: RANGE_LABEL[settings.range] || settings.range,
+    cards: settings.cards,
+    audio: settings.audio,
+    typewriter: settings.typewriter,
+    score: game.score,
+    correctCount,
+    wrongCount,
+    best,
+    results: game.results
+  };
+  history.push(record);
+  saveHistory();
+
+  resultViewMode = 'live';
+  currentResult = record;
+  renderResult();
+}
+
+function renderResult() {
+  if (!currentResult) { goTitle(); return; }
+  showScreen('screen-result');
+  // ナビ表示の切り替え
+  document.getElementById('result-nav-replay').style.display =
+    resultViewMode === 'live' ? '' : 'none';
+  document.getElementById('result-nav-back').textContent =
+    resultViewMode === 'live' ? '‹ タイトル' : '‹ 履歴';
+  document.getElementById('result-played-at').textContent =
+    resultViewMode === 'history'
+      ? `${formatDateTime(currentResult.playedAt)} ・ 範囲 ${currentResult.rangeLabel} ・ 札 ${currentResult.cards}枚`
+      : `範囲 ${currentResult.rangeLabel} ・ 札 ${currentResult.cards}枚`;
+
+  document.getElementById('result-score').textContent = String(currentResult.score);
+  document.getElementById('result-correct').textContent = String(currentResult.correctCount);
+  document.getElementById('result-wrong').textContent = String(currentResult.wrongCount);
+  document.getElementById('result-best').textContent = String(currentResult.best);
+
+  const list = document.getElementById('result-list');
+  list.innerHTML = '';
+  currentResult.results.forEach(r => {
+    const row = document.createElement('div');
+    row.className = 'result-row ' + (r.correct ? 'correct' : 'wrong');
+    row.innerHTML = `
+      <div class="result-row-mark">${r.correct ? '○' : '×'}</div>
+      <div class="result-row-main">
+        <div class="result-row-no">第${r.no}番</div>
+        <div class="result-row-kami">${escapeHtml(r.kami)}</div>
+        <div class="result-row-shimo">${escapeHtml(r.shimo)}</div>
+        <div class="result-row-author">― ${escapeHtml(r.author || '')} ―</div>
+      </div>
+      <div class="result-row-score">
+        <span>${r.points}</span>
+        <span class="pt-label">${(r.elapsedMs/1000).toFixed(1)}秒</span>
+      </div>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function goResultBack() {
+  if (resultViewMode === 'history') goHistory();
+  else goTitle();
+}
+
+function goHistory() {
+  showScreen('screen-history');
+  renderHistoryList();
+}
+function renderHistoryList() {
+  const list = document.getElementById('history-list');
+  const empty = document.getElementById('history-empty');
+  const stats = document.getElementById('history-stats');
+  list.innerHTML = '';
+  if (history.length === 0) {
+    empty.style.display = 'block';
+    stats.style.display = 'none';
+    return;
+  }
+  empty.style.display = 'none';
+  stats.style.display = 'block';
+
+  // 統計
+  const total = history.length;
+  const bestScore = history.reduce((m, h) => Math.max(m, h.score || 0), 0);
+  const avgScore = Math.round(history.reduce((s, h) => s + (h.score || 0), 0) / total);
+  stats.innerHTML = `
+    <div class="hist-stats-grid">
+      <div><strong>${total}</strong><span>対局</span></div>
+      <div><strong>${bestScore}</strong><span>最高</span></div>
+      <div><strong>${avgScore}</strong><span>平均</span></div>
+    </div>
+  `;
+
+  // 新しい順
+  [...history].reverse().forEach(h => {
+    const row = document.createElement('button');
+    row.className = 'history-row';
+    const ratio = h.correctCount + '/' + (h.correctCount + h.wrongCount);
+    row.innerHTML = `
+      <div class="hist-row-date">
+        <div class="hist-row-date-main">${formatDate(h.playedAt)}</div>
+        <div class="hist-row-date-time">${formatTime(h.playedAt)}</div>
+      </div>
+      <div class="hist-row-main">
+        <div class="hist-row-range">${escapeHtml(h.rangeLabel)}</div>
+        <div class="hist-row-meta">正解 ${ratio} ・ 札${h.cards}枚</div>
+      </div>
+      <div class="hist-row-score">
+        <span>${h.score}</span>
+        <span class="pt-label">点</span>
+      </div>
+      <div class="hist-row-chevron">›</div>
+    `;
+    row.onclick = () => {
+      resultViewMode = 'history';
+      currentResult = h;
+      renderResult();
+    };
+    list.appendChild(row);
+  });
+}
+
+function confirmClearHistory() {
+  if (history.length === 0) return;
+  if (!confirm('対局履歴を全て削除しますか？\n（取り消せません）')) return;
+  history = [];
+  saveHistory();
+  renderHistoryList();
+}
+
+function formatDateTime(iso) {
+  return `${formatDate(iso)} ${formatTime(iso)}`;
+}
+function formatDate(iso) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+}
+function formatTime(iso) {
+  const d = new Date(iso);
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+/* ==========================================================
+   ユーティリティ
+   ========================================================== */
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+let toastTimer = null;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+/* iOS Safari の TTS 初期化用 (最初のユーザ操作で空発話) */
+document.addEventListener('click', function once() {
+  try {
+    if ('speechSynthesis' in window) {
+      const u = new SpeechSynthesisUtterance('');
+      u.lang = 'ja-JP';
+      window.speechSynthesis.speak(u);
+    }
+  } catch {}
+  document.removeEventListener('click', once);
+}, { once: true });
+
+/* 初期化 */
+renderSettings();
+</script>
+</body>
+</html>
