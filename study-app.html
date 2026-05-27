@@ -1577,7 +1577,7 @@ const ENGLISH_NT_L0_SOURCE = [
 ];
 
 function buildEnglishNtL0Pack() {
-  const unit = { id: 'u-eng-nt-l0', subjectId: 'english', name: 'NT L0 単語', parentId: null };
+  const unit = { id: 'u-eng-nt-l0', subjectId: 'english', name: 'NT L0-1 単語', parentId: null };
   const questions = [];
   let n = 0;
   for (const [ja, en, category] of ENGLISH_NT_L0_SOURCE) {
@@ -1591,6 +1591,58 @@ function buildEnglishNtL0Pack() {
       hint: '',
       sourceNote: category,
       createdAt: '2026-05-04'
+    });
+  }
+  return { unit, questions };
+}
+
+/* ------------------------------------------------------------
+   英語 NT L0-2 単語 (26問: アルファベット順 A〜Z)
+   ------------------------------------------------------------ */
+const ENGLISH_NT_L0_2_SOURCE = [
+  ['りんご', 'apple'],
+  ['ボート', 'boat'],
+  ['ねこ', 'cat'],
+  ['犬', 'dog'],
+  ['卵', 'egg'],
+  ['魚', 'fish'],
+  ['ギター', 'guitar'],
+  ['家', 'house'],
+  ['インク', 'ink'],
+  ['ジャム', 'jam'],
+  ['鍵', 'key'],
+  ['ライオン', 'lion'],
+  ['牛乳', 'milk'],
+  ['名前', 'name'],
+  ['オレンジ', 'orange'],
+  ['パンダ', 'panda'],
+  ['質問', 'question'],
+  ['ウサギ', 'rabbit'],
+  ['太陽', 'sun'],
+  ['お茶', 'tea'],
+  ['傘', 'umbrella'],
+  ['バイオリン', 'violin'],
+  ['波', 'wave'],
+  ['箱', 'box'],
+  ['黄色', 'yellow'],
+  ['動物園', 'zoo']
+];
+
+function buildEnglishNtL02Pack() {
+  const unit = { id: 'u-eng-nt-l0-2', subjectId: 'english', name: 'NT L0-2 単語', parentId: null };
+  const questions = [];
+  let n = 0;
+  for (const [ja, en] of ENGLISH_NT_L0_2_SOURCE) {
+    n++;
+    questions.push({
+      id: 'q-entl02-' + String(n).padStart(3, '0'),
+      unitId: 'u-eng-nt-l0-2',
+      type: 'english',
+      ja: ja,
+      en: en,
+      hint: '',
+      sourceNote: '',
+      createdAt: '2026-05-12'
     });
   }
   return { unit, questions };
@@ -1807,6 +1859,9 @@ function buildSampleData() {
   const entl0 = buildEnglishNtL0Pack();
   data.units.push(entl0.unit);
   data.questions.push(...entl0.questions);
+  const entl02 = buildEnglishNtL02Pack();
+  data.units.push(entl02.unit);
+  data.questions.push(...entl02.questions);
   const ejp8 = buildEnglishJprepL8Pack();
   data.units.push(ejp8.unit);
   data.questions.push(...ejp8.questions);
@@ -1907,6 +1962,17 @@ function loadState() {
     // 英語 NT L0 単語の追加マイグレーション (既存ユーザー向け)
     if (!state.units.some(u => u.id === 'u-eng-nt-l0')) {
       const pack = buildEnglishNtL0Pack();
+      state.units.push(pack.unit);
+      state.questions.push(...pack.questions);
+      migrated = true;
+    } else {
+      // 既存ユーザーの「NT L0 単語」を「NT L0-1 単語」にリネーム
+      const u0 = state.units.find(u => u.id === 'u-eng-nt-l0');
+      if (u0 && u0.name === 'NT L0 単語') { u0.name = 'NT L0-1 単語'; migrated = true; }
+    }
+    // 英語 NT L0-2 単語の追加マイグレーション (既存ユーザー向け)
+    if (!state.units.some(u => u.id === 'u-eng-nt-l0-2')) {
+      const pack = buildEnglishNtL02Pack();
       state.units.push(pack.unit);
       state.questions.push(...pack.questions);
       migrated = true;
