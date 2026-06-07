@@ -1826,6 +1826,53 @@ function buildEnglishJprepL10Pack() {
 }
 
 /* ------------------------------------------------------------
+   英語 JPREP L1-10 単語 (100問: L1〜L10 通し復習用)
+   各エントリ: [日本語, 英語, セクション(L1〜L10)]
+   ------------------------------------------------------------ */
+const ENGLISH_JPREP_L1_10_SOURCE = [
+  // L1
+  ['新聞','newspaper','L1'],['窓','window','L1'],['台所','kitchen','L1'],['朝食','breakfast','L1'],['姉、妹','sister','L1'],['〜を見る','watch','L1'],['〜を読む','read','L1'],['〜を飲む','drink','L1'],['家族、一家','family','L1'],['〜を勉強する','study','L1'],
+  // L2
+  ['〜と会う','meet','L2'],['世界','world','L2'],['今(は)','now','L2'],['〜が見える、〜を見る','see','L2'],['家','house','L2'],['(興味があって)おもしろい、興味深い','interesting','L2'],['物、事','thing','L2'],['壁','wall','L2'],['〜を習う','learn','L2'],['〜の近くに','near','L2'],
+  // L3
+  ['楽しい','fun','L3'],['〜を始める','start','L3'],['学校','school','L3'],['イス','chair','L3'],['同級生、クラスメート','classmate','L3'],['教室','classroom','L3'],['先生','teacher','L3'],['(文字)を書く','write','L3'],['宿題','homework','L3'],['本','book','L3'],
+  // L4
+  ['授業、レッスン','lesson','L4'],['〜を手伝う、助ける','help','L4'],['朝','morning','L4'],['話す','talk','L4'],['(時間、時期的に)早くに','early','L4'],['暗い','dark','L4'],['聞く','listen','L4'],['〜を使う','use','L4'],['生徒、学生','student','L4'],['〜を持ってくる','bring','L4'],
+  // L5
+  ['忙しい','busy','L5'],['一緒に','together','L5'],['場所','place','L5'],['〜を思う、〜を考える','think','L5'],['(want to do)〜したい','want','L5'],['午後、昼下がり','afternoon','L5'],['新しい','new','L5'],['〜を買う','buy','L5'],['(聞いたり読んだりして)〜のように思われる','sound','L5'],['すばらしい','great','L5'],
+  // L6
+  ['天気、気候','weather','L6'],['皮、肌','skin','L6'],['色','color','L6'],['ときどき','sometimes','L6'],['〜の心地がする','feel','L6'],['人気がある','popular','L6'],['暖かい','warm','L6'],['動物','animal','L6'],['〜を着る','wear','L6'],['重い','heavy','L6'],
+  // L7
+  ['仕事','job','L7'],['よく、しばしば','often','L7'],['建物','building','L7'],['医者','doctor','L7'],['旅行する','travel','L7'],['病院','hospital','L7'],['報道する','report','L7'],['オフィス、会社','office','L7'],['働く','work','L7'],['消防士','firefighter','L7'],
+  // L8
+  ['皿、料理','dish','L8'],['食べ物','food','L8'],['〜を切る','cut','L8'],['〜を入れておく','hold','L8'],['きれいな','clean','L8'],['グローブ、手袋(通例複数形)','glove','L8'],['布','cloth','L8'],['大きい','large','L8'],['平皿','plate','L8'],['〜になる','become','L8'],
+  // L9
+  ['〜を話す、喋る','speak','L9'],['祖父、おじいさん','grandfather','L9'],['おばさん、おば','aunt','L9'],['帽子','cap','L9'],['おいしい','delicious','L9'],['祖母、おばあさん','grandmother','L9'],['英語の、英語による','English','L9'],['おじさん、おじ','uncle','L9'],['祖父母','grandparent','L9'],['レストラン、料理店、飲食店','restaurant','L9'],
+  // L10
+  ['冬','winter','L10'],['いつも','always','L10'],['友だち','friend','L10'],['〜を建てる','build','L10'],['夏','summer','L10'],['兄、弟','brother','L10'],['店','store','L10'],['歩く','walk','L10'],['一生懸命に、熱心に','hard','L10'],['若い、幼い','young','L10']
+];
+
+function buildEnglishJprepL1_10Pack() {
+  const unit = { id: 'u-eng-jprep-l1-10', subjectId: 'english', name: 'JPREP L1-10 単語', parentId: null };
+  const questions = [];
+  let n = 0;
+  for (const [ja, en, section] of ENGLISH_JPREP_L1_10_SOURCE) {
+    n++;
+    questions.push({
+      id: 'q-ejp110-' + String(n).padStart(3, '0'),
+      unitId: 'u-eng-jprep-l1-10',
+      type: 'english',
+      ja: ja,
+      en: en,
+      hint: '',
+      sourceNote: section,
+      createdAt: '2026-05-27'
+    });
+  }
+  return { unit, questions };
+}
+
+/* ------------------------------------------------------------
    百人一首 1〜20首
    各エントリ: { kami(上の句), shimo(下の句), meaning(意味),
                  author(詠み手), technique(主な表現技法) }
@@ -1941,6 +1988,9 @@ function buildSampleData() {
   const ejp10 = buildEnglishJprepL10Pack();
   data.units.push(ejp10.unit);
   data.questions.push(...ejp10.questions);
+  const ejp110 = buildEnglishJprepL1_10Pack();
+  data.units.push(ejp110.unit);
+  data.questions.push(...ejp110.questions);
   const hk = buildHyakuninPack();
   data.units.push(hk.unit);
   data.questions.push(...hk.questions);
@@ -2071,6 +2121,13 @@ function loadState() {
     // 英語 JPREP L10 単語の追加マイグレーション (既存ユーザー向け)
     if (!state.units.some(u => u.id === 'u-eng-jprep-l10')) {
       const pack = buildEnglishJprepL10Pack();
+      state.units.push(pack.unit);
+      state.questions.push(...pack.questions);
+      migrated = true;
+    }
+    // 英語 JPREP L1-10 単語の追加マイグレーション (既存ユーザー向け)
+    if (!state.units.some(u => u.id === 'u-eng-jprep-l1-10')) {
+      const pack = buildEnglishJprepL1_10Pack();
       state.units.push(pack.unit);
       state.questions.push(...pack.questions);
       migrated = true;
