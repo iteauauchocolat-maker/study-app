@@ -1580,7 +1580,7 @@ const ENGLISH_JPREP_L7_SOURCE = [
 ];
 
 function buildEnglishJprepL7Pack() {
-  const unit = { id: 'u-eng-jprep-l7', subjectId: 'english', name: 'JPREP L7 単語', parentId: null };
+  const unit = { id: 'u-eng-jprep-l7', subjectId: 'english', name: 'JPREP A L7 単語', parentId: null };
   const questions = [];
   let n = 0;
   for (const [ja, en] of ENGLISH_JPREP_L7_SOURCE) {
@@ -1733,7 +1733,7 @@ const ENGLISH_JPREP_L8_SOURCE = [
 ];
 
 function buildEnglishJprepL8Pack() {
-  const unit = { id: 'u-eng-jprep-l8', subjectId: 'english', name: 'JPREP L8 単語', parentId: null };
+  const unit = { id: 'u-eng-jprep-l8', subjectId: 'english', name: 'JPREP A L8 単語', parentId: null };
   const questions = [];
   let n = 0;
   for (const [ja, en] of ENGLISH_JPREP_L8_SOURCE) {
@@ -1770,7 +1770,7 @@ const ENGLISH_JPREP_L9_SOURCE = [
 ];
 
 function buildEnglishJprepL9Pack() {
-  const unit = { id: 'u-eng-jprep-l9', subjectId: 'english', name: 'JPREP L9 単語', parentId: null };
+  const unit = { id: 'u-eng-jprep-l9', subjectId: 'english', name: 'JPREP A L9 単語', parentId: null };
   const questions = [];
   let n = 0;
   for (const [ja, en] of ENGLISH_JPREP_L9_SOURCE) {
@@ -1806,7 +1806,7 @@ const ENGLISH_JPREP_L10_SOURCE = [
 ];
 
 function buildEnglishJprepL10Pack() {
-  const unit = { id: 'u-eng-jprep-l10', subjectId: 'english', name: 'JPREP L10 単語', parentId: null };
+  const unit = { id: 'u-eng-jprep-l10', subjectId: 'english', name: 'JPREP A L10 単語', parentId: null };
   const questions = [];
   let n = 0;
   for (const [ja, en] of ENGLISH_JPREP_L10_SOURCE) {
@@ -1853,7 +1853,7 @@ const ENGLISH_JPREP_L1_10_SOURCE = [
 ];
 
 function buildEnglishJprepL1_10Pack() {
-  const unit = { id: 'u-eng-jprep-l1-10', subjectId: 'english', name: 'JPREP L1-10 単語', parentId: null };
+  const unit = { id: 'u-eng-jprep-l1-10', subjectId: 'english', name: 'JPREP A L1-10 単語', parentId: null };
   const questions = [];
   let n = 0;
   for (const [ja, en, section] of ENGLISH_JPREP_L1_10_SOURCE) {
@@ -1866,6 +1866,42 @@ function buildEnglishJprepL1_10Pack() {
       en: en,
       hint: '',
       sourceNote: section,
+      createdAt: '2026-05-27'
+    });
+  }
+  return { unit, questions };
+}
+
+/* ------------------------------------------------------------
+   英語 JPREP B L1 単語 (10問)
+   ------------------------------------------------------------ */
+const ENGLISH_JPREP_B_L1_SOURCE = [
+  ['(good, wellの最上級)最も良い', 'best'],
+  ['何か', 'something'],
+  ['悲しい', 'sad'],
+  ['強い', 'strong'],
+  ['怒って', 'angry'],
+  ['私たちを(に) 《weの目的格》', 'us'],
+  ['黄色', 'yellow'],
+  ['止まる', 'stop'],
+  ['穏やかな', 'calm'],
+  ['幸福な、幸せな', 'happy']
+];
+
+function buildEnglishJprepBL1Pack() {
+  const unit = { id: 'u-eng-jprep-b-l1', subjectId: 'english', name: 'JPREP B L1 単語', parentId: null };
+  const questions = [];
+  let n = 0;
+  for (const [ja, en] of ENGLISH_JPREP_B_L1_SOURCE) {
+    n++;
+    questions.push({
+      id: 'q-ejpb1-' + String(n).padStart(3, '0'),
+      unitId: 'u-eng-jprep-b-l1',
+      type: 'english',
+      ja: ja,
+      en: en,
+      hint: '',
+      sourceNote: '',
       createdAt: '2026-05-27'
     });
   }
@@ -1991,6 +2027,9 @@ function buildSampleData() {
   const ejp110 = buildEnglishJprepL1_10Pack();
   data.units.push(ejp110.unit);
   data.questions.push(...ejp110.questions);
+  const ejpb1 = buildEnglishJprepBL1Pack();
+  data.units.push(ejpb1.unit);
+  data.questions.push(...ejpb1.questions);
   const hk = buildHyakuninPack();
   data.units.push(hk.unit);
   data.questions.push(...hk.questions);
@@ -2132,6 +2171,26 @@ function loadState() {
       state.questions.push(...pack.questions);
       migrated = true;
     }
+    // 英語 JPREP B L1 単語 (10問) 追加マイグレーション (既存ユーザー向け)
+    if (!state.units.some(u => u.id === 'u-eng-jprep-b-l1')) {
+      const pack = buildEnglishJprepBL1Pack();
+      state.units.push(pack.unit);
+      state.questions.push(...pack.questions);
+      migrated = true;
+    }
+    // 英語 JPREP 単元名を 'JPREP A ...' へリネーム (既存ユーザー向け)
+    const jprepRenames = {
+      'u-eng-jprep-l7':   'JPREP A L7 単語',
+      'u-eng-jprep-l8':   'JPREP A L8 単語',
+      'u-eng-jprep-l9':   'JPREP A L9 単語',
+      'u-eng-jprep-l10':  'JPREP A L10 単語',
+      'u-eng-jprep-l1-10':'JPREP A L1-10 単語'
+    };
+    Object.entries(jprepRenames).forEach(([uid, newName]) => {
+      const u = state.units.find(x => x.id === uid);
+      if (u && u.name !== newName) { u.name = newName; migrated = true; }
+    });
+
     // 百人一首 教科・単元の追加マイグレーション (既存ユーザー向け)
     if (!state.subjects.some(s => s.id === 'hyakunin')) {
       state.subjects.push({ id: 'hyakunin', name: '百人一首' });
