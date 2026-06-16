@@ -1909,6 +1909,42 @@ function buildEnglishJprepBL1Pack() {
 }
 
 /* ------------------------------------------------------------
+   英語 JPREP B L2 単語 (10問)
+   ------------------------------------------------------------ */
+const ENGLISH_JPREP_B_L2_SOURCE = [
+  ['すでに、もう', 'already'],
+  ['裕福な、金持ちの', 'rich'],
+  ['〜を混ぜる', 'mix'],
+  ['紫色', 'purple'],
+  ['白', 'white'],
+  ['花', 'flower'],
+  ['〜と組み合わせる', 'pair'],
+  ['難しい、困難な', 'difficult'],
+  ['植物', 'plant'],
+  ['オレンジ色', 'orange']
+];
+
+function buildEnglishJprepBL2Pack() {
+  const unit = { id: 'u-eng-jprep-b-l2', subjectId: 'english', name: 'JPREP B L2 単語', parentId: null };
+  const questions = [];
+  let n = 0;
+  for (const [ja, en] of ENGLISH_JPREP_B_L2_SOURCE) {
+    n++;
+    questions.push({
+      id: 'q-ejpb2-' + String(n).padStart(3, '0'),
+      unitId: 'u-eng-jprep-b-l2',
+      type: 'english',
+      ja: ja,
+      en: en,
+      hint: '',
+      sourceNote: '',
+      createdAt: '2026-05-27'
+    });
+  }
+  return { unit, questions };
+}
+
+/* ------------------------------------------------------------
    百人一首 1〜20首
    各エントリ: { kami(上の句), shimo(下の句), meaning(意味),
                  author(詠み手), technique(主な表現技法) }
@@ -2030,6 +2066,9 @@ function buildSampleData() {
   const ejpb1 = buildEnglishJprepBL1Pack();
   data.units.push(ejpb1.unit);
   data.questions.push(...ejpb1.questions);
+  const ejpb2 = buildEnglishJprepBL2Pack();
+  data.units.push(ejpb2.unit);
+  data.questions.push(...ejpb2.questions);
   const hk = buildHyakuninPack();
   data.units.push(hk.unit);
   data.questions.push(...hk.questions);
@@ -2174,6 +2213,13 @@ function loadState() {
     // 英語 JPREP B L1 単語 (10問) 追加マイグレーション (既存ユーザー向け)
     if (!state.units.some(u => u.id === 'u-eng-jprep-b-l1')) {
       const pack = buildEnglishJprepBL1Pack();
+      state.units.push(pack.unit);
+      state.questions.push(...pack.questions);
+      migrated = true;
+    }
+    // 英語 JPREP B L2 単語 (10問) 追加マイグレーション (既存ユーザー向け)
+    if (!state.units.some(u => u.id === 'u-eng-jprep-b-l2')) {
+      const pack = buildEnglishJprepBL2Pack();
       state.units.push(pack.unit);
       state.questions.push(...pack.questions);
       migrated = true;
