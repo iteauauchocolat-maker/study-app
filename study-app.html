@@ -1985,26 +1985,50 @@ function buildEnglishJprepBL3Pack() {
                  author(詠み手), technique(主な表現技法) }
    ------------------------------------------------------------ */
 const HYAKUNIN_SOURCE = [
-  { kami: '秋の田の かりほの庵の 苫をあらみ', shimo: 'わが衣手は 露にぬれつつ', author: '天智天皇', meaning: '秋の田の仮小屋の(屋根を葺いた)苫の目が粗いので、私の袖は(もれ落ちる)夜露でぬれ続けることだ。', technique: '掛詞(かりほ→刈り穂・仮庵)' },
-  { kami: '春過ぎて 夏来にけらし 白妙の', shimo: '衣ほすてふ 天の香具山', author: '持統天皇', meaning: '春が過ぎて夏がやってきたらしい。(夏になると)真っ白な衣を干すという天の香具山よ。', technique: '枕詞(白妙の→衣)／体言止め（原作は『万葉集』）' },
-  { kami: 'あしびきの 山鳥の尾の しだり尾の', shimo: '長々し夜を ひとりかも寝む', author: '柿本人麻呂', meaning: '山鳥の尾の垂れ下がった尾のように、長い長い(秋の)夜を(私は)ひとりで寝るのだろうか。', technique: '枕詞(あしびきの→山)／序詞(あしびきの〜しだり尾の→長々し)' },
-  { kami: '田子の浦に うち出でて見れば 白妙の', shimo: '富士の高嶺に 雪は降りつつ', author: '山部赤人', meaning: '田子の浦に出て見渡すと、真っ白な富士の高い峰に、今しきりに雪は降り積もっていることだ。', technique: '枕詞(白妙の→雪)（原作は『万葉集』）' },
-  { kami: '奥山に 紅葉踏み分け 鳴く鹿の', shimo: '声聞く時ぞ 秋は悲しき', author: '猿丸大夫', meaning: '奥深い山で、(妻を慕って)紅葉を踏み分けて鳴く鹿の声を聞くときこそ、(何にもまして)秋は悲しい。', technique: '係り結び(ぞ→悲しき)' },
-  { kami: 'かささぎの 渡せる橋に 置く霜の', shimo: '白きを見れば 夜ぞ更けにける', author: '大伴家持', meaning: 'カササギが(天の川に)渡している橋に置く霜が白いのを見ると、夜も更けてしまったことだなあ。', technique: '係り結び(ぞ→ける)' },
-  { kami: '天の原 ふりさけ見れば 春日なる', shimo: '三笠の山に 出でし月かも', author: '安倍仲麿', meaning: '大空を振り仰いで見ると、(故郷の)春日にある三笠の山に出た月(と同じ月)が照り輝いているよ。', technique: '体言止め' },
-  { kami: 'わが庵は 都のたつみ しかぞ住む', shimo: '世をうぢ山と 人は言ふなり', author: '喜撰法師', meaning: '私の庵は都の南東にあり、こうして(心静かに)住んでいる。(ここを)世を嫌って住む宇治山と人は言うそうだ。', technique: '掛詞(うぢ→宇治・憂)／係り結び' },
-  { kami: '花の色は 移りにけりな いたづらに', shimo: 'わが身世にふる ながめせし間に', author: '小野小町', meaning: '(桜の)花の色はすっかりあせてしまったよ。私が物思いをしてぼんやり世を過ごしている間に、長雨が降って。', technique: '掛詞(ふる→経る・降る、ながめ→眺め・長雨)／縁語(長雨・ふる)／倒置' },
-  { kami: 'これやこの 行くも帰るも 別れては', shimo: '知るも知らぬも 逢坂の関', author: '蝉丸', meaning: 'これがまあ、この(東国へ)行く人も(都へ)帰る人も(ここで)別れては、知る人も知らない人も(ここで)逢うという逢坂の関だよ。', technique: '掛詞(逢→逢坂・逢ふ)／体言止め' },
-  { kami: 'わたの原 八十島かけて 漕ぎ出でぬと', shimo: '人には告げよ あまの釣舟', author: '小野篁', meaning: '大海原を多くの島々を目指して舟を漕ぎ出したと、(都の)あの人には告げてくれ。漁夫の釣り舟よ。', technique: '擬人法' },
-  { kami: '天つ風 雲の通ひ路 吹き閉ぢよ', shimo: 'をとめの姿 しばしとどめむ', author: '僧正遍昭', meaning: '天の風よ、雲の(中の天への)通路を吹き閉じてくれ。(五節の舞を舞う)天女の姿をしばらくとどめておきたいのだ。', technique: '擬人法／体言止め' },
-  { kami: '筑波嶺の 峰より落つる みなの川', shimo: '恋ぞつもりて 淵となりぬる', author: '陽成院', meaning: '筑波山の峰から流れ落ちるみなの川のように、(私の)恋も積もって淵のように深くなってしまった。', technique: '序詞(筑波嶺の〜みなの川→恋ぞ)／係り結び' },
-  { kami: '陸奥の しのぶもぢずり 誰ゆゑに', shimo: '乱れそめにし 我ならなくに', author: '河原左大臣(源融)', meaning: '陸奥のしのぶずりの布の乱れ模様のように、(あなた以外の)だれかのせいで思い乱れ始めた私ではないのに。', technique: '序詞(陸奥のしのぶもぢずり→乱れ)／掛詞(そめ→染め・初め)' },
-  { kami: '君がため 春の野に出でて 若菜摘む', shimo: 'わが衣手に 雪は降りつつ', author: '光孝天皇', meaning: 'あなたのために春の野に出て若菜を摘む私の袖に、しきりに雪が降りかかってくることだ。', technique: '' },
-  { kami: '立ち別れ いなばの山の 峰に生ふる', shimo: 'まつとし聞かば 今帰り来む', author: '中納言行平(在原行平)', meaning: '(あなたと)別れて因幡の国へ往くが、稲葉山の峰に生える松のように、(あなたが私を)待つと聞いたらすぐに帰ってこよう。', technique: '掛詞(いなば→因幡・往なば、まつ→松・待つ)／係り結び' },
-  { kami: 'ちはやぶる 神代もきかず 竜田川', shimo: 'から紅に 水くくるとは', author: '在原業平', meaning: '不思議なことが多かったという神代にも聞いたことがない。竜田川が、(紅葉によって)美しい紅色にその水を絞り染めにするとは。', technique: '枕詞(ちはやぶる→神)／倒置' },
-  { kami: '住の江の 岸に寄る波 よるさへや', shimo: '夢の通ひ路 人目よくらむ', author: '藤原敏行', meaning: '住の江の岸に寄る波の、夜さえも、(あなたは)夢の中の通い路まで、人目を避けるのだろうか。', technique: '序詞(住の江の岸に寄る波→よる)／掛詞(よる→夜・寄る)／係り結び' },
-  { kami: '難波潟 短き蘆の 節の間も', shimo: '逢はでこの世を 過ぐしてよとや', author: '伊勢', meaning: '難波潟の蘆の短い節の間のような(わずかな)間さえ、(あなたに)逢わずにこの世を過ごしてしまえというのか。', technique: '序詞(難波潟短き蘆の→節の間)' },
-  { kami: 'わびぬれば 今はた同じ 難波なる', shimo: 'みをつくしても 逢はむとぞ思ふ', author: '元良親王', meaning: 'つらくなってしまったので、今はもう同じことだ。難波の澪標ではないが、身を滅ぼしても(あなたに)逢いたいと思う。', technique: '掛詞(みをつくし→澪標・身を尽くし)／係り結び' }
+  { kami: '秋の田の かりほの庵の 苫をあらみ', shimo: 'わが衣手は 露にぬれつつ', author: '天智天皇', meaning: '秋の田の仮小屋の(屋根を葺いた)苫の目が粗いので、私の袖は(もれ落ちる)夜露でぬれ続けることだ。', technique: '掛詞(かりほ→刈り穂・仮庵)', modernKami: 'あきのたの かりほのいおの とまをあらみ', modernShimo: 'わがころもでは つゆにぬれつつ' },
+  { kami: '春過ぎて 夏来にけらし 白妙の', shimo: '衣ほすてふ 天の香具山', author: '持統天皇', meaning: '春が過ぎて夏がやってきたらしい。(夏になると)真っ白な衣を干すという天の香具山よ。', technique: '枕詞(白妙の→衣)／体言止め（原作は『万葉集』）', modernKami: 'はるすぎて なつきにけらし しろたえの', modernShimo: 'ころもほすちょう あめのかぐやま' },
+  { kami: 'あしびきの 山鳥の尾の しだり尾の', shimo: '長々し夜を ひとりかも寝む', author: '柿本人麻呂', meaning: '山鳥の尾の垂れ下がった尾のように、長い長い(秋の)夜を(私は)ひとりで寝るのだろうか。', technique: '枕詞(あしびきの→山)／序詞(あしびきの〜しだり尾の→長々し)', modernKami: 'あしびきの やまどりのおの しだりおの', modernShimo: 'ながながしよを ひとりかもねん' },
+  { kami: '田子の浦に うち出でて見れば 白妙の', shimo: '富士の高嶺に 雪は降りつつ', author: '山部赤人', meaning: '田子の浦に出て見渡すと、真っ白な富士の高い峰に、今しきりに雪は降り積もっていることだ。', technique: '枕詞(白妙の→雪)（原作は『万葉集』）', modernKami: 'たごのうらに うちいでてみれば しろたえの', modernShimo: 'ふじのたかねに ゆきはふりつつ' },
+  { kami: '奥山に 紅葉踏み分け 鳴く鹿の', shimo: '声聞く時ぞ 秋は悲しき', author: '猿丸大夫', meaning: '奥深い山で、(妻を慕って)紅葉を踏み分けて鳴く鹿の声を聞くときこそ、(何にもまして)秋は悲しい。', technique: '係り結び(ぞ→悲しき)', modernKami: 'おくやまに もみじふみわけ なくしかの', modernShimo: 'こえきくときぞ あきはかなしき' },
+  { kami: 'かささぎの 渡せる橋に 置く霜の', shimo: '白きを見れば 夜ぞ更けにける', author: '大伴家持', meaning: 'カササギが(天の川に)渡している橋に置く霜が白いのを見ると、夜も更けてしまったことだなあ。', technique: '係り結び(ぞ→ける)', modernKami: 'かささぎの わたせるはしに おくしもの', modernShimo: 'しろきをみれば よぞふけにける' },
+  { kami: '天の原 ふりさけ見れば 春日なる', shimo: '三笠の山に 出でし月かも', author: '安倍仲麿', meaning: '大空を振り仰いで見ると、(故郷の)春日にある三笠の山に出た月(と同じ月)が照り輝いているよ。', technique: '体言止め', modernKami: 'あまのはら ふりさけみれば かすがなる', modernShimo: 'みかさのやまに いでしつきかも' },
+  { kami: 'わが庵は 都のたつみ しかぞ住む', shimo: '世をうぢ山と 人は言ふなり', author: '喜撰法師', meaning: '私の庵は都の南東にあり、こうして(心静かに)住んでいる。(ここを)世を嫌って住む宇治山と人は言うそうだ。', technique: '掛詞(うぢ→宇治・憂)／係り結び', modernKami: 'わがいおは みやこのたつみ しかぞすむ', modernShimo: 'よをうじやまと ひとはいうなり' },
+  { kami: '花の色は 移りにけりな いたづらに', shimo: 'わが身世にふる ながめせし間に', author: '小野小町', meaning: '(桜の)花の色はすっかりあせてしまったよ。私が物思いをしてぼんやり世を過ごしている間に、長雨が降って。', technique: '掛詞(ふる→経る・降る、ながめ→眺め・長雨)／縁語(長雨・ふる)／倒置', modernKami: 'はなのいろは うつりにけりな いたずらに', modernShimo: 'わがみよにふる ながめせしまに' },
+  { kami: 'これやこの 行くも帰るも 別れては', shimo: '知るも知らぬも 逢坂の関', author: '蝉丸', meaning: 'これがまあ、この(東国へ)行く人も(都へ)帰る人も(ここで)別れては、知る人も知らない人も(ここで)逢うという逢坂の関だよ。', technique: '掛詞(逢→逢坂・逢ふ)／体言止め', modernKami: 'これやこの ゆくもかえるも わかれては', modernShimo: 'しるもしらぬも おうさかのせき' },
+  { kami: 'わたの原 八十島かけて 漕ぎ出でぬと', shimo: '人には告げよ あまの釣舟', author: '小野篁', meaning: '大海原を多くの島々を目指して舟を漕ぎ出したと、(都の)あの人には告げてくれ。漁夫の釣り舟よ。', technique: '擬人法', modernKami: 'わたのはら やそしまかけて こぎいでぬと', modernShimo: 'ひとにはつげよ あまのつりぶね' },
+  { kami: '天つ風 雲の通ひ路 吹き閉ぢよ', shimo: 'をとめの姿 しばしとどめむ', author: '僧正遍昭', meaning: '天の風よ、雲の(中の天への)通路を吹き閉じてくれ。(五節の舞を舞う)天女の姿をしばらくとどめておきたいのだ。', technique: '擬人法／体言止め', modernKami: 'あまつかぜ くものかよいじ ふきとじよ', modernShimo: 'おとめのすがた しばしとどめん' },
+  { kami: '筑波嶺の 峰より落つる みなの川', shimo: '恋ぞつもりて 淵となりぬる', author: '陽成院', meaning: '筑波山の峰から流れ落ちるみなの川のように、(私の)恋も積もって淵のように深くなってしまった。', technique: '序詞(筑波嶺の〜みなの川→恋ぞ)／係り結び', modernKami: 'つくばねの みねよりおつる みなのがわ', modernShimo: 'こいぞつもりて ふちとなりぬる' },
+  { kami: '陸奥の しのぶもぢずり 誰ゆゑに', shimo: '乱れそめにし 我ならなくに', author: '河原左大臣(源融)', meaning: '陸奥のしのぶずりの布の乱れ模様のように、(あなた以外の)だれかのせいで思い乱れ始めた私ではないのに。', technique: '序詞(陸奥のしのぶもぢずり→乱れ)／掛詞(そめ→染め・初め)', modernKami: 'みちのくの しのぶもじずり たれゆえに', modernShimo: 'みだれそめにし われならなくに' },
+  { kami: '君がため 春の野に出でて 若菜摘む', shimo: 'わが衣手に 雪は降りつつ', author: '光孝天皇', meaning: 'あなたのために春の野に出て若菜を摘む私の袖に、しきりに雪が降りかかってくることだ。', technique: '', modernKami: 'きみがため はるののにいでて わかなつむ', modernShimo: 'わがころもでに ゆきはふりつつ' },
+  { kami: '立ち別れ いなばの山の 峰に生ふる', shimo: 'まつとし聞かば 今帰り来む', author: '中納言行平(在原行平)', meaning: '(あなたと)別れて因幡の国へ往くが、稲葉山の峰に生える松のように、(あなたが私を)待つと聞いたらすぐに帰ってこよう。', technique: '掛詞(いなば→因幡・往なば、まつ→松・待つ)／係り結び', modernKami: 'たちわかれ いなばのやまの みねにおうる', modernShimo: 'まつとしきかば いまかえりこん' },
+  { kami: 'ちはやぶる 神代もきかず 竜田川', shimo: 'から紅に 水くくるとは', author: '在原業平', meaning: '不思議なことが多かったという神代にも聞いたことがない。竜田川が、(紅葉によって)美しい紅色にその水を絞り染めにするとは。', technique: '枕詞(ちはやぶる→神)／倒置', modernKami: 'ちはやぶる かみよもきかず たつたがわ', modernShimo: 'からくれないに みずくくるとは' },
+  { kami: '住の江の 岸に寄る波 よるさへや', shimo: '夢の通ひ路 人目よくらむ', author: '藤原敏行', meaning: '住の江の岸に寄る波の、夜さえも、(あなたは)夢の中の通い路まで、人目を避けるのだろうか。', technique: '序詞(住の江の岸に寄る波→よる)／掛詞(よる→夜・寄る)／係り結び', modernKami: 'すみのえの きしによるなみ よるさえや', modernShimo: 'ゆめのかよいじ ひとめよくらん' },
+  { kami: '難波潟 短き蘆の 節の間も', shimo: '逢はでこの世を 過ぐしてよとや', author: '伊勢', meaning: '難波潟の蘆の短い節の間のような(わずかな)間さえ、(あなたに)逢わずにこの世を過ごしてしまえというのか。', technique: '序詞(難波潟短き蘆の→節の間)', modernKami: 'なにわがた みじかきあしの ふしのまも', modernShimo: 'あわでこのよを すぐしてよとや' },
+  { kami: 'わびぬれば 今はた同じ 難波なる', shimo: 'みをつくしても 逢はむとぞ思ふ', author: '元良親王', meaning: 'つらくなってしまったので、今はもう同じことだ。難波の澪標ではないが、身を滅ぼしても(あなたに)逢いたいと思う。', technique: '掛詞(みをつくし→澪標・身を尽くし)／係り結び', modernKami: 'わびぬれば いまはたおなじ なにわなる', modernShimo: 'みをつくしても あわんとぞおもう' }
+];
+
+/* 百人一首 21〜40首 */
+const HYAKUNIN_2_SOURCE = [
+  { kami: '今来むと 言ひしばかりに 長月の', shimo: '有明の月を 待ち出でつるかな', author: '素性法師', meaning: '今すぐに行こうと(あなたが)言ったばかりに、旧暦九月の明け方の月が出るまで(長い夜を)待ち明かしてしまったよ。', technique: '', modernKami: 'いまこんと いいしばかりに ながつきの', modernShimo: 'ありあけのつきを まちいでつるかな' },
+  { kami: '吹くからに 秋の草木の しをるれば', shimo: 'むべ山風を あらしといふらむ', author: '文屋康秀', meaning: '吹くとすぐに秋の草木がしおれるので、なるほど山から吹く風を荒々しい風、つまり嵐(=山+風)というのだろう。', technique: '掛詞(あらし→嵐・荒らし)', modernKami: 'ふくからに あきのくさきの しおるれば', modernShimo: 'むべやまかぜを あらしというらん' },
+  { kami: '月見れば ちぢに物こそ 悲しけれ', shimo: 'わが身一つの 秋にはあらねど', author: '大江千里', meaning: '月を見ていると、あれこれとかぎりなくもの悲しい。私ひとりの(ためにやってきた)秋ではないけれど。', technique: '倒置', modernKami: 'つきみれば ちぢにものこそ かなしけれ', modernShimo: 'わがみひとつの あきにはあらねど' },
+  { kami: 'このたびは ぬさも取りあへず 手向山', shimo: '紅葉の錦 神のまにまに', author: '菅原道真', meaning: '今度の旅は(神に捧げる)幣も用意できていない。手向山の錦のような紅葉を、神よ、どうぞ御心のままに(お受けください)。', technique: '掛詞(このたび→この旅・この度)／体言止め', modernKami: 'このたびは ぬさもとりあえず たむけやま', modernShimo: 'もみじのにしき かみのまにまに' },
+  { kami: '名にし負はば 逢坂山の さねかづら', shimo: '人に知られで くるよしもがな', author: '三条右大臣(藤原定方)', meaning: '逢って寝るという名をもつのなら、逢坂山のさねかずらよ、(さねかずらをたぐるように)他人に知られずに来るすべがほしいなあ。', technique: '序詞(名にし〜さねかづら→くる)／掛詞(くる→繰る・来る)', modernKami: 'なにしおわば おうさかやまの さねかずら', modernShimo: 'ひとにしられで くるよしもがな' },
+  { kami: '小倉山 峰のもみぢ葉 心あらば', shimo: '今ひとたびの みゆき待たなむ', author: '貞信公(藤原忠平)', meaning: '小倉山の峰のもみじ葉、もし心があるのならば、次の天皇の行幸を(散らずに)待っていてほしい。', technique: '擬人法', modernKami: 'おぐらやま みねのもみじば こころあらば', modernShimo: 'いまひとたびの みゆきまたなん' },
+  { kami: 'みかの原 わきて流るる いづみ川', shimo: 'いつ見きとてか 恋しかるらむ', author: '中納言兼輔(藤原兼輔)', meaning: 'みかの原を分けて、湧いて流れるいずみ川ではないが、いつ見たというので(こんなにも)恋しいのだろうか。', technique: '序詞(みかの原〜いづみ川→いつ見)／係り結び', modernKami: 'みかのはら わきてながるる いずみがわ', modernShimo: 'いつみきとてか こいしかるらん' },
+  { kami: '山里は 冬ぞさびしさ まさりける', shimo: '人目も草も かれぬと思へば', author: '源宗于', meaning: '山里は、冬にはことに寂しさがまさることだ。人も訪ねてこなくなり、草も枯れてしまうと思うと。', technique: '掛詞(かれ→離れ・枯れ)／係り結び', modernKami: 'やまざとは ふゆぞさびしさ まさりける', modernShimo: 'ひとめもくさも かれぬとおもえば' },
+  { kami: '心あてに 折らばや折らむ 初霜の', shimo: '置きまどはせる 白菊の花', author: '凡河内躬恒', meaning: 'あてずっぽうに折るなら折ることもできようか。初霜が(一面に)置いて(目を)まどわせている白菊の花を。', technique: '見立て', modernKami: 'こころあてに おらばやおらん はつしもの', modernShimo: 'おきまどわせる しらぎくのはな' },
+  { kami: '有明の つれなく見えし 別れより', shimo: '暁ばかり 憂きものはなし', author: '壬生忠岑', meaning: '明け方の月が冷たく見え、あの女性が無情に見えた別れのときから、(私には)暁ほどつらいものはない。', technique: '倒置／体言止め', modernKami: 'ありあけの つれなくみえし わかれより', modernShimo: 'あかつきばかり うきものはなし' },
+  { kami: '朝ぼらけ 有明の月と 見るまでに', shimo: '吉野の里に 降れる白雪', author: '坂上是則', meaning: '夜の明けるころ、明け方の月(の光)かと思うほどに、吉野の里に降り積もった白雪よ。', technique: '見立て／体言止め', modernKami: 'あさぼらけ ありあけのつきと みるまでに', modernShimo: 'よしののさとに ふれるしらゆき' },
+  { kami: '山川に 風のかけたる しがらみは', shimo: '流れもあへぬ 紅葉なりけり', author: '春道列樹', meaning: '山中を流れる川に風がかけたしがらみというのは、流れることができずに(滞っている)紅葉だったのだ。', technique: '擬人法', modernKami: 'やまがわに かぜのかけたる しがらみは', modernShimo: 'ながれもあえぬ もみじなりけり' },
+  { kami: 'ひさかたの 光のどけき 春の日に', shimo: 'しづ心なく 花の散るらむ', author: '紀友則', meaning: '日の光ののどかな春の日に、どうして落ち着いた心もなく桜の花は散っているのだろう。', technique: '枕詞(ひさかたの→光)／擬人法／係り結び', modernKami: 'ひさかたの ひかりのどけき はるのひに', modernShimo: 'しずごころなく はなのちるらん' },
+  { kami: '誰をかも 知る人にせむ 高砂の', shimo: '松も昔の 友ならなくに', author: '藤原興風', meaning: '誰を知人としようか。(あの長寿で名高い)高砂の松でさえも、昔からの友ではないのだからなあ。', technique: '擬人法', modernKami: 'たれをかも しるひとにせん たかさごの', modernShimo: 'まつもむかしの ともならなくに' },
+  { kami: '人はいさ 心も知らず ふるさとは', shimo: '花ぞ昔の 香ににほひける', author: '紀貫之', meaning: '(あなたは)さあどうだか、心はわからない。昔なじみのこの里では、(梅の)花が昔のままの香りでにおっていることだよ。', technique: '係り結び', modernKami: 'ひとはいさ こころもしらず ふるさとは', modernShimo: 'はなぞむかしの かににおいける' },
+  { kami: '夏の夜は まだ宵ながら 明けぬるを', shimo: '雲のいづこに 月宿るらむ', author: '清原深養父', meaning: '(短い)夏の夜は、まだ宵だと思っているうちに明けてしまったが、いったい雲のどの辺りに月が宿っているのだろう。', technique: '擬人法', modernKami: 'なつのよは まだよいながら あけぬるを', modernShimo: 'くものいずこに つきやどるらん' },
+  { kami: '白露に 風の吹きしく 秋の野は', shimo: 'つらぬきとめぬ 玉ぞ散りける', author: '文屋朝康', meaning: '白露に風がしきりに吹く秋の野では、(糸に)通してとめていない(露の白い)玉が散っていることだ。', technique: '見立て／係り結び', modernKami: 'しらつゆに かぜのふきしく あきののは', modernShimo: 'つらぬきとめぬ たまぞちりける' },
+  { kami: '忘らるる 身をば思はず 誓ひてし', shimo: '人の命の 惜しくもあるかな', author: '右近', meaning: '忘れられる(私の)身は何とも思わない。(私への愛を神に)誓ったあなたの命が(神罰を受け、なくなるのが)惜しいことよ。', technique: '', modernKami: 'わすらるる みをばおもわず ちかいてし', modernShimo: 'ひとのいのちの おしくもあるかな' },
+  { kami: '浅茅生の 小野の篠原 忍ぶれど', shimo: 'あまりてなどか 人の恋しき', author: '参議等(源等)', meaning: '丈の低いチガヤが生えた小野の篠原の「しの」ではないが、(私は)忍んでも忍びきれず、どうしてあなたが恋しいのか。', technique: '序詞(浅茅生の小野の篠原→しのぶ)／係り結び', modernKami: 'あさじうの おののしのはら しのぶれど', modernShimo: 'あまりてなどか ひとのこいしき' },
+  { kami: '忍ぶれど 色に出でにけり わが恋は', shimo: '物や思ふと 人の問ふまで', author: '平兼盛', meaning: '心の中に秘めていたが、私の恋は顔色に出てしまった。恋の物思いをしているのかと人が尋ねるほどに。', technique: '倒置／係り結び', modernKami: 'しのぶれど いろにいでにけり わがこいは', modernShimo: 'ものやおもうと ひとのとうまで' }
 ];
 
 function buildHyakuninPack() {
@@ -2023,9 +2047,37 @@ function buildHyakuninPack() {
       meaning: p.meaning,
       author: p.author,
       technique: p.technique,
+      modernKami: p.modernKami || '',
+      modernShimo: p.modernShimo || '',
       hint: '',
       sourceNote: '',
       createdAt: '2026-05-10'
+    });
+  }
+  return { unit, questions };
+}
+
+function buildHyakunin2Pack() {
+  const unit = { id: 'u-hyakunin-2', subjectId: 'hyakunin', name: '21〜40', parentId: null };
+  const questions = [];
+  let n = 20;
+  for (const p of HYAKUNIN_2_SOURCE) {
+    n++;
+    questions.push({
+      id: 'q-hk-' + String(n).padStart(3, '0'),
+      unitId: 'u-hyakunin-2',
+      type: 'hyakunin',
+      no: n,
+      kami: p.kami,
+      shimo: p.shimo,
+      meaning: p.meaning,
+      author: p.author,
+      technique: p.technique,
+      modernKami: p.modernKami || '',
+      modernShimo: p.modernShimo || '',
+      hint: '',
+      sourceNote: '',
+      createdAt: '2026-05-27'
     });
   }
   return { unit, questions };
@@ -2110,6 +2162,9 @@ function buildSampleData() {
   const hk = buildHyakuninPack();
   data.units.push(hk.unit);
   data.questions.push(...hk.questions);
+  const hk2 = buildHyakunin2Pack();
+  data.units.push(hk2.unit);
+  data.questions.push(...hk2.questions);
   return data;
 }
 
@@ -2296,6 +2351,25 @@ function loadState() {
       const hu = state.units.find(u => u.id === 'u-hyakunin-1');
       if (hu && hu.name === '1〜20首') { hu.name = '1〜20'; migrated = true; }
     }
+    // 百人一首 21〜40 単元の追加マイグレーション (既存ユーザー向け)
+    if (!state.units.some(u => u.id === 'u-hyakunin-2')) {
+      const pack = buildHyakunin2Pack();
+      state.units.push(pack.unit);
+      state.questions.push(...pack.questions);
+      migrated = true;
+    }
+    // 既存の百人一首問題に modernKami / modernShimo が欠けていれば補う
+    {
+      const modernMap = new Map();
+      buildHyakuninPack().questions.forEach(q => modernMap.set(q.id, { mk: q.modernKami, ms: q.modernShimo }));
+      buildHyakunin2Pack().questions.forEach(q => modernMap.set(q.id, { mk: q.modernKami, ms: q.modernShimo }));
+      state.questions.forEach(q => {
+        if (q.type === 'hyakunin' && (!q.modernKami || !q.modernShimo)) {
+          const m = modernMap.get(q.id);
+          if (m) { q.modernKami = m.mk; q.modernShimo = m.ms; migrated = true; }
+        }
+      });
+    }
     // 旧 qa 形式の英語問題 (JPREP L7) を english 形式に変換
     state.questions.forEach(q => {
       if (q.unitId === 'u-eng-jprep-l7' && q.type === 'qa' && q.question && Array.isArray(q.answers)) {
@@ -2424,6 +2498,12 @@ function questionDisplay(q, direction) {
     }
     if (direction === 'hk-technique') {
       return { text: (q.kami || '') + '\n' + (q.shimo || ''), answers: [q.technique || '特になし'], qStyle: '', aStyle: '' };
+    }
+    if (direction === 'hk-modern') {
+      // 歴史的仮名遣い → 現代仮名遣い
+      const histText = (q.kami || '') + '\n' + (q.shimo || '');
+      const modText = (q.modernKami || '') + '\n' + (q.modernShimo || '');
+      return { text: histText, answers: [modText || '(未登録)'], qStyle: '', aStyle: '' };
     }
     // hk-kami-shimo (既定)
     return { text: q.kami || '', answers: [(q.shimo || '') + ' ' + au], qStyle: '', aStyle: '' };
@@ -3008,6 +3088,10 @@ function startStudy({ unitId = null, subjectId = null, direction = 'kakitori', l
   if (direction === 'hk-technique') {
     pool = pool.filter(q => q.type === 'hyakunin' && q.technique && q.technique.trim());
   }
+  // 百人一首 現代仮名遣いモードは modernKami/modernShimo が登録された首のみ
+  if (direction === 'hk-modern') {
+    pool = pool.filter(q => q.type === 'hyakunin' && q.modernKami && q.modernShimo);
+  }
   // 復習モード: 直近結果が ○ 以外 (△/× 未学習) だけに絞り込む
   if (reviewMode) {
     pool = pool.filter(q => {
@@ -3549,6 +3633,8 @@ function renderHyakuninDirection(params) {
   const skCnt = inScope.filter(q => getLatestResult(q.id, 'hk-shimo-kami', currentProfileId) !== 'o').length;
   const techPool = inScope.filter(q => q.technique && q.technique.trim());
   const tcCnt = techPool.filter(q => getLatestResult(q.id, 'hk-technique', currentProfileId) !== 'o').length;
+  const modPool = inScope.filter(q => q.modernKami && q.modernShimo);
+  const mdCnt = modPool.filter(q => getLatestResult(q.id, 'hk-modern', currentProfileId) !== 'o').length;
   const sub = (cnt, total) => reviewMode ? ('復習対象 ' + cnt + '問 / 全' + total + '問') : null;
 
   document.getElementById('screen-hyakunin-direction').innerHTML = `
@@ -3561,7 +3647,7 @@ function renderHyakuninDirection(params) {
       <div class="section-label">出題順</div>
       <div class="radio-group" id="hd-order">
         <label class="radio-item ${order === 'random' ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="hdorder" value="random" hidden>ランダム</label>
-        <label class="radio-item ${order === 'seq' ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="hdorder" value="seq" hidden>順番（1→20）</label>
+        <label class="radio-item ${order === 'seq' ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="hdorder" value="seq" hidden>番号順</label>
       </div>
       <div class="section-label">暗記（採点なし）</div>
       <div class="list-group">
@@ -3609,6 +3695,12 @@ function renderHyakuninDirection(params) {
             <div class="list-item-subtitle">${escapeHtml(sub(tcCnt, techPool.length) || '歌に使われた表現技法を答える（' + techPool.length + '首）')}</div>
           </div>
         </button>
+        <button class="list-item list-item-chevron" id="hd-modern">
+          <div class="list-item-main">
+            <div class="list-item-title">歴史的仮名遣い → 現代仮名遣い${reviewMode ? ' (復習)' : ''}</div>
+            <div class="list-item-subtitle">${escapeHtml(sub(mdCnt, modPool.length) || '歌を見て現代仮名遣いに直す（' + modPool.length + '首）')}</div>
+          </div>
+        </button>
       </div>
 
       <div class="section-label">この範囲を確認する</div>
@@ -3641,6 +3733,7 @@ function renderHyakuninDirection(params) {
   document.getElementById('hd-ks').onclick = () => startHyakuninGraded({ ...baseP, direction: 'hk-kami-shimo' });
   document.getElementById('hd-sk').onclick = () => startHyakuninGraded({ ...baseP, direction: 'hk-shimo-kami' });
   document.getElementById('hd-tech').onclick = () => startStudy({ ...baseP, direction: 'hk-technique' });
+  document.getElementById('hd-modern').onclick = () => startStudy({ ...baseP, direction: 'hk-modern' });
   document.getElementById('hd-list').onclick = () => showScreen('hyakunin-list', params);
 }
 
@@ -3802,7 +3895,7 @@ function renderHyakuninQuiz() {
         <div style="font-size:52px;margin-bottom:12px">🎴</div>
         <div style="font-size:18px;font-weight:700;margin-bottom:6px">全${s.questions.length}首 おわり</div>
         <div style="color:var(--text-secondary);margin-bottom:28px">おつかれさま！</div>
-        <button class="btn" id="hq-again">もう一度（${s.order === 'seq' ? '1→20' : 'シャッフル'}）</button>
+        <button class="btn" id="hq-again">もう一度（${s.order === 'seq' ? '番号順' : 'シャッフル'}）</button>
         <button class="btn secondary" id="hq-home">単元へ戻る</button>
       </div>`;
     document.getElementById('hq-quit').onclick = goBack;
@@ -3906,6 +3999,8 @@ function renderHyakuninList(params) {
     const sk = getLatestResult(q.id, 'hk-shimo-kami', currentProfileId);
     const tc = (q.technique && q.technique.trim()) ? getLatestResult(q.id, 'hk-technique', currentProfileId) : null;
     const tcCell = (q.technique && q.technique.trim()) ? markCell(tc) : '<span class="kl-r-none">—</span>';
+    const md = (q.modernKami && q.modernShimo) ? getLatestResult(q.id, 'hk-modern', currentProfileId) : null;
+    const mdCell = (q.modernKami && q.modernShimo) ? markCell(md) : '<span class="kl-r-none">—</span>';
     return `
     <tr>
       <td class="hk-list-no">${q.no || ''}</td>
@@ -3915,12 +4010,13 @@ function renderHyakuninList(params) {
       <td class="kl-result">${markCell(ks)}</td>
       <td class="kl-result">${markCell(sk)}</td>
       <td class="kl-result">${tcCell}</td>
+      <td class="kl-result">${mdCell}</td>
     </tr>`;
   }).join('');
   const tableHtml = pool.length === 0
     ? '<div class="card" style="text-align:center;color:var(--text-secondary)">百人一首がありません</div>'
     : `<table class="kanji-list-table hk-list-table">
-        <thead><tr><th>No</th><th>上の句</th><th>下の句</th><th>詠み手</th><th>上→下</th><th>下→上</th><th>技法</th></tr></thead>
+        <thead><tr><th>No</th><th>上の句</th><th>下の句</th><th>詠み手</th><th>上→下</th><th>下→上</th><th>技法</th><th>現代</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>`;
   document.getElementById('screen-hyakunin-list').innerHTML = `
