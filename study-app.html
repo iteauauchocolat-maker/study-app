@@ -1945,6 +1945,41 @@ function buildEnglishJprepBL2Pack() {
 }
 
 /* ------------------------------------------------------------
+   英語 JPREP B L3 単語 (9問)
+   ------------------------------------------------------------ */
+const ENGLISH_JPREP_B_L3_SOURCE = [
+  ['退屈な', 'boring'],
+  ['室内の', 'indoor'],
+  ['アクション', 'action'],
+  ['活動', 'activity'],
+  ['趣味', 'hobby'],
+  ['野外の', 'outdoor'],
+  ['デザート', 'dessert'],
+  ['〜をより好む', 'prefer'],
+  ['手芸', 'craft']
+];
+
+function buildEnglishJprepBL3Pack() {
+  const unit = { id: 'u-eng-jprep-b-l3', subjectId: 'english', name: 'JPREP B L3 単語', parentId: null };
+  const questions = [];
+  let n = 0;
+  for (const [ja, en] of ENGLISH_JPREP_B_L3_SOURCE) {
+    n++;
+    questions.push({
+      id: 'q-ejpb3-' + String(n).padStart(3, '0'),
+      unitId: 'u-eng-jprep-b-l3',
+      type: 'english',
+      ja: ja,
+      en: en,
+      hint: '',
+      sourceNote: '',
+      createdAt: '2026-05-27'
+    });
+  }
+  return { unit, questions };
+}
+
+/* ------------------------------------------------------------
    百人一首 1〜20首
    各エントリ: { kami(上の句), shimo(下の句), meaning(意味),
                  author(詠み手), technique(主な表現技法) }
@@ -2069,6 +2104,9 @@ function buildSampleData() {
   const ejpb2 = buildEnglishJprepBL2Pack();
   data.units.push(ejpb2.unit);
   data.questions.push(...ejpb2.questions);
+  const ejpb3 = buildEnglishJprepBL3Pack();
+  data.units.push(ejpb3.unit);
+  data.questions.push(...ejpb3.questions);
   const hk = buildHyakuninPack();
   data.units.push(hk.unit);
   data.questions.push(...hk.questions);
@@ -2220,6 +2258,13 @@ function loadState() {
     // 英語 JPREP B L2 単語 (10問) 追加マイグレーション (既存ユーザー向け)
     if (!state.units.some(u => u.id === 'u-eng-jprep-b-l2')) {
       const pack = buildEnglishJprepBL2Pack();
+      state.units.push(pack.unit);
+      state.questions.push(...pack.questions);
+      migrated = true;
+    }
+    // 英語 JPREP B L3 単語 (9問) 追加マイグレーション (既存ユーザー向け)
+    if (!state.units.some(u => u.id === 'u-eng-jprep-b-l3')) {
+      const pack = buildEnglishJprepBL3Pack();
       state.units.push(pack.unit);
       state.questions.push(...pack.questions);
       migrated = true;
