@@ -2046,6 +2046,122 @@ function buildEnglishJprepBL3Pack() {
   return { unit, questions };
 }
 
+/* ============================================================
+   高校英語 (profileId='p2')
+   - 単語確認シート L14〜L18
+   - 例文暗唱シート L14〜L18
+   - 英コミュⅠ L6・L7
+   ============================================================ */
+const HS_VOCAB_L14 = [
+  ['〜を保護する','preserve'],['植物を育てる','grow plants'],['〜に魅了される','be fascinated by'],['〜に囲まれている','be surrounded by'],['自然に親しみながら生活する','live close to nature'],['ハイキングに行く','go hiking'],['絶滅した','extinct'],['手つかずの','untouched'],['絶滅危惧種','an endangered species'],['捨て猫','an abandoned cat'],['野生動物','wild animals'],['生態学、エコロジー','ecology'],['森林破壊','deforestation'],['野生動物保護区','a wildlife sanctuary'],['景観','a landscape'],['滝','a waterfall'],['国立公園','a national park'],['自然林','a natural forest'],['山火事','a wildfire'],['実地調査','field work'],['自然破壊','destruction of nature'],['環境を守る','protect the environment'],['自然環境','the natural environment'],['世界自然遺産','a World Natural Heritage Site']
+];
+const HS_VOCAB_L15 = [
+  ['〜にかまれる','be bitten by'],['〜に巻き込まれる','get involved in'],['〜に閉じ込められる','be trapped in'],['入院する','be hospitalized'],['動揺する','be upset'],['慌てふためいている','be in a panic'],['盗まれる','be stolen'],['救助される','be rescued'],['じゃまされる','be disturbed'],['いらいらする','be irritated'],['だまされる','be cheated'],['損害をもたらす','cause damage'],['罪を犯す','commit a crime'],['〜に害を及ぼす','do harm to'],['ひどい','terrible'],['悲惨な','tragic'],['停電','a blackout'],['大雨','a heavy rain'],['大雪','a heavy snow'],['交通事故','a traffic accident'],['洪水','a flood'],['嵐','a storm'],['台風','a typhoon'],['地震','an earthquake']
+];
+const HS_VOCAB_L16 = [
+  ['〜に貢献する','contribute to'],['〜を紹介[導入]する','introduce'],['〜を奮い立たせる','inspire'],['〜を発明する','invent'],['〜を証明する','prove'],['記録を立てる','set a record'],['〜を感動させる','impress'],['画期的な','epoch-making'],['創造的な','creative'],['想像力に富んだ','imaginative'],['革新的な','innovative'],['才能のある','talented'],['独創性','originality'],['努力、汗','perspiration'],['評判','a reputation'],['革命','a revolution'],['評価','an evaluation'],['ひらめき','an inspiration'],['試行錯誤','trial and error'],['目標','an aim'],['理論','a theory'],['機能','a function'],['科学技術','technology'],['化学者','a chemist'],['科学者','a scientist'],['発明家','an inventor'],['研究者','a researcher'],['ノーベル賞を取る','win the Nobel Prize']
+];
+const HS_VOCAB_L17 = [
+  ['〜の目標を達成する',"achieve one's goal"],['〜を達成する','accomplish'],['有名になる','become famous'],['成功する','become successful'],['困難を克服する','overcome difficulties'],['メダルを取る','win a medal'],['1位になる','win first place'],['よい成績をとる','get a good grade'],['成功する','succeed'],['奮闘する','struggle'],['能力がある','have ability'],['可能性がある','have potential'],['留学する','study abroad'],['称賛される','be praised'],['試合に負ける','lose a match'],['すばらしい','amazing'],['優れた','excellent'],['信じがたい、すばらしい','incredible'],['傑出した','outstanding'],['がっかりさせる','disappointing'],['忍耐','patience'],['努力不足','a lack of effort'],['努力家','a hard worker'],['伝説','a legend']
+];
+const HS_VOCAB_L18 = [
+  ['〜で有名な','be famous for'],['〜でよく知られた','be well-known for'],['人気がある','popular'],['美しい','beautiful'],['刺激的な','exciting'],['歴史に関わりのある','historical'],['便利な','convenient'],['優雅な、洗練された','elegant'],['居心地がよい','cozy'],['コンパクトな','compact'],['観光名所','a tourist spot'],['村','a village'],['その土地の食べ物','local food'],['娯楽','entertainment'],['田園地帯','a rural area'],['都市部','an urban area'],['地方','the country'],['首都','a capital'],['ご当地キャラ','a local mascot'],['超高層ビル','a skyscraper'],['寺','a temple'],['神社','a shrine'],['史跡','a historic site'],['文化遺跡','a cultural heritage site']
+];
+const HS_SENT_L14 = [
+  ['野原の真ん中に立っている大きな木は樹齢100年を超えています。','The big tree standing in the middle of the field is over 100 years old.'],
+  ['ビーバーは枝と泥でできたすみかで暮らしています。','Beavers live in homes made of branches and mud.'],
+  ['イルカといっしょに泳ぐのは驚くべきことでした。','Swimming with dolphins was amazing.'],
+  ['私は海の美しさに驚きました。','I was amazed at the beauty of the ocean.'],
+  ['眠りながら飛び続けることができる鳥もいます。','Some birds can keep flying while they are sleeping.'],
+  ['この島の大半は森林に覆われたままです。','Much of this island remains covered in forest.'],
+  ['数頭のカバが池で水浴びしています。','There are several hippos bathing in a pond.'],
+  ['彼女は午後を昆虫に関する本を読んで過ごしました。','She spent the afternoon reading a book about insects.']
+];
+const HS_SENT_L15 = [
+  ['私は水を一晩中出しっぱなしにしていました。','I left the water running all night.'],
+  ['私は昨日、犬に指をかまれました。','I got my finger bitten by a dog yesterday.'],
+  ['私は警察官が男を追いかけているのを見ました。','I saw a police officer chasing a man.'],
+  ['私は暗がりで自分の名前が呼ばれるのを聞きました。','I heard my name called in the dark.'],
+  ['その男性は英語で何か叫びながら、私に近づいてきました。','The man approached me, shouting something in English.'],
+  ['私は徒歩で下校中、転んで脚を痛めました。','Walking home from school, I fell down and hurt my leg.'],
+  ['粉々に割れてしまったので、その花瓶は価値がなくなった。','Broken into pieces, the vase became worthless.'],
+  ['その男は、エンジンをかけたまま車から離れました。','The man left his car with the engine running.']
+];
+const HS_SENT_L16 = [
+  ['あなたはX線を発見した人の名前を知っていますか。','Do you know the name of the person who discovered X-rays?'],
+  ['彼らは障がい者を手助けするロボットを作ろうとしています。',"They're trying to create robots that will help people with disabilities."],
+  ['2016年に彼が打ち立てた世界記録はまだ破られていません。','The world record that he set in 2016 has not been broken yet.'],
+  ['あなたがいちばん尊敬している人について教えてください。','Tell me about the person whom you admire the most.'],
+  ['彼女が発明した製品は世界中の多くの人々の役に立ってきました。','The products she invented have helped many people around the world.'],
+  ['これは画面を折りたためる新しいスマートフォンです。','This is the new smartphone whose screen can be folded.'],
+  ['これが私たちが待ち望んでいた新しいワクチンです。','This is the new vaccine that we have been waiting for.'],
+  ['彼らが何年も取り組んできた事業が完了するでしょう。','The project on which they have worked for years will be completed.']
+];
+const HS_SENT_L17 = [
+  ['私の兄[弟]のコウタは、海外留学中なのですが、奨学金を獲得しました。','My brother Kota, who is studying abroad, won a scholarship.'],
+  ['彼は最新小説を出版しましたが、それは英語に翻訳されるでしょう。',"He's published his latest novel, which will be translated into English."],
+  ['僕たちのサッカーチームは優勝しましたが、それはみんなを驚かせました。','Our soccer team won the championship, which surprised everyone.'],
+  ['金をつくろうとした科学者もいましたが、それは不可能でした。','Some scientists tried to make gold, which was impossible.'],
+  ['彼女はメダルをたくさん持っていますが、そのうちのいくつかはオリンピックで取りました。','She has a lot of medals, some of which she got at the Olympics.'],
+  ['彼らにはふたりの子供がいますが、ふたりともプロの音楽家になりました。','They have two children, both of whom became professional musicians.'],
+  ['彼女が過去10年間に成し遂げたことは、信じがたいことです。','What she accomplished in the past ten years is incredible.'],
+  ['私たちはまだ彼の発見したことを信じられません。',"We still can't believe what he discovered."]
+];
+const HS_SENT_L18 = [
+  ['私たちが住んでいる市には、多くの観光名所があります。','The city where we live has a lot of tourist attractions.'],
+  ['私たちがシドニーで初めて会った日のことを覚えていますか。','Do you remember the day when we first met in Sydney?'],
+  ['私たちは温泉行楽地に行き、そこで楽しく過ごしました。','We went to the hot spring resort, where we had a good time.'],
+  ['最初の東京オリンピックは1964年に開催されましたが、その年に父が生まれました。','The first Tokyo Olympics were held in 1964, when my father was born.'],
+  ['私たちが地元について学ぶべきいくつかの理由があります。','There are several reasons why we should learn about our hometown.'],
+  ['このようにして、あの長いつり橋はこの谷に建設されました。','This is how that long suspension bridge was built in this valley.'],
+  ['私はこの町をよりよい場所にするためにできることは何でもします。',"I'll do whatever I can to make this city a better place."],
+  ['あなたがこの町に戻ってくるときはいつでも、私たちに会いに来てください。','Whenever you return to this town, please come and see us.']
+];
+const HS_EC1_L6 = [
+  ['ハンス・クリスチャン・アンデルセン','Hans Christian Anderson'],['賞','award'],['まもなく、じきに','shortly'],['創設者','founder'],['イエラ・レップマン','Jella Lepman'],['〜を創造する、つくりだす','create'],['文学','literature'],['深く、非常に','deeply'],['〜を称賛する、尊敬する','admire'],['Aの真っただ中で','in the middle of A'],['必死の、絶望的な','desperate'],['勇気','courage'],['著者','author'],['子ども時代','childhood'],['擬音[態]語、オノマトペ','onomatopoeia'],['〜を落ち着かせる','calm'],['Aから始まる','begin with A'],['桃','peach'],['浮く、浮かぶ','float'],['楽しい、気持ちのよい','pleasant'],['リズム','rhythm'],['うまくいく','go well'],['無意識に','unconsciously'],['魔法','magic'],['呪文','spell'],['毎日の','everyday'],['想像力','imagination'],['擬音[態]語の','onomatopoeic'],['句、慣用句','phrase'],['実に、大変','ever so ~'],['楽しい、愉快な','delightful'],['〜するようになる','come to do'],['ポルトガル語','Portuguese'],['Aと友達になる','become friends with A'],['伝わる、理解される','come across'],['打つ、鼓動する','beat'],['思い出す','recall'],['神秘的なこと、不可解なこと','mystery'],['深さ','depth'],['語彙','vocabulary'],['教授','professor'],['ノンフィクション','nonfiction'],['ブラジル(人)の','Brazilian'],['〜するのに成功する','succeed in doing'],['(比較級を修飾)ずっと、はるかに','much'],['結びつく','combine'],['読者','reader'],['気分','mood'],['内の、内部の','inner'],['Aを結びつける、親しくさせる','bring together A / bring A together']
+];
+const HS_EC1_L7 = [
+  ['思わぬ発見をする才能、思いがけないものの発見','serendipity'],['普通の、ありふれた','common'],['Aを共通に持つ','have A in common'],['多様な、異なった','diverse'],['偶然','by accident'],['ホレス・ウォルポール','Horace Walpole'],['予期しない、意外な','unexpected'],['発見','discovery'],['ペルシャの','Persian'],['王子','prince'],['セレンディップ','Serendip'],['セイロン','Ceylon'],['スリランカ','Sri Lanka'],['探求','quest'],['Aを追求して','in quest of A'],['説明する','describe'],['能力','ability'],['新手法、発明','innovation'],['(突然の)ひらめき、着想','inspiration'],['失敗','failure'],['Aを生み出す、出産する','give birth to A'],['自己粘着性がある','self-sticky'],['メモ(用紙)','note'],['紙片','slip'],['ファイル','file'],['フォルダー、書類はさみ','folder'],['冷蔵庫','refrigerator'],['アート・フライ','Art Fry'],['開発、発展','development'],['聖歌隊','choir'],['AにB(の印)を付ける','mark A with B'],['切れ端','scrap'],['礼拝','service'],['Aに〜させる','cause A to do'],['急いで','in a hurry'],['(頭の中を)くるくる回る','go round [around]'],['Aを思い出す、考えつく','think of A'],['接着剤','adhesive'],['Aをあきらめる','give up on A'],['くっつく','bond'],['永久に','permanently'],['印をつけるもの、マーカー','marker'],['〜を取り付ける、くっつける','attach'],['(必要・目的)にかなう、(人)に役立つ','serve'],['一時的に','temporarily'],['しおり','bookmark'],['方法、手段','means'],['取り付け、付着','attachment'],['除去、撤去','removal'],['妨げ、挫折','setback'],['実験','experiment'],['一時的な','temporary'],['永遠の','permanent'],['粘着性の','sticky'],['発売される','be on sale'],['一般に','commonly'],['起こる','take place'],['アレクサンダー・フレミング','Alexander Fleming'],['Aの世話をする','take care of A'],['負傷した','wounded'],['防腐剤、消毒液','antiseptic'],['〜を治す、治療する','cure'],['観察する','observe'],['害','harm'],['有害無益である','do more harm than good'],['…という点で','in that ...'],['細菌','bacteria'],['血、血液','blood'],['細胞','cell'],['防御者','defender'],['(細菌・細胞などの)培養、培養菌','culture'],['液体','liquid'],['〜を調査する','examine'],['AをBで満たす','fill A with B'],['〜であることは驚きである','it comes as a surprise that ~'],['空間','space'],['観察','observation'],['AをBに導く、至らせる','lead A to B'],['結論','conclusion'],['物質','substance'],['害がない','harmless'],['Aに関する調査を行う','do research on A'],['インフルエンザ','influenza'],['場所、地点','spot'],['細片、わずか','bit'],['少しのA','a bit of A'],['カビ','mold'],['おそらく、たぶん','probably'],['〜と結論づける','conclude'],['ペニシリン','penicillin'],['ルイ・パスツール','Louis Pasteur'],['化学者','chemist'],['〜をひいきする、〜に味方する','favor'],['ポール・フローリー','Paul Flory'],['知識','knowledge'],['深く、徹底的に','in depth'],['幅','breadth'],['幅広く','in breadth'],['予期された','expected'],['まず第一に','first of all'],['〜を訓練する','train'],['〜を記録する','record'],['〜を固定する','fix'],['Cと判断してAをあきらめる','give up A as C / give A up as C'],['(Aに)劣らず〜である','no less ~ (than A)'],['まさに〜しようとしている','be about to do'],['〜な人々','those who ~']
+];
+
+const HS_PACK_DEFS = [
+  { id: 'u-eng-hs-v14', name: 'L14 単語', src: HS_VOCAB_L14, prefix: 'q-hsv14-' },
+  { id: 'u-eng-hs-v15', name: 'L15 単語', src: HS_VOCAB_L15, prefix: 'q-hsv15-' },
+  { id: 'u-eng-hs-v16', name: 'L16 単語', src: HS_VOCAB_L16, prefix: 'q-hsv16-' },
+  { id: 'u-eng-hs-v17', name: 'L17 単語', src: HS_VOCAB_L17, prefix: 'q-hsv17-' },
+  { id: 'u-eng-hs-v18', name: 'L18 単語', src: HS_VOCAB_L18, prefix: 'q-hsv18-' },
+  { id: 'u-eng-hs-s14', name: 'L14 例文', src: HS_SENT_L14, prefix: 'q-hss14-' },
+  { id: 'u-eng-hs-s15', name: 'L15 例文', src: HS_SENT_L15, prefix: 'q-hss15-' },
+  { id: 'u-eng-hs-s16', name: 'L16 例文', src: HS_SENT_L16, prefix: 'q-hss16-' },
+  { id: 'u-eng-hs-s17', name: 'L17 例文', src: HS_SENT_L17, prefix: 'q-hss17-' },
+  { id: 'u-eng-hs-s18', name: 'L18 例文', src: HS_SENT_L18, prefix: 'q-hss18-' },
+  { id: 'u-eng-hs-ec1-l6', name: '英コミュⅠ L6', src: HS_EC1_L6, prefix: 'q-hsec6-' },
+  { id: 'u-eng-hs-ec1-l7', name: '英コミュⅠ L7', src: HS_EC1_L7, prefix: 'q-hsec7-' }
+];
+
+function buildHighSchoolEnglishPacks() {
+  const units = [];
+  const questions = [];
+  for (const p of HS_PACK_DEFS) {
+    units.push({ id: p.id, subjectId: 'english', name: p.name, parentId: null, profileId: 'p2' });
+    let n = 0;
+    for (const [ja, en] of p.src) {
+      n++;
+      questions.push({
+        id: p.prefix + String(n).padStart(3, '0'),
+        unitId: p.id,
+        type: 'english',
+        ja: ja,
+        en: en,
+        hint: '',
+        sourceNote: '',
+        createdAt: '2026-05-30'
+      });
+    }
+  }
+  return { units, questions };
+}
+
 /* ------------------------------------------------------------
    百人一首 1〜20首
    各エントリ: { kami(上の句), shimo(下の句), meaning(意味),
@@ -2235,8 +2351,12 @@ function buildSampleData() {
   const hk2 = buildHyakunin2Pack();
   data.units.push(hk2.unit);
   data.questions.push(...hk2.questions);
-  // 全単元に profileId='p1' (中学) を付与: 既存の問題は中学側に紐付ける
+  // 全単元に profileId='p1' (中学) を付与 (高校用パックは個別に 'p2' を持つ)
   data.units.forEach(u => { if (!u.profileId) u.profileId = 'p1'; });
+  // 高校英語パック (profileId='p2' は内部で設定済み)
+  const hs = buildHighSchoolEnglishPacks();
+  data.units.push(...hs.units);
+  data.questions.push(...hs.questions);
   return data;
 }
 
@@ -2467,6 +2587,17 @@ function loadState() {
     state.units.forEach(u => {
       if (!u.profileId) { u.profileId = 'p1'; migrated = true; }
     });
+    // 高校英語パック (profileId='p2') の追加マイグレーション (既存ユーザー向け)
+    {
+      const hs = buildHighSchoolEnglishPacks();
+      hs.units.forEach(u => {
+        if (!state.units.some(x => x.id === u.id)) {
+          state.units.push(u);
+          state.questions.push(...hs.questions.filter(q => q.unitId === u.id));
+          migrated = true;
+        }
+      });
+    }
     if (migrated) saveState();
   } catch (e) {
     console.error('LocalStorageの読込に失敗:', e);
