@@ -607,7 +607,7 @@ input, textarea, select {
   font-size: 15px;
 }
 
-/* 英語 5問ずつの行 (縦2段レイアウト) */
+/* 英語 5問ずつの行 (縦3段レイアウト) */
 .eb-row {
   display: flex;
   flex-direction: column;
@@ -623,13 +623,11 @@ input, textarea, select {
   align-items: center;
   gap: 12px;
 }
-.eb-bottom {
+.eb-grade-row {
   display: flex;
+  justify-content: flex-end;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding-left: 56px; /* prompt と整列 (speakerボタン幅+gap) */
-  min-height: 38px;
+  padding-left: 56px; /* prompt と整列 */
 }
 .eb-speak {
   width: 44px;
@@ -659,12 +657,13 @@ input, textarea, select {
   line-height: 1.4;
 }
 .eb-answer {
-  flex: 1;
   font-size: 16px;
   color: var(--text);
   word-break: break-word;
   cursor: pointer;
   line-height: 1.5;
+  padding-left: 56px; /* prompt と整列 */
+  min-height: 24px;
 }
 .eb-tap-hint {
   color: var(--text-tertiary);
@@ -3605,10 +3604,8 @@ function renderEnglishBatch() {
           <button class="eb-speak" data-id="${q.id}" aria-label="音声を聞く">🔊</button>
           <div class="eb-prompt" data-id="${q.id}">${escapeHtml(prompt)}</div>
         </div>
-        <div class="eb-bottom">
-          <div class="eb-answer" data-id="${q.id}">${revealed ? escapeHtml(answer) : '<span class="eb-tap-hint">タップして表示</span>'}</div>
-          ${gradeArea}
-        </div>
+        <div class="eb-answer" data-id="${q.id}">${revealed ? escapeHtml(answer) : '<span class="eb-tap-hint">タップして表示</span>'}</div>
+        ${gradeArea ? `<div class="eb-grade-row">${gradeArea}</div>` : ''}
       </div>`;
   }).join('');
 
