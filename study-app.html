@@ -2235,6 +2235,8 @@ function buildSampleData() {
   const hk2 = buildHyakunin2Pack();
   data.units.push(hk2.unit);
   data.questions.push(...hk2.questions);
+  // 全単元に profileId='p1' (中学) を付与: 既存の問題は中学側に紐付ける
+  data.units.forEach(u => { if (!u.profileId) u.profileId = 'p1'; });
   return data;
 }
 
@@ -2461,6 +2463,10 @@ function loadState() {
         }
       }
     });
+    // 既存の単元すべてに profileId='p1' を付与 (プロフィール分離の初期化)
+    state.units.forEach(u => {
+      if (!u.profileId) { u.profileId = 'p1'; migrated = true; }
+    });
     if (migrated) saveState();
   } catch (e) {
     console.error('LocalStorageの読込に失敗:', e);
@@ -2546,6 +2552,23 @@ function getCurrentProfile() {
 function getSubject(id)  { return state.subjects.find(s => s.id === id); }
 function getUnit(id)     { return state.units.find(u => u.id === id); }
 function getQuestion(id) { return state.questions.find(q => q.id === id); }
+
+// 単元のプロフィール (未指定なら 'p1' = 中学)
+const DEFAULT_UNIT_PROFILE = 'p1';
+function unitProfile(u) { return (u && u.profileId) || DEFAULT_UNIT_PROFILE; }
+function isUnitForProfile(u, pid) {
+  return !!u && unitProfile(u) === (pid || currentProfileId);
+}
+// 現在のプロフィールから見える単元一覧
+function profileUnits(pid) {
+  const p = pid || currentProfileId;
+  return state.units.filter(u => unitProfile(u) === p);
+}
+// 現在のプロフィールから見える問題一覧
+function profileQuestions(pid) {
+  const p = pid || currentProfileId;
+  return state.questions.filter(q => isUnitForProfile(getUnit(q.unitId), p));
+}
 
 // 出題向きに応じた表示用の問題文・解答とフォントスタイルを返す
 // kanji: 'kakitori' (ひらがな→漢字) | 'yomi' (漢字→ひらがな)
@@ -2830,7 +2853,7 @@ function renderHome() {
   const tiles = state.subjects.map(s => {
     const qcount = state.questions.filter(q => {
       const u = getUnit(q.unitId);
-      return u && u.subjectId === s.id;
+      return u && u.subjectId === s.id && isUnitForProfile(u);
     }).length;
     const icon = subjectIcons[s.id] || '📘';
     return `
@@ -2906,16 +2929,16 @@ function countReviewQuestions(filterFn) {
 function renderUnits(subjectId) {
   const subject = getSubject(subjectId);
   if (!subject) { goBack(); return; }
-  const units = state.units.filter(u => u.subjectId === subjectId);
+  const units = state.units.filter(u => u.subjectId === subjectId && isUnitForProfile(u));
 
   const totalQ = state.questions.filter(q => {
     const u = getUnit(q.unitId);
-    return u && u.subjectId === subjectId;
+    return u && u.subjectId === subjectId && isUnitForProfile(u);
   }).length;
   const totalAcc = (() => {
     const qids = state.questions.filter(q => {
       const u = getUnit(q.unitId);
-      return u && u.subjectId === subjectId;
+      return u && u.subjectId === subjectId && isUnitForProfile(u);
     }).map(q => q.id);
     const hist = (state.history[currentProfileId] || []).filter(h => qids.includes(h.questionId));
     if (hist.length === 0) return null;
@@ -2924,7 +2947,7 @@ function renderUnits(subjectId) {
   const totalReview = unitsReviewMode
     ? countReviewQuestions(q => {
         const u = getUnit(q.unitId);
-        return u && u.subjectId === subjectId;
+        return u && u.subjectId === subjectId && isUnitForProfile(u);
       })
     : null;
 
@@ -3096,8 +3119,8 @@ function renderStudyDirection(params) {
    ------------------------------------------------------------ */
 function renderKanjiList(params) {
   const label = params && params.label ? params.label : '漢字';
-  // 対象問題の絞り込み (kanji 型のみ)
-  let pool = state.questions.filter(q => q.type === 'kanji');
+  // 対象問題の絞り込み (kanji 型・現プロフィールのみ)
+  let pool = state.questions.filter(q => q.type === 'kanji' && isUnitForProfile(getUnit(q.unitId)));
   if (params && params.unitId) pool = pool.filter(q => q.unitId === params.unitId);
   if (params && params.subjectId) pool = pool.filter(q => {
     const u = getUnit(q.unitId);
@@ -3154,8 +3177,8 @@ function renderKanjiList(params) {
    画面4: 学習
    ------------------------------------------------------------ */
 function startStudy({ unitId = null, subjectId = null, direction = 'kakitori', label = null, reviewMode = false, order = 'random' } = {}) {
-  // 出題対象を絞り込む
-  let pool = state.questions.slice();
+  // 出題対象を絞り込む (現プロフィールの単元のみ)
+  let pool = state.questions.filter(q => isUnitForProfile(getUnit(q.unitId)));
   if (unitId) pool = pool.filter(q => q.unitId === unitId);
   if (subjectId) pool = pool.filter(q => {
     const u = getUnit(q.unitId);
@@ -3380,7 +3403,7 @@ function renderEnglishDirection(params) {
 const ENGLISH_BATCH_SIZE = 5;
 
 function startEnglishBatch({ unitId = null, subjectId = null, mode, reviewMode = false }) {
-  let pool = state.questions.filter(q => q.type === 'english');
+  let pool = state.questions.filter(q => q.type === 'english' && isUnitForProfile(getUnit(q.unitId)));
   if (unitId) pool = pool.filter(q => q.unitId === unitId);
   if (subjectId) pool = pool.filter(q => {
     const u = getUnit(q.unitId);
@@ -3520,7 +3543,7 @@ function renderEnglishBatch() {
    画面: 英語 聞き取り (1問ずつ)
    ------------------------------------------------------------ */
 function startEnglishListen({ unitId = null, subjectId = null, reviewMode = false }) {
-  let pool = state.questions.filter(q => q.type === 'english');
+  let pool = state.questions.filter(q => q.type === 'english' && isUnitForProfile(getUnit(q.unitId)));
   if (unitId) pool = pool.filter(q => q.unitId === unitId);
   if (subjectId) pool = pool.filter(q => {
     const u = getUnit(q.unitId);
@@ -3627,7 +3650,7 @@ function renderEnglishListen() {
    ------------------------------------------------------------ */
 function renderEnglishList(params) {
   const label = params && params.label ? params.label : '英語';
-  let pool = state.questions.filter(q => q.type === 'english');
+  let pool = state.questions.filter(q => q.type === 'english' && isUnitForProfile(getUnit(q.unitId)));
   if (params && params.unitId) pool = pool.filter(q => q.unitId === params.unitId);
   if (params && params.subjectId) pool = pool.filter(q => {
     const u = getUnit(q.unitId);
@@ -3816,7 +3839,7 @@ function renderHyakuninDirection(params) {
 
 /* ④上の句→下の句 / ⑤下の句→上の句: 上の句=上・下の句=中央・詠み手=下 の空間配置 */
 function startHyakuninGraded({ unitId = null, subjectId = null, direction, reviewMode = false, order = 'random' }) {
-  let pool = state.questions.filter(q => q.type === 'hyakunin');
+  let pool = state.questions.filter(q => q.type === 'hyakunin' && isUnitForProfile(getUnit(q.unitId)));
   if (unitId) pool = pool.filter(q => q.unitId === unitId);
   if (subjectId) pool = pool.filter(q => {
     const u = getUnit(q.unitId);
@@ -3915,7 +3938,7 @@ function renderHyakuninTest() {
 }
 
 function startHyakuninQuiz({ unitId = null, subjectId = null, mode, order = 'random' }) {
-  let pool = state.questions.filter(q => q.type === 'hyakunin');
+  let pool = state.questions.filter(q => q.type === 'hyakunin' && isUnitForProfile(getUnit(q.unitId)));
   if (unitId) pool = pool.filter(q => q.unitId === unitId);
   if (subjectId) pool = pool.filter(q => {
     const u = getUnit(q.unitId);
@@ -4058,7 +4081,7 @@ function renderHyakuninQuiz() {
 
 function renderHyakuninList(params) {
   const label = params && params.label ? params.label : '百人一首';
-  let pool = state.questions.filter(q => q.type === 'hyakunin');
+  let pool = state.questions.filter(q => q.type === 'hyakunin' && isUnitForProfile(getUnit(q.unitId)));
   if (params && params.unitId) pool = pool.filter(q => q.unitId === params.unitId);
   if (params && params.subjectId) pool = pool.filter(q => {
     const u = getUnit(q.unitId);
@@ -4225,7 +4248,7 @@ function renderPrint(params) {
   let unitOptions = '<option value="all">すべての単元</option>';
   if (cfg.subjectId !== 'all') {
     unitOptions += state.units
-      .filter(u => u.subjectId === cfg.subjectId)
+      .filter(u => u.subjectId === cfg.subjectId && isUnitForProfile(u))
       .map(u => `<option value="${u.id}" ${cfg.unitId === u.id ? 'selected' : ''}>${escapeHtml(u.name)}</option>`)
       .join('');
   }
@@ -4350,7 +4373,7 @@ function renderPrint(params) {
 
 // 印刷用の出題プール (対象を絞り、順番は維持)
 function collectPrintPool(cfg) {
-  let pool = state.questions.slice();
+  let pool = state.questions.filter(q => isUnitForProfile(getUnit(q.unitId)));
   if (cfg.subjectId !== 'all') {
     pool = pool.filter(q => {
       const u = getUnit(q.unitId);
