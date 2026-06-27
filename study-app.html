@@ -607,17 +607,29 @@ input, textarea, select {
   font-size: 15px;
 }
 
-/* 英語 5問ずつの行 */
+/* 英語 5問ずつの行 (縦2段レイアウト) */
 .eb-row {
-  display: grid;
-  grid-template-columns: auto 1fr 1fr auto;
-  gap: 10px;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   background: var(--bg-card);
   border-radius: 12px;
-  padding: 12px 12px;
-  margin-bottom: 8px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
   box-shadow: var(--shadow);
+}
+.eb-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.eb-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-left: 56px; /* prompt と整列 (speakerボタン幅+gap) */
+  min-height: 38px;
 }
 .eb-speak {
   width: 44px;
@@ -637,50 +649,50 @@ input, textarea, select {
   background: var(--bg-elevated);
   transform: scale(0.95);
 }
-/* 問題文 (タップで音声再生) と答え欄 (タップで開く) は個別にカーソル指定 */
-.eb-prompt { cursor: pointer; }
-.eb-answer { cursor: pointer; }
 .eb-prompt {
-  font-size: 20px;
+  flex: 1;
+  font-size: 19px;
   font-weight: 600;
   color: var(--text);
   word-break: break-word;
+  cursor: pointer;
+  line-height: 1.4;
 }
 .eb-answer {
-  font-size: 17px;
+  flex: 1;
+  font-size: 16px;
   color: var(--text);
   word-break: break-word;
-  min-height: 1.4em;
+  cursor: pointer;
+  line-height: 1.5;
 }
 .eb-tap-hint {
   color: var(--text-tertiary);
   font-size: 13px;
   font-weight: normal;
 }
-.eb-grade-placeholder {
-  width: 96px;
-}
 .eb-grade {
   display: flex;
-  gap: 4px;
+  gap: 6px;
+  flex-shrink: 0;
 }
 .eb-grade-btn {
-  padding: 6px 8px;
+  padding: 6px 12px;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   background: var(--bg-button-secondary);
   border: 1px solid var(--border);
-  min-width: 28px;
+  min-width: 36px;
 }
 .eb-grade-btn.x { color: var(--danger); }
 .eb-grade-btn.d { color: var(--warning); }
 .eb-grade-btn.o { color: var(--success); }
 .eb-graded-mark {
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 700;
-  text-align: center;
-  width: 96px;
+  flex-shrink: 0;
+  padding: 0 12px;
 }
 .eb-graded-mark.eb-o { color: var(--success); }
 .eb-graded-mark.eb-d { color: var(--warning); }
@@ -3586,13 +3598,17 @@ function renderEnglishBatch() {
               <button class="eb-grade-btn d" data-id="${q.id}" data-r="d">△</button>
               <button class="eb-grade-btn o" data-id="${q.id}" data-r="o">○</button>
             </div>`
-          : '<div class="eb-grade-placeholder"></div>');
+          : '');
     return `
       <div class="eb-row" data-id="${q.id}">
-        <button class="eb-speak" data-id="${q.id}" aria-label="音声を聞く">🔊</button>
-        <div class="eb-prompt" data-id="${q.id}">${escapeHtml(prompt)}</div>
-        <div class="eb-answer" data-id="${q.id}">${revealed ? escapeHtml(answer) : '<span class="eb-tap-hint">タップして表示</span>'}</div>
-        ${gradeArea}
+        <div class="eb-top">
+          <button class="eb-speak" data-id="${q.id}" aria-label="音声を聞く">🔊</button>
+          <div class="eb-prompt" data-id="${q.id}">${escapeHtml(prompt)}</div>
+        </div>
+        <div class="eb-bottom">
+          <div class="eb-answer" data-id="${q.id}">${revealed ? escapeHtml(answer) : '<span class="eb-tap-hint">タップして表示</span>'}</div>
+          ${gradeArea}
+        </div>
       </div>`;
   }).join('');
 
