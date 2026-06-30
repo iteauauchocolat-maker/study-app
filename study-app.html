@@ -1307,6 +1307,44 @@ input, textarea, select {
 .tile-color-social     { box-shadow: inset 4px 0 0 #ff9500, var(--shadow); }
 .tile-color-science    { box-shadow: inset 4px 0 0 #34c759, var(--shadow); }
 
+/* 英語DB 用 */
+.edb-blank { display: inline-block; min-width: 3em; border-bottom: 2px solid var(--text-secondary); padding: 0 4px; color: transparent; }
+.edb-hilite { color: #ff2d55; font-weight: 600; }
+.edb-row { background: var(--card-bg); border-radius: 10px; padding: 12px; margin-bottom: 12px; box-shadow: var(--shadow); }
+.edb-prompt { font-size: 17px; line-height: 1.6; margin-bottom: 8px; cursor: pointer; }
+.edb-answer { font-size: 16px; line-height: 1.6; color: var(--text-secondary); cursor: pointer; min-height: 44px; padding: 10px; border-radius: 8px; background: var(--bg); border: 1px dashed var(--border); }
+.edb-tap-hint { color: var(--text-secondary); font-size: 13px; }
+.edb-grade-row { display: flex; gap: 8px; margin-top: 8px; }
+.edb-grade-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; font-size: 18px; font-weight: 600; cursor: pointer; }
+.edb-grade-btn.x { background: #ff3b30; color: #fff; }
+.edb-grade-btn.d { background: #ff9500; color: #fff; }
+.edb-grade-btn.o { background: #34c759; color: #fff; }
+.edb-graded-mark { display: inline-block; font-size: 22px; font-weight: 700; padding: 4px 16px; border-radius: 8px; margin-top: 8px; }
+.edb-graded-mark.eb-o { background: #34c75933; color: #34c759; }
+.edb-graded-mark.eb-d { background: #ff950033; color: #ff9500; }
+.edb-graded-mark.eb-x { background: #ff3b3033; color: #ff3b30; }
+.edb-speak { background: none; border: 1px solid var(--border); border-radius: 50%; width: 36px; height: 36px; font-size: 16px; cursor: pointer; }
+.edb-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.edb-mode-pill { display: inline-block; font-size: 11px; background: var(--bg); color: var(--text-secondary); padding: 2px 8px; border-radius: 10px; margin-bottom: 4px; }
+.edb-list-card { background: var(--card-bg); border-radius: 10px; padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
+.edb-list-serial { color: #32ade6; font-weight: 700; font-size: 14px; }
+.edb-list-head { font-size: 19px; font-weight: 600; margin-top: 2px; }
+.edb-list-pos { font-size: 12px; color: var(--text-secondary); margin-left: 6px; }
+.edb-list-meanings { margin: 6px 0; }
+.edb-list-meaning { font-size: 14px; line-height: 1.6; }
+.edb-list-mlabel { display: inline-block; min-width: 1.6em; color: var(--text-secondary); }
+.edb-list-section { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin: 10px 0 4px; }
+.edb-list-ex { font-size: 14px; line-height: 1.6; padding: 6px 0; border-top: 1px dashed var(--border); }
+.edb-list-ex:first-child { border-top: 0; }
+.edb-list-rel { font-size: 13px; line-height: 1.6; padding: 2px 0; }
+.edb-list-rel .kind { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 8px; margin-right: 6px; vertical-align: middle; }
+.edb-list-rel .kind.colloc { background: #5856d633; color: #5856d6; }
+.edb-list-rel .kind.deriv  { background: #34c75933; color: #34c759; }
+.edb-list-note { font-size: 12px; padding: 8px; background: var(--bg); border-radius: 8px; margin-top: 6px; color: var(--text-secondary); }
+.edb-list-same { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+.edb-cat-intro { font-size: 13px; line-height: 1.6; color: var(--text-secondary); margin: 4px 0 12px; padding: 10px; background: var(--card-bg); border-radius: 10px; }
+.edb-cat-meanings { font-size: 13px; margin-bottom: 6px; }
+
 </style>
 </head>
 <body>
@@ -1321,6 +1359,9 @@ input, textarea, select {
   <div id="screen-english-batch" class="screen"></div>
   <div id="screen-english-listen" class="screen"></div>
   <div id="screen-english-list" class="screen"></div>
+  <div id="screen-edb-direction" class="screen"></div>
+  <div id="screen-edb-batch" class="screen"></div>
+  <div id="screen-edb-list" class="screen"></div>
   <div id="screen-hyakunin-direction" class="screen"></div>
   <div id="screen-hyakunin-quiz" class="screen"></div>
   <div id="screen-hyakunin-test" class="screen"></div>
@@ -2445,6 +2486,229 @@ function buildHyakunin2Pack() {
 }
 
 /* ------------------------------------------------------------
+   英語DB (English DB) — 高校用
+   構造: Lesson → Category(Unit) → Entry(Question)
+   ・entry.serial が全 Lesson 通しの青番号、id は 'q-edb-{serial}'
+   ・examples/meanings の隠す範囲は [[ ... ]] で囲って表現
+   ・collocations と派生語は related[].kind で区別
+   ------------------------------------------------------------ */
+const HS_EDB_PACKS = [
+  // ===== L1 make (1) =====
+  {
+    category: {
+      id: 'u-edb-l1-make-1', name: 'L1 make (1)',
+      lesson: 'L1', lessonName: '基本動詞を含む熟語',
+      catType: 'verb', catKey: 'make', catVariant: 1, catOrder: 1,
+      meanings: ['を作る', '(事態・状態)を生み出す、を引き起こす', '(ある状態)にする', 'に〜させる'],
+      intro: 'make は、ものごとに働きかけて、新しい別のものや状況を生み出すことを表す。いろいろな文型で使われるので、注意が必要である。'
+    },
+    entries: [
+      { serial: 263, headEn: 'be made from ...',
+        meanings: [{ idx: 1, ja: '(原料)から作られている' }],
+        examples: [{ ja: 'チーズは牛乳[[から作られている]]。', en: 'Cheese [[is made from]] milk.' }],
+        note: 'from は製品を見て原材料がわからないときに使う。' },
+      { serial: 264, headEn: 'be made of ...',
+        meanings: [{ idx: 1, ja: '(材料)でできている' }],
+        examples: [{ ja: 'このスプーンは木[[でできている]]。', en: 'This spoon [[is made of]] wood.' }],
+        note: 'of は製品を見て原材料がわかるときに使う。' },
+      { serial: 265, headEn: 'be made up of ...',
+        meanings: [{ idx: 1, ja: '…で構成されている' }],
+        examples: [{ ja: 'そのグループは4人の学生[[で構成されている]]。', en: 'The group [[is made up of]] four students.' }] },
+      { serial: 266, headEn: 'make ... into ~',
+        meanings: [{ idx: 1, ja: '…を(製品)に加工する' }],
+        examples: [{ ja: '我々は古いものを[[新しい製品に加工する]]。', en: 'We [[make]] old things [[into]] new products.' }] },
+      { serial: 267, headEn: "make up one's mind to do",
+        meanings: [{ idx: 1, ja: '〜しようと決心する' }],
+        examples: [{ ja: '彼女はもっと一生懸命働こう[[と決心した]]。', en: 'She [[made up her mind to]] work harder.' }],
+        sameAs: ['decide to do'] },
+      { serial: 268, headEn: 'make a point of -ing',
+        meanings: [{ idx: 1, ja: '〜することにしている' }],
+        examples: [{ ja: '私は寝る前に聖書を[[読むことにしている]]。', en: 'I [[make a point of]] reading the Bible before going to bed.' }],
+        sameAs: ['make it a point to do'] },
+      { serial: 269, headEn: 'make progress in ...',
+        meanings: [{ idx: 1, ja: '…において進歩をとげる' }],
+        examples: [{ ja: '彼は英語を話すことにおいて大きな[[進歩をとげた]]。', en: 'He [[made]] great [[progress in]] speaking English.' }] }
+    ]
+  },
+  // ===== L1 come (1) =====
+  {
+    category: {
+      id: 'u-edb-l1-come-1', name: 'L1 come (1)',
+      lesson: 'L1', lessonName: '基本動詞を含む熟語',
+      catType: 'verb', catKey: 'come', catVariant: 1, catOrder: 2,
+      meanings: ['(自分の方に)来る', '(相手の方に)行く', '(ある状態)になる'],
+      intro: 'come は、人やものが自分のところに向かって来ることを表す。相手を中心に考え、相手のところに行くことも come で表すことができる。'
+    },
+    entries: [
+      { serial: 270, headEn: 'come across ...',
+        meanings: [{ idx: 1, ja: '…に出くわす、…に偶然会う' }],
+        examples: [{ ja: '私は書店で古い友人に[[出くわした]]。', en: 'I [[came across]] my old friend in a bookstore.' }] },
+      { serial: 271, headEn: 'come true',
+        meanings: [{ idx: 1, ja: '実現する' }],
+        examples: [{ ja: '教師になるという彼女の願いがようやく[[実現した]]。', en: 'Her dream of becoming a teacher finally [[came true]].' }] },
+      { serial: 272, headEn: 'come to (oneself)',
+        meanings: [{ idx: 1, ja: '意識を取り戻す' }],
+        examples: [{ ja: '数分後、彼女は[[意識を取り戻した]]。', en: 'After a few minutes, she [[came to]] herself.' }] },
+      { serial: 273, headEn: 'come to do',
+        meanings: [{ idx: 1, ja: '〜するようになる' }],
+        examples: [{ ja: 'ポールは日本に住んでから納豆が[[好きになった]]。', en: 'Paul [[came to]] like natto after living in Japan.' }] },
+      { serial: 274, headEn: 'come off',
+        meanings: [{ idx: 1, ja: '①行われる' }, { idx: 2, ja: '②落ちる、取れる' }],
+        examples: [{ ja: 'パーティーは私たちが計画したとおりに[[行われた]]。', en: 'The party [[came off]] as we planned.' }] },
+      { serial: 275, headEn: 'come to think of it',
+        meanings: [{ idx: 1, ja: '考えてみると、そう言えば' }],
+        examples: [{ ja: '[[考えてみると]]、私は彼女を見た。', en: '[[Come to think of it]], I did see her.' }],
+        sameAs: ['talking about it', 'speaking of it'] },
+      { serial: 276, headEn: 'come by (...)',
+        meanings: [{ idx: 1, ja: '①…を手に入れる' }, { idx: 2, ja: '②立ち寄る' }],
+        examples: [{ ja: 'どうやってこれらのチケットを[[手に入れた]]の?', en: 'How did you [[come by]] these tickets?' }] }
+    ]
+  },
+  // ===== L2 よくない状況を表す語 =====
+  {
+    category: {
+      id: 'u-edb-l2-bad', name: 'L2 よくない状況を表す語',
+      lesson: 'L2', lessonName: '単語',
+      catType: 'theme', catKey: 'よくない状況を表す語', catVariant: 0, catOrder: 1,
+      meanings: [], intro: ''
+    },
+    entries: [
+      { serial: 343, headEn: 'accident', pos: '名',
+        meanings: [
+          { idx: 1, label: 'ⓐ', ja: '(交通)事故' },
+          { idx: 2, label: 'ⓑ', ja: '偶然' }
+        ],
+        examples: [
+          { label: 'ⓐ', ja: '彼は[[事故]]で左脚を骨折した。', en: 'He broke his left leg in an [[accident]].' },
+          { label: 'ⓑ', ja: '彼女は[[偶然]]その病気の治療法を発見した。', en: 'She discovered a cure to the disease [[by accident]].' }
+        ],
+        related: [
+          { kind: 'colloc', en: 'by accident', ja: '偶然に' },
+          { kind: 'deriv', en: 'accidental', ja: '偶然の', pos: '形' }
+        ] },
+      { serial: 344, headEn: 'pain', pos: '名',
+        meanings: [
+          { idx: 1, ja: '痛み、苦痛' },
+          { idx: 2, ja: '(複)で苦労、努力' }
+        ],
+        examples: [
+          { ja: '私は今朝、両肩に[[痛み]]を感じた。', en: 'I felt [[pain]] in my shoulders this morning.' }
+        ],
+        related: [
+          { kind: 'deriv', en: 'painful', ja: 'つらい、痛い', pos: '形' }
+        ] },
+      { serial: 345, headEn: 'ill', pos: '形',
+        hints: { irregular: '<worse - worst>' },
+        meanings: [
+          { idx: 1, label: 'ⓐ', ja: '病気で', pos: '形' },
+          { idx: 2, ja: '悪い', pos: '形' },
+          { idx: 3, label: 'ⓑ', ja: '悪く', pos: '副', note: '(↔ well 元気な、よく)' }
+        ],
+        examples: [
+          { label: 'ⓐ', ja: '彼は[[病気で]]入院している。', en: 'He is [[ill]] and in the hospital.' },
+          { label: 'ⓑ', ja: '他人の[[悪口を言う]]な。', en: "Don't [[speak ill of]] others." }
+        ],
+        related: [
+          { kind: 'colloc', en: 'fall ill', ja: '病気になる' },
+          { kind: 'colloc', en: 'speak ill of ...', ja: '…の悪口を言う' },
+          { kind: 'deriv', en: 'illness', ja: '病気', pos: '名' }
+        ] },
+      { serial: 346, headEn: 'die', pos: '動',
+        meanings: [{ idx: 1, ja: '死ぬ、(植物が)枯れる' }],
+        examples: [{ ja: '3人がその火事で[[死んだ]]。', en: 'Three people [[died]] in the fire.' }],
+        related: [
+          { kind: 'deriv', en: 'death', ja: '死', pos: '名' },
+          { kind: 'deriv', en: 'dead', ja: '死んだ、(植物が)枯れた', pos: '形' }
+        ] }
+    ]
+  },
+  // ===== L2 〈他動詞+A of B〉(1) 【関連の of】 =====
+  {
+    category: {
+      id: 'u-edb-l2-of-1', name: 'L2 〈他動詞+A of B〉(1) 【関連の of】',
+      lesson: 'L2', lessonName: '単語',
+      catType: 'grammar', catKey: '〈他動詞+A of B〉', catVariant: 1, catOrder: 2,
+      meanings: [], intro: '前置詞 of には「…についての」、【関連】の意味がある。'
+    },
+    entries: [
+      { serial: 347, headEn: 'remind', pos: '動',
+        meanings: [{ idx: 1, ja: 'に思い出させる、に気づかせる' }],
+        examples: [{ ja: 'あの歌はいつも私たちの初めてのデートを[[思い出させる]]。', en: 'That song always [[reminds]] me [[of]] our first date.' }],
+        related: [{ kind: 'colloc', en: 'remind ⟨人⟩ of ...', ja: '⟨人⟩に…を思い出させる' }] },
+      { serial: 348, headEn: 'inform', pos: '動',
+        meanings: [{ idx: 1, ja: 'に知らせる' }],
+        examples: [{ ja: 'なるべく早く私に結果を[[知らせて]]ください。', en: 'Please [[inform]] me [[of]] the result as soon as possible.' }],
+        related: [
+          { kind: 'colloc', en: 'inform ⟨人⟩ of ...', ja: '⟨人⟩に…を知らせる' },
+          { kind: 'deriv', en: 'information', ja: '情報', pos: '名' }
+        ] },
+      { serial: 349, headEn: 'convince', pos: '動',
+        meanings: [{ idx: 1, ja: 'に納得させる、に確信させる' }],
+        examples: [
+          { label: 'ⓐ', ja: '彼女は彼らに自分の[[無罪を納得させた]]。', en: 'She [[convinced]] them [[of]] her innocence.' },
+          { label: 'ⓑ', ja: '私は、私たちの製品がよく売れるだろうということを[[確信している]]。', en: 'I [[am convinced]] that our products will sell well.' }
+        ],
+        related: [
+          { kind: 'colloc', en: 'convince ⟨人⟩ of ...', ja: '⟨人⟩に…を納得(確信)させる' },
+          { kind: 'colloc', en: 'be convinced (that) ...', ja: '…だと確信している' },
+          { kind: 'deriv', en: 'conviction', ja: '確信', pos: '名' }
+        ] },
+      { serial: 350, headEn: 'warn', pos: '動',
+        meanings: [{ idx: 1, ja: 'に警告する' }],
+        examples: [{ ja: '私は彼に喫煙の危険性を[[警告した]]。', en: 'I [[warned]] him [[of]] the risks of smoking.' }],
+        related: [
+          { kind: 'colloc', en: 'warn ⟨人⟩ of ...', ja: '⟨人⟩に…を警告する' },
+          { kind: 'deriv', en: 'warning', ja: '警告', pos: '名' }
+        ] },
+      { serial: 351, headEn: 'suspect', pos: '動',
+        meanings: [
+          { idx: 1, ja: 'を疑う', pos: '動' },
+          { idx: 2, ja: 'に感づく', pos: '動' },
+          { idx: 3, ja: '容疑者', pos: '名' }
+        ],
+        examples: [{ ja: '警察は彼に[[スパイの疑いをかけている]]。', en: 'The police [[suspect]] him [[of]] being a spy.' }],
+        related: [
+          { kind: 'colloc', en: 'suspect ⟨人⟩ of ...', ja: '⟨人⟩に…の疑いをかける' },
+          { kind: 'deriv', en: 'suspicion', ja: '疑惑', pos: '名' },
+          { kind: 'deriv', en: 'suspicious', ja: '疑わしい', pos: '形' }
+        ] }
+    ]
+  }
+];
+
+function buildEnglishDbPack() {
+  const units = [];
+  const questions = [];
+  for (const p of HS_EDB_PACKS) {
+    const c = p.category;
+    units.push({
+      id: c.id, subjectId: 'english-db', name: c.name, parentId: null, profileId: 'p2',
+      lesson: c.lesson, lessonName: c.lessonName,
+      catType: c.catType, catKey: c.catKey, catVariant: c.catVariant, catOrder: c.catOrder,
+      catMeanings: c.meanings || [], intro: c.intro || ''
+    });
+    for (const e of p.entries) {
+      questions.push({
+        id: 'q-edb-' + e.serial,
+        unitId: c.id,
+        type: c.lesson === 'L1' ? 'edb-idiom' : 'edb-word',
+        serial: e.serial,
+        headEn: e.headEn,
+        pos: e.pos || '',
+        hints: e.hints || null,
+        meanings: e.meanings || [],
+        examples: e.examples || [],
+        related: e.related || [],
+        note: e.note || '',
+        sameAs: e.sameAs || [],
+        createdAt: '2026-06-30'
+      });
+    }
+  }
+  return { units, questions };
+}
+
+/* ------------------------------------------------------------
    サンプルデータ (初回起動時のみ投入)
    ------------------------------------------------------------ */
 function buildSampleData() {
@@ -2536,6 +2800,10 @@ function buildSampleData() {
   const hs = buildHighSchoolEnglishPacks();
   data.units.push(...hs.units);
   data.questions.push(...hs.questions);
+  // 高校 英語DB パック
+  const edb = buildEnglishDbPack();
+  data.units.push(...edb.units);
+  data.questions.push(...edb.questions);
   return data;
 }
 
@@ -2797,6 +3065,17 @@ function loadState() {
           migrated = true;
         }
       });
+      // 英語DB パック (subjectId='english-db') の追加マイグレーション (既存ユーザー向け)
+      {
+        const edb = buildEnglishDbPack();
+        edb.units.forEach(u => {
+          if (!state.units.some(x => x.id === u.id)) {
+            state.units.push(u);
+            state.questions.push(...edb.questions.filter(q => q.unitId === u.id));
+            migrated = true;
+          }
+        });
+      }
       // 既存の L6/L7 問題に enDef を反映 (英英定義→英語モード用)
       // ソースパックを正本とし、内容が異なる場合は常に上書きする
       // (旧仮置きの定義が保存済みのユーザーも次回ロード時に教科書版へ更新される)
@@ -3099,6 +3378,9 @@ function showScreen(name, params = {}, replace = false) {
     case 'english-batch':   renderEnglishBatch(); break;
     case 'english-listen':  renderEnglishListen(); break;
     case 'english-list':    renderEnglishList(params); break;
+    case 'edb-direction':   renderEdbDirection(params); break;
+    case 'edb-batch':       renderEdbBatch(); break;
+    case 'edb-list':        renderEdbList(params); break;
     case 'hyakunin-direction': renderHyakuninDirection(params); break;
     case 'hyakunin-quiz':   renderHyakuninQuiz(); break;
     case 'hyakunin-test':   renderHyakuninTest(); break;
@@ -3133,6 +3415,9 @@ function goBack() {
     case 'english-batch':   renderEnglishBatch(); break;
     case 'english-listen':  renderEnglishListen(); break;
     case 'english-list':    renderEnglishList(prev.params); break;
+    case 'edb-direction':   renderEdbDirection(prev.params); break;
+    case 'edb-batch':       renderEdbBatch(); break;
+    case 'edb-list':        renderEdbList(prev.params); break;
     case 'hyakunin-direction': renderHyakuninDirection(prev.params); break;
     case 'hyakunin-quiz':   renderHyakuninQuiz(); break;
     case 'hyakunin-test':   renderHyakuninTest(); break;
@@ -3359,6 +3644,8 @@ function renderUnits(subjectId) {
       showScreen('study-direction', { subjectId, label: subject.name + ' 全単元', reviewMode: unitsReviewMode });
     } else if (isEnglishSubject(subjectId)) {
       showScreen('english-direction', { subjectId, label: subject.name + ' 全単元', reviewMode: unitsReviewMode });
+    } else if (subjectId === 'english-db') {
+      showScreen('edb-direction', { subjectId, label: subject.name + ' 全単元', reviewMode: unitsReviewMode });
     } else if (subjectId === 'hyakunin') {
       showScreen('hyakunin-direction', { subjectId, label: subject.name + ' 全単元' });
     } else {
@@ -3373,6 +3660,8 @@ function renderUnits(subjectId) {
         showScreen('study-direction', { unitId: uid, label: u.name, reviewMode: unitsReviewMode });
       } else if (isEnglishUnit(uid)) {
         showScreen('english-direction', { unitId: uid, label: u.name, reviewMode: unitsReviewMode });
+      } else if (u && u.subjectId === 'english-db') {
+        showScreen('edb-direction', { unitId: uid, label: u.name, reviewMode: unitsReviewMode });
       } else if (u && u.subjectId === 'hyakunin') {
         showScreen('hyakunin-direction', { unitId: uid, label: u.name });
       } else {
@@ -4090,6 +4379,434 @@ function renderEnglishList(params) {
 }
 
 /* ------------------------------------------------------------
+   英語DB (English DB) — 出題方法選択 / batch / 一覧
+   ------------------------------------------------------------ */
+// [[ ... ]] を { text, hidden } トークン列に分解
+function edbTokenize(s) {
+  const out = [];
+  const RX = /\[\[(.+?)\]\]/g;
+  let p = 0, m;
+  while ((m = RX.exec(s))) {
+    if (m.index > p) out.push({ text: s.slice(p, m.index), hidden: false });
+    out.push({ text: m[1], hidden: true });
+    p = RX.lastIndex;
+  }
+  if (p < s.length) out.push({ text: s.slice(p), hidden: false });
+  return out;
+}
+// [[ ]] を取り除いた平文 (聞き取り・読み上げ用)
+function edbPlain(s) {
+  return (s || '').replace(/\[\[(.+?)\]\]/g, '$1');
+}
+// プロンプト表示: hidden 部分を空白下線に
+function edbRenderBlank(s) {
+  return edbTokenize(s || '').map(t =>
+    t.hidden ? `<span class="edb-blank">${escapeHtml(t.text)}</span>` : escapeHtml(t.text)
+  ).join('');
+}
+// 答え表示: hidden 部分を赤字に
+function edbRenderHilite(s) {
+  return edbTokenize(s || '').map(t =>
+    t.hidden ? `<span class="edb-hilite">${escapeHtml(t.text)}</span>` : escapeHtml(t.text)
+  ).join('');
+}
+// エントリ q の見出し対応文 (例: '①事故 / ②偶然' or '(原料)から作られている')
+function edbHeadJa(q) {
+  return (q.meanings || []).map(m => m.ja).filter(Boolean).join(' / ');
+}
+// あるモードで q から問題インスタンスを生成
+// 返値: { instanceId, mode, prompt:{html,plain}, answer:{html,plain}, speakEn }
+function edbExpandQuestion(q, mode) {
+  const items = [];
+  if (mode === 'edb-head-en-ja') {
+    items.push({
+      instanceId: q.id + '#head',
+      mode, prompt: { html: escapeHtml(q.headEn), plain: q.headEn },
+      answer: { html: escapeHtml(edbHeadJa(q)), plain: edbHeadJa(q) },
+      speakEn: q.headEn
+    });
+  } else if (mode === 'edb-head-ja-en') {
+    items.push({
+      instanceId: q.id + '#head',
+      mode, prompt: { html: escapeHtml(edbHeadJa(q)), plain: edbHeadJa(q) },
+      answer: { html: escapeHtml(q.headEn), plain: q.headEn },
+      speakEn: q.headEn
+    });
+  } else if (mode === 'edb-ex-blank-en') {
+    (q.examples || []).forEach((ex, i) => {
+      items.push({
+        instanceId: q.id + '#ex' + i + '/blank-en',
+        mode, prompt: { html: edbRenderBlank(ex.en), plain: edbPlain(ex.en) },
+        answer: { html: edbRenderHilite(ex.en), plain: edbPlain(ex.en) },
+        sub: { ja: edbPlain(ex.ja), label: ex.label || '' },
+        speakEn: edbPlain(ex.en)
+      });
+    });
+  } else if (mode === 'edb-ex-blank-ja') {
+    (q.examples || []).forEach((ex, i) => {
+      items.push({
+        instanceId: q.id + '#ex' + i + '/blank-ja',
+        mode, prompt: { html: edbRenderBlank(ex.ja), plain: edbPlain(ex.ja) },
+        answer: { html: edbRenderHilite(ex.ja), plain: edbPlain(ex.ja) },
+        sub: { en: edbPlain(ex.en), label: ex.label || '' },
+        speakEn: edbPlain(ex.en)
+      });
+    });
+  } else if (mode === 'edb-ex-ja-en') {
+    (q.examples || []).forEach((ex, i) => {
+      items.push({
+        instanceId: q.id + '#ex' + i + '/ja-en',
+        mode, prompt: { html: escapeHtml(edbPlain(ex.ja)), plain: edbPlain(ex.ja) },
+        answer: { html: escapeHtml(edbPlain(ex.en)), plain: edbPlain(ex.en) },
+        speakEn: edbPlain(ex.en)
+      });
+    });
+  } else if (mode === 'edb-ex-en-ja') {
+    (q.examples || []).forEach((ex, i) => {
+      items.push({
+        instanceId: q.id + '#ex' + i + '/en-ja',
+        mode, prompt: { html: escapeHtml(edbPlain(ex.en)), plain: edbPlain(ex.en) },
+        answer: { html: escapeHtml(edbPlain(ex.ja)), plain: edbPlain(ex.ja) },
+        speakEn: edbPlain(ex.en)
+      });
+    });
+  } else if (mode === 'edb-rel-ja-en') {
+    (q.related || []).forEach((r, i) => {
+      items.push({
+        instanceId: q.id + '#rel' + i + '/ja-en',
+        mode, prompt: { html: escapeHtml(r.ja), plain: r.ja },
+        answer: { html: escapeHtml(r.en), plain: r.en },
+        sub: { kind: r.kind, pos: r.pos || '' },
+        speakEn: r.en
+      });
+    });
+  } else if (mode === 'edb-rel-en-ja') {
+    (q.related || []).forEach((r, i) => {
+      items.push({
+        instanceId: q.id + '#rel' + i + '/en-ja',
+        mode, prompt: { html: escapeHtml(r.en), plain: r.en },
+        answer: { html: escapeHtml(r.ja), plain: r.ja },
+        sub: { kind: r.kind, pos: r.pos || '' },
+        speakEn: r.en
+      });
+    });
+  }
+  // 各 instance に entry 情報を付与
+  items.forEach(it => { it.entryId = q.id; it.serial = q.serial; it.entry = q; });
+  return items;
+}
+
+// edb 履歴の参照: questionId は instanceId と一致する形で保存している
+function edbLatestResult(instanceId) {
+  const arr = (state.history && state.history[currentProfileId]) || [];
+  for (let i = arr.length - 1; i >= 0; i--) {
+    if (arr[i].questionId === instanceId) return arr[i].result;
+  }
+  return null;
+}
+
+const EDB_MODES = [
+  { id: 'edb-head-en-ja',  label: '📖 見出し 英→日', sub: '英単語/熟語 をタップして意味を確認' },
+  { id: 'edb-head-ja-en',  label: '✏️ 見出し 日→英', sub: '意味から見出しを思い出す' },
+  { id: 'edb-ex-blank-en', label: '🕳 例文 穴埋め(英)', sub: '英文の赤字部分を答える' },
+  { id: 'edb-ex-blank-ja', label: '🕳 例文 穴埋め(日)', sub: '和訳の赤字部分を答える' },
+  { id: 'edb-ex-ja-en',    label: '✏️ 例文 日→英', sub: '日本語文を英訳' },
+  { id: 'edb-ex-en-ja',    label: '📖 例文 英→日', sub: '英文を和訳' },
+  { id: 'edb-rel-ja-en',   label: '🔗 派生・熟語 日→英', sub: '派生語/コロケーションを答える' },
+  { id: 'edb-rel-en-ja',   label: '🔗 派生・熟語 英→日', sub: '派生語/コロケーションの意味' }
+];
+
+function renderEdbDirection(params) {
+  const label = params && params.label ? params.label : '英語DB';
+  const reviewMode = !!(params && params.reviewMode);
+
+  // この範囲のエントリ
+  const inScope = state.questions.filter(q => {
+    if (q.type !== 'edb-idiom' && q.type !== 'edb-word') return false;
+    if (params.unitId) return q.unitId === params.unitId;
+    if (params.subjectId) {
+      const u = getUnit(q.unitId);
+      return u && u.subjectId === params.subjectId;
+    }
+    return false;
+  });
+  const hasEx = inScope.some(q => (q.examples || []).length > 0);
+  const hasRel = inScope.some(q => (q.related || []).length > 0);
+
+  // カテゴリ情報 (単一 unit の時)
+  let catBlock = '';
+  if (params.unitId) {
+    const u = getUnit(params.unitId);
+    if (u) {
+      const meaningsLine = (u.catMeanings && u.catMeanings.length)
+        ? '<div class="edb-cat-meanings">意味: ' + u.catMeanings.map((m, i) => `<span style="margin-right:8px">${i+1}.&nbsp;${escapeHtml(m)}</span>`).join('') + '</div>'
+        : '';
+      const introLine = u.intro ? `<div class="edb-cat-intro">${escapeHtml(u.intro)}</div>` : '';
+      const serials = inScope.map(q => q.serial).filter(n => typeof n === 'number');
+      const range = serials.length ? `No.${Math.min.apply(null,serials)}〜${Math.max.apply(null,serials)} (${inScope.length}語句)` : `${inScope.length}語句`;
+      catBlock = `<div class="section-label">${escapeHtml(range)}</div>${meaningsLine}${introLine}`;
+    }
+  }
+
+  const modeBtnsHtml = EDB_MODES.filter(m => {
+    if (m.id.startsWith('edb-ex-') && !hasEx) return false;
+    if (m.id.startsWith('edb-rel-') && !hasRel) return false;
+    return true;
+  }).map(m => `
+    <button class="list-item list-item-chevron" data-mode="${m.id}">
+      <div class="list-item-main">
+        <div class="list-item-title">${m.label}${reviewMode ? ' (復習)' : ''}</div>
+        <div class="list-item-subtitle">${escapeHtml(m.sub)}</div>
+      </div>
+    </button>`).join('');
+
+  document.getElementById('screen-edb-direction').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="ed2-back">‹ 戻る</button>
+      <span class="nav-title">${escapeHtml(label)}</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="content">
+      ${catBlock}
+      <div class="section-label">出題範囲</div>
+      <div class="radio-group" id="ed2-mode">
+        <label class="radio-item ${!reviewMode ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="ed2mode" value="all" hidden>全問</label>
+        <label class="radio-item ${reviewMode ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="ed2mode" value="review" hidden>○以外のみ (復習)</label>
+      </div>
+      <div class="section-label">出題のしかた</div>
+      <div class="list-group">${modeBtnsHtml}</div>
+      <div class="section-label">この範囲を確認する</div>
+      <div class="list-group">
+        <button class="list-item list-item-chevron" id="ed2-list">
+          <div class="list-item-main">
+            <div class="list-item-title">📋 一覧表示</div>
+            <div class="list-item-subtitle">全エントリ・例文・派生語をまとめて確認</div>
+          </div>
+        </button>
+      </div>
+    </div>`;
+
+  document.getElementById('ed2-back').onclick = goBack;
+  document.querySelectorAll('#ed2-mode .radio-item').forEach(item => {
+    item.onclick = () => {
+      params.reviewMode = item.querySelector('input').value === 'review';
+      renderEdbDirection(params);
+    };
+  });
+  document.querySelectorAll('#screen-edb-direction .list-item[data-mode]').forEach(b => {
+    b.onclick = () => startEdbBatch({ ...params, mode: b.dataset.mode, reviewMode: !!params.reviewMode });
+  });
+  document.getElementById('ed2-list').onclick = () => showScreen('edb-list', params);
+}
+
+const EDB_BATCH_SIZE = 5;
+
+function startEdbBatch({ unitId = null, subjectId = null, mode, reviewMode = false }) {
+  let pool = state.questions.filter(q => (q.type === 'edb-idiom' || q.type === 'edb-word') && isUnitForProfile(getUnit(q.unitId)));
+  if (unitId) pool = pool.filter(q => q.unitId === unitId);
+  if (subjectId) pool = pool.filter(q => {
+    const u = getUnit(q.unitId);
+    return u && u.subjectId === subjectId;
+  });
+  // mode に応じて instance を展開
+  const instances = [];
+  for (const q of pool) instances.push(...edbExpandQuestion(q, mode));
+  let pool2 = instances;
+  if (reviewMode) {
+    pool2 = pool2.filter(it => edbLatestResult(it.instanceId) !== 'o');
+  }
+  if (pool2.length === 0) {
+    showAlert('問題がありません', reviewMode
+      ? 'この範囲には「○以外」の問題がありません。'
+      : 'この範囲には該当する問題がありません。');
+    return;
+  }
+  studySession = {
+    unitId, subjectId, mode, direction: mode, reviewMode,
+    instances: shuffle(pool2),
+    batchIndex: 0,
+    revealed: {},
+    graded: {},
+    results: [],
+    startedAt: Date.now()
+  };
+  showScreen('edb-batch');
+}
+
+function renderEdbBatch() {
+  const s = studySession;
+  if (!s || !s.instances) { goBack(); return; }
+  if (s.batchIndex >= s.instances.length) {
+    showScreen('result', {}, true);
+    return;
+  }
+  const batch = s.instances.slice(s.batchIndex, s.batchIndex + EDB_BATCH_SIZE);
+  const totalBatches = Math.ceil(s.instances.length / EDB_BATCH_SIZE);
+  const currentBatch = Math.floor(s.batchIndex / EDB_BATCH_SIZE) + 1;
+  const modeLabel = (EDB_MODES.find(m => m.id === s.mode) || { label: '' }).label;
+
+  const rows = batch.map(it => {
+    const id = it.instanceId;
+    const revealed = !!s.revealed[id];
+    const grade = s.graded[id];
+    const subHtml = it.sub
+      ? (it.sub.ja ? `<div style="font-size:13px;color:var(--text-secondary);margin-top:4px">${escapeHtml(it.sub.label ? it.sub.label + ' ' : '')}${escapeHtml(it.sub.ja)}</div>`
+        : it.sub.en ? `<div style="font-size:13px;color:var(--text-secondary);margin-top:4px">${escapeHtml(it.sub.label ? it.sub.label + ' ' : '')}${escapeHtml(it.sub.en)}</div>`
+        : it.sub.kind ? `<div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">${escapeHtml(it.sub.kind === 'colloc' ? 'コロケーション' : '派生語')}${it.sub.pos ? ' · ' + escapeHtml(it.sub.pos) : ''}</div>`
+        : '')
+      : '';
+    const gradeArea = grade
+      ? `<div class="edb-graded-mark eb-${grade}">${grade === 'o' ? '○' : grade === 'd' ? '△' : '×'}</div>`
+      : (revealed
+          ? `<div class="edb-grade-row">
+              <button class="edb-grade-btn x" data-id="${id}" data-r="x">×</button>
+              <button class="edb-grade-btn d" data-id="${id}" data-r="d">△</button>
+              <button class="edb-grade-btn o" data-id="${id}" data-r="o">○</button>
+            </div>`
+          : '');
+    return `
+      <div class="edb-row" data-id="${id}">
+        <div class="edb-top">
+          <button class="edb-speak" data-id="${id}" aria-label="音声を聞く">🔊</button>
+          <span class="edb-mode-pill">No.${it.serial}</span>
+        </div>
+        ${it.sub && it.sub.kind ? subHtml : ''}
+        <div class="edb-prompt" data-id="${id}">${it.prompt.html}</div>
+        <div class="edb-answer" data-id="${id}">${revealed ? it.answer.html : '<span class="edb-tap-hint">タップして表示</span>'}</div>
+        ${(it.sub && (it.sub.ja || it.sub.en)) ? subHtml : ''}
+        ${gradeArea}
+      </div>`;
+  }).join('');
+
+  const allGraded = batch.every(it => s.graded[it.instanceId]);
+  const isLast = s.batchIndex + EDB_BATCH_SIZE >= s.instances.length;
+  const remaining = s.instances.length - s.batchIndex - EDB_BATCH_SIZE;
+  const nextLabel = isLast ? '結果を見る' : '次の' + Math.min(EDB_BATCH_SIZE, remaining) + '問へ';
+
+  document.getElementById('screen-edb-batch').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="edb-quit">中断</button>
+      <span class="nav-title">${escapeHtml(modeLabel)}</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="study-header">
+      <div class="study-progress">${currentBatch} / ${totalBatches} グループ</div>
+    </div>
+    <div class="content">
+      ${rows}
+      <button class="btn" id="edb-next" ${!allGraded ? 'disabled style="opacity:0.5"' : ''}>${escapeHtml(nextLabel)}</button>
+    </div>`;
+
+  const playFromEvent = (el) => {
+    const id = el.dataset.id;
+    const it = s.instances.find(x => x.instanceId === id);
+    if (it && it.speakEn) speakEnglish(it.speakEn);
+  };
+  document.querySelectorAll('#screen-edb-batch .edb-speak').forEach(b => {
+    b.onclick = (e) => { e.stopPropagation(); playFromEvent(b); };
+  });
+  document.querySelectorAll('#screen-edb-batch .edb-prompt').forEach(el => {
+    el.onclick = (e) => { e.stopPropagation(); playFromEvent(el); };
+  });
+  document.querySelectorAll('#screen-edb-batch .edb-answer').forEach(el => {
+    el.onclick = (e) => {
+      e.stopPropagation();
+      const id = el.dataset.id;
+      if (!s.revealed[id]) {
+        s.revealed[id] = true;
+        renderEdbBatch();
+      }
+    };
+  });
+  document.querySelectorAll('#screen-edb-batch .edb-grade-btn').forEach(b => {
+    b.onclick = (e) => {
+      e.stopPropagation();
+      const id = b.dataset.id;
+      const r = b.dataset.r;
+      s.graded[id] = r;
+      s.results.push({ questionId: id, result: r });
+      state.history[currentProfileId].push({
+        questionId: id,
+        profileId: currentProfileId,
+        result: r,
+        direction: s.mode,
+        answeredAt: new Date().toISOString()
+      });
+      saveState();
+      renderEdbBatch();
+    };
+  });
+  document.getElementById('edb-next').onclick = () => {
+    if (!allGraded) return;
+    s.batchIndex += EDB_BATCH_SIZE;
+    if (s.batchIndex >= s.instances.length) {
+      showScreen('result', {}, true);
+    } else {
+      renderEdbBatch();
+    }
+  };
+  document.getElementById('edb-quit').onclick = async () => {
+    const ok = await showConfirm('学習を中断', 'これまでの結果は記録されています。中断しますか?', { okText: '中断', danger: true });
+    if (ok) { studySession = null; goBack(); }
+  };
+}
+
+function renderEdbList(params) {
+  const label = params && params.label ? params.label : '英語DB';
+  let pool = state.questions.filter(q => (q.type === 'edb-idiom' || q.type === 'edb-word') && isUnitForProfile(getUnit(q.unitId)));
+  if (params && params.unitId) pool = pool.filter(q => q.unitId === params.unitId);
+  if (params && params.subjectId) pool = pool.filter(q => {
+    const u = getUnit(q.unitId);
+    return u && u.subjectId === params.subjectId;
+  });
+  pool = pool.slice().sort((a, b) => (a.serial || 0) - (b.serial || 0));
+
+  const cardsHtml = pool.map(q => {
+    const meaningsHtml = (q.meanings || []).map(m => `
+      <div class="edb-list-meaning">
+        <span class="edb-list-mlabel">${escapeHtml(m.label || (m.idx ? '①②③④⑤'[m.idx-1] || ('('+m.idx+')') : ''))}</span>
+        ${escapeHtml(m.ja || '')}${m.pos ? ' <span class="edb-list-pos">' + escapeHtml(m.pos) + '</span>' : ''}${m.note ? ' <span class="edb-list-pos">' + escapeHtml(m.note) + '</span>' : ''}
+      </div>`).join('');
+    const examplesHtml = (q.examples || []).map(ex => `
+      <div class="edb-list-ex">
+        <div>${ex.label ? '<span class="edb-list-mlabel">' + escapeHtml(ex.label) + '</span>' : ''}${edbRenderHilite(ex.en)}</div>
+        <div style="color:var(--text-secondary)">${ex.label ? '<span class="edb-list-mlabel">　</span>' : ''}${edbRenderHilite(ex.ja)}</div>
+      </div>`).join('');
+    const relHtml = (q.related || []).map(r => `
+      <div class="edb-list-rel">
+        <span class="kind ${r.kind === 'colloc' ? 'colloc' : 'deriv'}">${r.kind === 'colloc' ? 'コロケ' : '派生'}</span>
+        <strong>${escapeHtml(r.en)}</strong>${r.pos ? ' <span class="edb-list-pos">' + escapeHtml(r.pos) + '</span>' : ''} — ${escapeHtml(r.ja)}
+      </div>`).join('');
+    const noteHtml = q.note ? `<div class="edb-list-note">注意: ${escapeHtml(q.note)}</div>` : '';
+    const sameHtml = (q.sameAs && q.sameAs.length) ? `<div class="edb-list-same">[同・類] ${q.sameAs.map(escapeHtml).join(', ')}</div>` : '';
+    const hintsHtml = (q.hints && q.hints.irregular) ? ` <span class="edb-list-pos">${escapeHtml(q.hints.irregular)}</span>` : '';
+    return `
+      <div class="edb-list-card">
+        <div class="edb-list-serial">No.${q.serial}</div>
+        <div class="edb-list-head">${escapeHtml(q.headEn)}${q.pos ? ' <span class="edb-list-pos">' + escapeHtml(q.pos) + '</span>' : ''}${hintsHtml}</div>
+        <div class="edb-list-meanings">${meaningsHtml}</div>
+        ${relHtml ? '<div class="edb-list-section">派生語・コロケーション</div>' + relHtml : ''}
+        ${examplesHtml ? '<div class="edb-list-section">例文</div>' + examplesHtml : ''}
+        ${noteHtml}
+        ${sameHtml}
+      </div>`;
+  }).join('');
+
+  const emptyHtml = '<div class="card" style="text-align:center;color:var(--text-secondary)">この範囲にエントリがありません</div>';
+  document.getElementById('screen-edb-list').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="edl-back">‹ 戻る</button>
+      <span class="nav-title">${escapeHtml(label)} 一覧</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="content">
+      <div class="section-label">${pool.length}件 (No.順)</div>
+      ${pool.length ? cardsHtml : emptyHtml}
+    </div>`;
+  document.getElementById('edl-back').onclick = goBack;
+}
+
+/* ------------------------------------------------------------
    百人一首: 出題方法の選択 / 3モード / 全首表示
    ------------------------------------------------------------ */
 function hyakuninSegments(q) {
@@ -4533,7 +5250,16 @@ function renderResult() {
   const sec = Math.floor((elapsedMs % 60000) / 1000);
 
   // 間違えた問題 (x と d をリストアップ)
+  // edb モードでは instanceId と entry id が異なるので instances から再取得
+  const isEdb = s.instances && (s.mode || '').startsWith('edb-');
+  const edbInstanceMap = isEdb
+    ? new Map(s.instances.map(it => [it.instanceId, it]))
+    : null;
   const mistakes = s.results.filter(r => r.result !== 'o').map(r => {
+    if (isEdb) {
+      const it = edbInstanceMap.get(r.questionId);
+      return it ? { edb: it, mark: r.result } : null;
+    }
     const q = getQuestion(r.questionId);
     return q ? { q, mark: r.result } : null;
   }).filter(Boolean);
@@ -4541,6 +5267,13 @@ function renderResult() {
   const mistakeHtml = mistakes.length === 0
     ? '<div class="card" style="text-align:center;color:var(--text-secondary)">全問正解!お見事!</div>'
     : mistakes.map(m => {
+        if (m.edb) {
+          return `
+        <div class="result-mistake">
+          <div class="result-mistake-q">${m.mark === 'd' ? '△' : '×'} <span class="edb-list-serial">No.${m.edb.serial}</span> ${m.edb.prompt.html}</div>
+          <div class="result-mistake-a">→ ${m.edb.answer.html}</div>
+        </div>`;
+        }
         const d = questionDisplay(m.q, s.direction);
         return `
         <div class="result-mistake">
@@ -4580,6 +5313,8 @@ function renderResult() {
       startEnglishBatch({ ...params, mode });
     } else if (mode === 'listen') {
       startEnglishListen(params);
+    } else if (mode && mode.startsWith('edb-')) {
+      startEdbBatch({ ...params, mode });
     } else if (mode === 'hk-graded') {
       startHyakuninGraded(params);
     } else {
