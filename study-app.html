@@ -1301,10 +1301,11 @@ input, textarea, select {
 }
 
 /* 教科ごとのアクセントカラー (タイル左ボーダー) */
-.tile-color-english { box-shadow: inset 4px 0 0 #5856d6, var(--shadow); }
-.tile-color-kanji   { box-shadow: inset 4px 0 0 #ff2d55, var(--shadow); }
-.tile-color-social  { box-shadow: inset 4px 0 0 #ff9500, var(--shadow); }
-.tile-color-science { box-shadow: inset 4px 0 0 #34c759, var(--shadow); }
+.tile-color-english    { box-shadow: inset 4px 0 0 #5856d6, var(--shadow); }
+.tile-color-english-db { box-shadow: inset 4px 0 0 #32ade6, var(--shadow); }
+.tile-color-kanji      { box-shadow: inset 4px 0 0 #ff2d55, var(--shadow); }
+.tile-color-social     { box-shadow: inset 4px 0 0 #ff9500, var(--shadow); }
+.tile-color-science    { box-shadow: inset 4px 0 0 #34c759, var(--shadow); }
 
 </style>
 </head>
@@ -2450,11 +2451,12 @@ function buildSampleData() {
   const data = {
     version: 1,
     subjects: [
-      { id: 'english', name: '英語' },
-      { id: 'kanji',   name: '漢字' },
-      { id: 'social',  name: '社会' },
-      { id: 'science', name: '理科' },
-      { id: 'hyakunin', name: '百人一首' }
+      { id: 'english',    name: '英語',     profileIds: ['p1', 'p2'] },
+      { id: 'english-db', name: '英語DB',   profileIds: ['p2'] },
+      { id: 'kanji',      name: '漢字',     profileIds: ['p1'] },
+      { id: 'social',     name: '社会',     profileIds: ['p1'] },
+      { id: 'science',    name: '理科',     profileIds: ['p1'] },
+      { id: 'hyakunin',   name: '百人一首', profileIds: ['p1'] }
     ],
     units: [
       { id: 'u-soc-1', subjectId: 'social',  name: '日本史',     parentId: null },
@@ -2713,9 +2715,30 @@ function loadState() {
       if (u && u.name !== newName) { u.name = newName; migrated = true; }
     });
 
+    // 教科ごとの表示プロフィールを backfill / 英語DB を追加 (既存ユーザー向け)
+    {
+      const defaults = {
+        english:      ['p1', 'p2'],
+        'english-db': ['p2'],
+        kanji:        ['p1'],
+        social:       ['p1'],
+        science:      ['p1'],
+        hyakunin:     ['p1']
+      };
+      state.subjects.forEach(s => {
+        if (!Array.isArray(s.profileIds)) {
+          s.profileIds = defaults[s.id] || ['p1', 'p2'];
+          migrated = true;
+        }
+      });
+      if (!state.subjects.some(s => s.id === 'english-db')) {
+        state.subjects.push({ id: 'english-db', name: '英語DB', profileIds: ['p2'] });
+        migrated = true;
+      }
+    }
     // 百人一首 教科・単元の追加マイグレーション (既存ユーザー向け)
     if (!state.subjects.some(s => s.id === 'hyakunin')) {
-      state.subjects.push({ id: 'hyakunin', name: '百人一首' });
+      state.subjects.push({ id: 'hyakunin', name: '百人一首', profileIds: ['p1'] });
       migrated = true;
     }
     if (!state.units.some(u => u.id === 'u-hyakunin-1')) {
@@ -3173,9 +3196,10 @@ function renderHome() {
   if (!profile) { showScreen('profile-select', {}, true); return; }
 
   const initial = (profile.name || '?').charAt(0);
-  const subjectIcons = { english: '🌐', kanji: '✏️', social: '🗾', science: '🔬', hyakunin: '🎴' };
+  const subjectIcons = { english: '🌐', 'english-db': '🗂', kanji: '✏️', social: '🗾', science: '🔬', hyakunin: '🎴' };
 
-  const tiles = state.subjects.map(s => {
+  const visibleSubjects = state.subjects.filter(s => !s.profileIds || s.profileIds.includes(currentProfileId));
+  const tiles = visibleSubjects.map(s => {
     const qcount = state.questions.filter(q => {
       const u = getUnit(q.unitId);
       return u && u.subjectId === s.id && isUnitForProfile(u);
