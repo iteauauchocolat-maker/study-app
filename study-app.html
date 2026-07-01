@@ -2493,12 +2493,12 @@ function buildHyakunin2Pack() {
    ・collocations と派生語は related[].kind で区別
    ------------------------------------------------------------ */
 const HS_EDB_PACKS = [
-  // ===== L1 make (1) =====
+  // ===== L1 make =====
   {
     category: {
-      id: 'u-edb-l1-make-1', name: 'L1 make (1)',
+      id: 'u-edb-l1-make', name: 'L1 make',
       lesson: 'L1', lessonName: '基本動詞を含む熟語',
-      catType: 'verb', catKey: 'make', catVariant: 1, catOrder: 1,
+      catType: 'verb', catKey: 'make', catOrder: 1,
       meanings: ['を作る', '(事態・状態)を生み出す、を引き起こす', '(ある状態)にする', 'に〜させる'],
       intro: 'make は、ものごとに働きかけて、新しい別のものや状況を生み出すことを表す。いろいろな文型で使われるので、注意が必要である。'
     },
@@ -2530,12 +2530,12 @@ const HS_EDB_PACKS = [
         examples: [{ ja: '彼は英語を話すことにおいて大きな[[進歩をとげた]]。', en: 'He [[made]] great [[progress in]] speaking English.' }] }
     ]
   },
-  // ===== L1 come (1) =====
+  // ===== L1 come =====
   {
     category: {
-      id: 'u-edb-l1-come-1', name: 'L1 come (1)',
+      id: 'u-edb-l1-come', name: 'L1 come',
       lesson: 'L1', lessonName: '基本動詞を含む熟語',
-      catType: 'verb', catKey: 'come', catVariant: 1, catOrder: 2,
+      catType: 'verb', catKey: 'come', catOrder: 2,
       meanings: ['(自分の方に)来る', '(相手の方に)行く', '(ある状態)になる'],
       intro: 'come は、人やものが自分のところに向かって来ることを表す。相手を中心に考え、相手のところに行くことも come で表すことができる。'
     },
@@ -2562,6 +2562,326 @@ const HS_EDB_PACKS = [
       { serial: 276, headEn: 'come by (...)',
         meanings: [{ idx: 1, ja: '①…を手に入れる' }, { idx: 2, ja: '②立ち寄る' }],
         examples: [{ ja: 'どうやってこれらのチケットを[[手に入れた]]の?', en: 'How did you [[come by]] these tickets?' }] }
+    ]
+  },
+  // ===== L1 go =====
+  {
+    category: {
+      id: 'u-edb-l1-go', name: 'L1 go',
+      lesson: 'L1', lessonName: '基本動詞を含む熟語',
+      catType: 'verb', catKey: 'go', catOrder: 3,
+      meanings: ['(現在の位置から離れて)行く', '(道・ものが)至る', '(悪い状態)になる'],
+      intro: 'go は、come と逆に、自分や相手のところから遠ざかっていくことを表す。悪い状態を表す形容詞を補語にする SVC の文型での用法にも注意する。'
+    },
+    entries: [
+      { serial: 277, headEn: 'go on -ing',
+        meanings: [{ idx: 1, ja: '〜し続ける' }],
+        examples: [{ ja: '彼は森の中を[[歩き続けた]]。', en: 'He [[went on walking]] in the forest.' }],
+        sameAs: ['continue -ing[to do]', 'keep (on) -ing'] },
+      { serial: 278, headEn: 'go on to do',
+        meanings: [{ idx: 1, ja: 'さらに続けて〜する' }],
+        examples: [{ ja: '彼女は[[続けて]]いくつかの小説を書いた。', en: 'She [[went on to]] write several novels.' }] },
+      { serial: 279, headEn: 'go on with ...',
+        meanings: [{ idx: 1, ja: '…を続ける' }],
+        examples: [{ ja: 'どうぞ仕事を[[続けて]]ください。', en: 'Please [[go on with]] your work.' }] },
+      { serial: 280, headEn: 'go -ing at[in, on] 〈場所〉',
+        meanings: [{ idx: 1, ja: '〈場所〉に〜しに行く' }],
+        examples: [{ ja: '彼らはショッピングモールへ[[買い物に行った]]。', en: 'They [[went shopping at]] the shopping mall.' }] },
+      { serial: 281, headEn: 'go through ...',
+        meanings: [{ idx: 1, ja: '…を経験する、…を通り抜ける' }],
+        examples: [{ ja: '彼女は苦しい時期を[[経験した]]。', en: 'She [[went through]] a hard time.' }],
+        note: '[関連] go through with ... (…をやり通す) [同・類] experience' },
+      { serial: 282, headEn: 'go bad',
+        meanings: [{ idx: 1, ja: '(食べ物などが)腐る' }],
+        examples: [{ ja: 'バナナは夏にはすぐ[[腐る]]。', en: 'Bananas [[go bad]] quickly in summer.' }] },
+      { serial: 283, headEn: 'go wild',
+        meanings: [{ idx: 1, ja: '荒っぽくなる、興奮する' }],
+        examples: [{ ja: '彼らのチームが勝利のゴールを決めたとき、ファンは[[興奮した]]。', en: 'The fans [[went wild]] when their team scored the winning goal.' }] },
+      { serial: 284, headEn: 'go from bad to worse',
+        meanings: [{ idx: 1, ja: 'さらに悪く(つまらなく)なる' }],
+        examples: [{ ja: '事態は[[さらに悪い方向に向かった]]。', en: 'Matters [[went from bad to worse]].' }] },
+      { serial: 285, headEn: 'go ahead with ...',
+        meanings: [{ idx: 1, ja: '…を始める、…を進める' }],
+        examples: [{ ja: '今すぐ仕事を[[始めなさい]]。', en: '[[Go ahead with]] the work right now.' }],
+        sameAs: ['begin', 'start'] },
+      { serial: 286, headEn: 'go over ...',
+        meanings: [{ idx: 1, ja: '…をよく調べる(考える)' }],
+        examples: [{ ja: '私たちはその計画を何度も[[よく調べた]]。', en: 'We [[went over]] the plan several times.' }] },
+      { serial: 287, headEn: 'go with ...',
+        meanings: [{ idx: 1, ja: '①…と調和する' }, { idx: 2, ja: '②…と交際する' }],
+        examples: [{ ja: 'この靴はこのドレスに[[似合う]]と思いますか。', en: 'Do you think these shoes [[go with]] this dress?' }] },
+      { serial: 288, headEn: "go out of one's way to do",
+        meanings: [{ idx: 1, ja: '(必要がないのに)わざわざする、無理して〜する' }],
+        examples: [{ ja: '私が体調を崩している間、彼は[[わざわざ助けてくれた]]。', en: 'He [[went out of his way to]] help me while I was sick.' }],
+        note: '[関連] go out of the way (回り道する、取り乱す)' },
+      { serial: 289, headEn: 'be on the go',
+        meanings: [{ idx: 1, ja: '仕事に追われている、常に活動している' }],
+        examples: [{ ja: '私は1日中[[仕事に追われている]]。', en: "I've [[been on the go]] all day." }],
+        note: 'この文での go は名詞(行くこと、活動)。' }
+    ]
+  },
+  // ===== L1 give =====
+  {
+    category: {
+      id: 'u-edb-l1-give', name: 'L1 give',
+      lesson: 'L1', lessonName: '基本動詞を含む熟語',
+      catType: 'verb', catKey: 'give', catOrder: 4,
+      meanings: ['を与える、を渡す', 'を催す', '(圧力などに負けて)譲る、崩れる'],
+      intro: 'give は、他動詞「を与える」の意味だけでとらえがちだが、自動詞「譲る、崩れる」の意味を含む熟語も重要である。'
+    },
+    entries: [
+      { serial: 290, headEn: 'give 〈人〉 a hand',
+        meanings: [{ idx: 1, ja: '〈人〉に手を貸す、〈人〉の手伝いをする' }],
+        examples: [{ ja: 'この机を運ぶのに[[手を貸して]]くれませんか。', en: 'Can you [[give]] me [[a hand]] with this desk?' }],
+        sameAs: ['give a hand to 〈人〉'] },
+      { serial: 291, headEn: 'give 〈人〉 a call[ring]',
+        meanings: [{ idx: 1, ja: '〈人〉に電話をする' }],
+        examples: [{ ja: '7時頃あなたに[[電話をします]]。', en: "I'll [[give]] you [[a call]] at about seven." }],
+        sameAs: ['call', 'telephone'] },
+      { serial: 292, headEn: 'give birth to ...',
+        meanings: [{ idx: 1, ja: '…を産む' }],
+        examples: [{ ja: 'アンは男の子を[[産んだ]]。', en: 'Ann [[gave birth to]] a baby boy.' }],
+        sameAs: ['bear'] },
+      { serial: 293, headEn: 'give up (...)',
+        meanings: [{ idx: 1, ja: '(…を)あきらめる、(…を)断念する' }],
+        examples: [{ ja: '私は留学する計画を[[あきらめた]]。', en: 'I [[gave up]] my plan to study abroad.' }],
+        note: '[関連] give up -ing (〜するのをやめる)、give 〈人〉 up for lost (〈人〉が行方不明とあきらめる)' },
+      { serial: 294, headEn: 'give in (...)',
+        meanings: [{ idx: 1, ja: '①譲る、屈服する' }, { idx: 2, ja: '②…を提出する' }],
+        examples: [{ ja: '彼は決して簡単に[[降参しない]]。', en: 'He never [[gives in]] easily.' }],
+        note: '[関連] give in to ... (…に屈服する) (= yield to ...) [同・類] hand in ... (…を提出する)' },
+      { serial: 295, headEn: 'give way to ...',
+        meanings: [{ idx: 1, ja: '①…に譲歩する、…に屈する、…に負ける' }, { idx: 2, ja: '②…に道を譲る' }],
+        examples: [{ ja: '彼女は誘惑に[[負けた]]。', en: 'She [[gave way to]] temptation.' }],
+        sameAs: ['yield to ...'] },
+      { serial: 296, headEn: 'given ...',
+        meanings: [{ idx: 1, ja: '…を考慮に入れれば、もし…があれば' }],
+        examples: [{ ja: '台風が近づいてきていることを[[考慮に入れれば]]、家にいるべきだ。', en: '[[Given]] a typhoon is coming, you should stay home.' }] },
+      { serial: 297, headEn: 'give out ...',
+        meanings: [{ idx: 1, ja: '…を配る' }],
+        examples: [{ ja: '私たちの先生が試験用紙を[[配った]]。', en: 'Our teacher [[gave out]] the test papers.' }],
+        sameAs: ['distribute'] },
+      { serial: 298, headEn: 'give away ...',
+        meanings: [{ idx: 1, ja: '①(秘密など)を明かす' }, { idx: 2, ja: '②…を無料で配る' }],
+        examples: [{ ja: '私たちの秘密を[[明かさないで]]。', en: "Don't [[give away]] our secret." }] },
+      { serial: 299, headEn: 'give rise to ...',
+        meanings: [{ idx: 1, ja: '…を引き起こす、…の原因となる' }],
+        examples: [{ ja: '彼の不注意な発言が誤解を[[引き起こした]]。', en: 'His careless words [[gave rise to]] misunderstandings.' }] },
+      { serial: 300, headEn: 'give off ...',
+        meanings: [{ idx: 1, ja: '(におい・熱など)を発する、…を出す' }],
+        examples: [{ ja: 'その川はひどいにおいを[[発していた]]。', en: 'The river [[gave off]] a terrible smell.' }] }
+    ]
+  },
+  // ===== L1 take =====
+  {
+    category: {
+      id: 'u-edb-l1-take', name: 'L1 take',
+      lesson: 'L1', lessonName: '基本動詞を含む熟語',
+      catType: 'verb', catKey: 'take', catOrder: 5,
+      meanings: ['を取る', 'を持って行く、を連れて行く', 'を必要とする', 'を〜とみなす、を〜と思う'],
+      intro: 'take は、ものを持って(人を連れて)その場から遠ざかることを表す。「を〜とみなす、を〜と思う」の意味を含む熟語も重要である。'
+    },
+    entries: [
+      { serial: 301, headEn: 'take care of ...',
+        meanings: [{ idx: 1, ja: '…の世話をする、…に気を配る' }],
+        examples: [{ ja: '誰がそのイヌの[[世話をしているの]]?', en: 'Who is [[taking care of]] the dog?' }],
+        sameAs: ['look after ...'] },
+      { serial: 302, headEn: 'take over (...)',
+        meanings: [{ idx: 1, ja: '(…を)引き継ぐ、交代する' }],
+        examples: [{ ja: '父は私に自分の会社を[[引き継いで]]ほしいと思っている。', en: 'My father wants me to [[take over]] his business.' }] },
+      { serial: 303, headEn: 'take part in ...',
+        meanings: [{ idx: 1, ja: '…に参加する' }],
+        examples: [{ ja: '40人ほどの学生がボランティア活動に[[参加した]]。', en: 'About 40 students [[took part in]] the volunteer activity.' }],
+        sameAs: ['participate in ...'] },
+      { serial: 304, headEn: 'it takes 〈人〉〈時間〉 to do',
+        meanings: [{ idx: 1, ja: '〈人〉が〜するのに〈時間〉がかかる' }],
+        examples: [{ ja: '私は通勤するのに[[20分ほどかかる]]。', en: '[[It takes]] me about 20 minutes [[to]] get to work.' }],
+        sameAs: ['it takes 〈時間〉 for 〈人〉 to do'] },
+      { serial: 305, headEn: 'take ... for granted',
+        meanings: [{ idx: 1, ja: '…をあたりまえに思う、…を当然のことと思う' }],
+        examples: [{ ja: '母は私が大学に行くことを[[あたりまえだと思った]]。', en: 'My mother [[took]] it [[for granted]] that I would go to college.' }] },
+      { serial: 306, headEn: 'take it easy',
+        meanings: [{ idx: 1, ja: '気楽にする' }],
+        examples: [{ ja: '少し[[気楽にして]]、リラックスしなさい。', en: 'Just [[take it easy]] and relax.' }],
+        note: '[関連] take ... seriously (…を深刻に受けとめる)' },
+      { serial: 307, headEn: 'take ... for',
+        meanings: [{ idx: 1, ja: '①(誤って)…を〜だと思い込む' }, { idx: 2, ja: '②…を〜だと思う' }],
+        examples: [{ ja: "私はその女性をマイクの母親[[だと思い込んだ]]。", en: "I [[took]] the woman [[for]] Mike's mother." }],
+        sameAs: ['mistake ... for ~'] }
+    ]
+  },
+  // ===== L1 leave =====
+  {
+    category: {
+      id: 'u-edb-l1-leave', name: 'L1 leave',
+      lesson: 'L1', lessonName: '基本動詞を含む熟語',
+      catType: 'verb', catKey: 'leave', catOrder: 6,
+      meanings: ['を去る', 'を置き忘れる、を残す', 'を(ある状態のまま)に放っておく'],
+      intro: 'leave は、ものごとをそのままにして、その場を離れることを表す。離れたあとの状態に注目した意味が「を残す」だと考えればよい。'
+    },
+    entries: [
+      { serial: 308, headEn: 'leave ... behind',
+        meanings: [{ idx: 1, ja: '①を置き忘れる' }, { idx: 2, ja: '②(財産など)をあとに残す' }],
+        examples: [{ ja: '私はレストランに財布を[[置き忘れた]]。', en: 'I [[left]] my wallet [[behind]] at the restaurant.' }] },
+      { serial: 309, headEn: 'leave much[a lot] to be desired',
+        meanings: [{ idx: 1, ja: '問題が多い、不満な点が多く残っている' }],
+        examples: [{ ja: 'この種の製品は[[問題が多い]]。', en: 'This kind of product [[leaves a lot to be desired]].' }],
+        note: '[関連] leave nothing to be desired (全然問題がない)' },
+      { serial: 310, headEn: 'leave ... alone',
+        meanings: [{ idx: 1, ja: '…を1人にしておく、…をそっとしておく' }],
+        examples: [{ ja: 'しばらくのあいだ[[1人にしておいて]]くれませんか。', en: 'Can you please [[leave]] me [[alone]] for a while?' }] },
+      { serial: 311, headEn: 'leave ... out',
+        meanings: [{ idx: 1, ja: '…を省く、…を入れ忘れる' }],
+        examples: [{ ja: 'あなたが聞いたことはすべて打ち明けなさい。何も[[省いて]]はいけない。', en: "Tell me everything you heard. Don't [[leave]] anything [[out]]." }] }
+    ]
+  },
+  // ===== L1 keep =====
+  {
+    category: {
+      id: 'u-edb-l1-keep', name: 'L1 keep',
+      lesson: 'L1', lessonName: '基本動詞を含む熟語',
+      catType: 'verb', catKey: 'keep', catOrder: 7,
+      meanings: ['を持っている', 'を取っておく', 'を(ある状態)にしておく', '(約束・規則など)を守る'],
+      intro: 'keep は、ものごとを変化させないで同じ状態に保つことを表す。〈keep + 目的語 + 補語〉の形に注意する。'
+    },
+    entries: [
+      { serial: 312, headEn: 'keep good[early] hours',
+        meanings: [{ idx: 1, ja: '早寝早起きをする' }],
+        examples: [{ ja: '医者は彼に[[早寝早起きをする]]ように忠告した。', en: 'The doctor advised him to [[keep good hours]].' }] },
+      { serial: 313, headEn: 'keep a diary',
+        meanings: [{ idx: 1, ja: '日記をつける' }],
+        examples: [{ ja: '祖父は70年間[[日記をつけている]]。', en: 'My grandfather has [[kept a diary]] for 70 years.' }] },
+      { serial: 314, headEn: 'keep good time',
+        meanings: [{ idx: 1, ja: '(時計の)時間が正確である' }],
+        examples: [{ ja: 'その時計はとても古いが、[[時間は正確である]]。', en: 'The watch is very old but [[keeps good time]].' }] },
+      { serial: 315, headEn: 'keep (on) -ing',
+        meanings: [{ idx: 1, ja: '〜し続ける' }],
+        examples: [{ ja: '私たちは[[挑戦し続け]]なければならない。', en: 'We must [[keep on trying]].' }],
+        sameAs: ['continue -ing[to do]'], note: '[関連] keep on with ... (…を続ける)' },
+      { serial: 316, headEn: 'keep ... -ing',
+        meanings: [{ idx: 1, ja: '…を〜するままにしておく' }],
+        examples: [{ ja: '彼らは私たちを1時間以上[[待たせたままにした]]。', en: 'They [[kept]] us [[waiting]] for more than an hour.' }] },
+      { serial: 317, headEn: 'keep 〈人〉 company',
+        meanings: [{ idx: 1, ja: '〈人〉に同行する、〈人〉につき合う' }],
+        examples: [{ ja: '私が大阪まであなたに[[同行しよう]]。', en: "I'll [[keep]] you [[company]] on the way to Osaka." }],
+        note: '[関連] in company with ... (…といっしょに)' },
+      { serial: 318, headEn: 'keep ~ in mind',
+        meanings: [{ idx: 1, ja: '〜を覚えている、〜を心に留めておく' }],
+        examples: [{ ja: '富士山に登るときは天気のことを[[忘れるな]]。', en: '[[Keep]] the weather [[in mind]] when you climb Mt. Fuji.' }] },
+      { serial: 319, headEn: 'keep up with ~',
+        meanings: [{ idx: 1, ja: '(時勢など)に遅れずについていく' }],
+        examples: [{ ja: '世界のニュースに[[遅れずについていく]]ことが必要だ。', en: 'It is necessary to [[keep up with]] world news.' }] }
+    ]
+  },
+  // ===== L1 set =====
+  {
+    category: {
+      id: 'u-edb-l1-set', name: 'L1 set',
+      lesson: 'L1', lessonName: '基本動詞を含む熟語',
+      catType: 'verb', catKey: 'set', catOrder: 8,
+      meanings: ['を置く', 'を整える', '(太陽や月が)沈む', 'を(ある状態)にする'],
+      intro: 'set は、ものごとをある固定された状態にすえることを表す。'
+    },
+    entries: [
+      { serial: 320, headEn: 'set out (...)',
+        meanings: [{ idx: 1, ja: '①(on, forを伴って)(…に)出発する' }, { idx: 2, ja: '②…に着手する' }],
+        examples: [{ ja: '彼らは危険な旅に[[出発した]]。', en: 'They [[set out]] on their dangerous journey.' }],
+        sameAs: ['leave'] },
+      { serial: 321, headEn: 'set in',
+        meanings: [{ idx: 1, ja: '①(季節・天気が)始まる' }, { idx: 2, ja: '②(よくないことが)定着する、流行する' }],
+        examples: [{ ja: 'その動物は冬が[[始まる]]前に木の実を集める。', en: 'The animal gathers nuts before winter [[sets in]].' }] },
+      { serial: 322, headEn: 'set about ...',
+        meanings: [{ idx: 1, ja: '…に取りかかる、…に着手する' }],
+        examples: [{ ja: 'すぐに仕事に[[取りかかりなさい]]。', en: '[[Set about]] your work as soon as possible.' }] }
+    ]
+  },
+  // ===== L1 have =====
+  {
+    category: {
+      id: 'u-edb-l1-have', name: 'L1 have',
+      lesson: 'L1', lessonName: '基本動詞を含む熟語',
+      catType: 'verb', catKey: 'have', catOrder: 9,
+      meanings: ['を持っている', 'を食べる、を飲む', 'に〜してもらう、に〜させる'],
+      intro: 'have は、ものごとや状況を手に入れた状態にあることを表す。使役の用法「に〜させる」の意味に注意する。'
+    },
+    entries: [
+      { serial: 323, headEn: 'have a good time -ing',
+        meanings: [{ idx: 1, ja: '〜して楽しむ' }],
+        examples: [{ ja: '彼らはいっしょにゲームを[[して楽しんだ]]。', en: 'They [[had a good time]] play[[ing]] games together.' }],
+        note: '[関連] have a hard time -ing (〜してつらい思いをする)' },
+      { serial: 324, headEn: 'have no idea',
+        meanings: [{ idx: 1, ja: 'わからない、全然知らない' }],
+        examples: [{ ja: '私は、私たちの新しい英語の先生について[[全然知らない]]。', en: 'I [[have no idea]] about our new English teacher.' }] },
+      { serial: 325, headEn: 'have an eye for ...',
+        meanings: [{ idx: 1, ja: '…を見る目がある' }],
+        examples: [{ ja: '彼女は美しい芸術作品を[[見る目がある]]。', en: 'She [[has an eye for]] beautiful art.' }] },
+      { serial: 326, headEn: 'have only to do',
+        meanings: [{ idx: 1, ja: '〜しさえすればよい' }],
+        examples: [{ ja: 'あなたはこのボタンを[[押しさえすればよい]]。', en: 'You [[have only to]] press this button.' }],
+        note: '[関連] have to do (〜しなければならない)' },
+      { serial: 327, headEn: 'have ... done',
+        meanings: [{ idx: 1, ja: 'を〜してもらう、を〜される' }],
+        examples: [{ ja: '私の姉(妹)は誰かに自転車を[[盗まれた]]。', en: 'My sister [[had]] her bicycle [[stolen]] by someone.' }] },
+      { serial: 328, headEn: 'have words with ...',
+        meanings: [{ idx: 1, ja: '…と口論する' }],
+        examples: [{ ja: '昨夜、母は私と[[口論した]]。', en: 'My mother [[had words with]] me last night.' }] },
+      { serial: 329, headEn: 'have an effect on ...',
+        meanings: [{ idx: 1, ja: '①…に影響を与える' }, { idx: 2, ja: '②…に効果がある' }],
+        examples: [{ ja: 'その旅は実に彼女に[[影響を与えた]]。', en: 'The trip really [[had an effect on]] her.' }],
+        note: '[関連] be of no effect (効果がない)' },
+      { serial: 330, headEn: "have[take, go] one's own way",
+        meanings: [{ idx: 1, ja: '自分の思い通りにする' }],
+        examples: [{ ja: '君はすべてにおいて[[自分の思い通りにする]]ことができるわけではない。', en: "You can't [[have your own way]] in everything." }] },
+      { serial: 331, headEn: 'have a good command of ...',
+        meanings: [{ idx: 1, ja: '…を自由にあやつる' }],
+        examples: [{ ja: 'ミサキは英語を[[自由にあやつる]]。', en: 'Misaki [[has a good command of]] English.' }] },
+      { serial: 332, headEn: 'have no choice but to do',
+        meanings: [{ idx: 1, ja: '〜せざるをえない、〜するほかに選択の余地がない' }],
+        examples: [{ ja: '彼女は[[同意せざるをえなかった]]。', en: 'She [[had no choice but to]] agree.' }] }
+    ]
+  },
+  // ===== L1 get =====
+  {
+    category: {
+      id: 'u-edb-l1-get', name: 'L1 get',
+      lesson: 'L1', lessonName: '基本動詞を含む熟語',
+      catType: 'verb', catKey: 'get', catOrder: 10,
+      meanings: ['を得る、を受け取る', 'を(ある状態)にする', '(ある状態)になる'],
+      intro: 'get は、人が主語の場合は、意図的にものやある状態を手に入れることを表す。また、人以外が主語の場合は、自然とある状態になることを表す。'
+    },
+    entries: [
+      { serial: 333, headEn: 'get to do',
+        meanings: [{ idx: 1, ja: '〜するようになる' }],
+        examples: [{ ja: '君はどうやって彼を[[知るようになった]](彼と知り合いになった)の?', en: 'How did you [[get to]] know him?' }] },
+      { serial: 334, headEn: 'get ... to do',
+        meanings: [{ idx: 1, ja: '①…に〜させる' }, { idx: 2, ja: '②…に〜してもらう' }],
+        examples: [{ ja: 'まずは彼に[[手を洗わせなさい]]。', en: '[[Get]] him [[to]] wash his hands first.' }] },
+      { serial: 335, headEn: 'get ... done',
+        meanings: [{ idx: 1, ja: '…を〜してしまう' }],
+        examples: [{ ja: '私は5時までにすべての仕事を[[してしまわ]]なければならない。', en: "I have to [[get]] all my work [[done]] by 5 o'clock." }] },
+      { serial: 336, headEn: 'get in touch with ...',
+        meanings: [{ idx: 1, ja: '…と連絡を取る' }],
+        examples: [{ ja: 'あなたはいつでも私とメールで[[連絡を取る]]ことができる。', en: 'You can always [[get in touch with]] me by email.' }] },
+      { serial: 337, headEn: 'get on[along] with ...',
+        meanings: [{ idx: 1, ja: '…と仲よくやっていく' }],
+        examples: [{ ja: '私は級友みんなと[[仲よくしたい]]。', en: 'I want to [[get along with]] all my classmates.' }] },
+      { serial: 338, headEn: 'get nowhere',
+        meanings: [{ idx: 1, ja: '進展しない、目的を達成しない' }],
+        examples: [{ ja: 'ずっと不満を言っていては[[進展しない]]。', en: 'You will [[get nowhere]] if you complain all the time.' }],
+        note: '[関連] get ... nowhere (…に利益をもたらさない)' },
+      { serial: 339, headEn: "get on one's nerves",
+        meanings: [{ idx: 1, ja: '〜をいらつかせる、〜の神経にさわる' }],
+        examples: [{ ja: '下の階からの騒音が私を[[いらつかせ]]始めていた。', en: 'The noise from downstairs was starting to [[get on my nerves]].' }] },
+      { serial: 340, headEn: "get[stand] in one's way",
+        meanings: [{ idx: 1, ja: '〜のじゃまをする' }],
+        examples: [{ ja: '私はあなたの[[じゃまをする]]つもりはなかった。', en: "I didn't mean to [[get in your way]]." }],
+        sameAs: ['get in the way of ...'] },
+      { serial: 341, headEn: 'get around',
+        meanings: [{ idx: 1, ja: '①あちこち移動する、歩き回る' }, { idx: 2, ja: '②(うわさなどが)広まる' }],
+        examples: [{ ja: '私は自転車で簡単に[[あちこち移動する]]ことができる。', en: 'I can easily [[get around]] with my bicycle.' }] },
+      { serial: 342, headEn: 'get back to ~',
+        meanings: [{ idx: 1, ja: '(元の話題など)に戻る、〜に折り返し連絡する' }],
+        examples: [{ ja: '休憩後に仕事に[[戻ります]]。', en: "I'll [[get back to]] work after the break." }] }
     ]
   },
   // ===== L2 よくない状況を表す語 =====
@@ -3067,9 +3387,25 @@ function loadState() {
       });
       // 英語DB パック (subjectId='english-db') の追加マイグレーション (既存ユーザー向け)
       {
+        // 旧 unit id (make(1)/come(1)) を新形式にリネーム
+        const edbUnitRenames = { 'u-edb-l1-make-1': 'u-edb-l1-make', 'u-edb-l1-come-1': 'u-edb-l1-come' };
+        state.units.forEach(u => {
+          if (edbUnitRenames[u.id]) { u.id = edbUnitRenames[u.id]; migrated = true; }
+        });
+        state.questions.forEach(q => {
+          if (edbUnitRenames[q.unitId]) { q.unitId = edbUnitRenames[q.unitId]; migrated = true; }
+        });
         const edb = buildEnglishDbPack();
         edb.units.forEach(u => {
-          if (!state.units.some(x => x.id === u.id)) {
+          const existing = state.units.find(x => x.id === u.id);
+          if (existing) {
+            // 既存の unit があれば name/catKey/lesson/meanings/intro/catOrder 等を上書き
+            ['name', 'lesson', 'lessonName', 'catType', 'catKey', 'catOrder', 'catMeanings', 'intro'].forEach(k => {
+              if (existing[k] !== u[k]) { existing[k] = u[k]; migrated = true; }
+            });
+            // catVariant フィールドが残っていれば削除
+            if ('catVariant' in existing) { delete existing.catVariant; migrated = true; }
+          } else {
             state.units.push(u);
             state.questions.push(...edb.questions.filter(q => q.unitId === u.id));
             migrated = true;
@@ -3605,6 +3941,35 @@ function renderUnits(subjectId) {
     ? `復習対象 ${totalReview}問 / 全${totalQ}問`
     : `${totalQ}問 ${totalAcc != null ? '・正答率 ' + totalAcc + '%' : '・未学習'}`;
 
+  // english-db 教科は「実力テスト」セクション (Lesson 単位のミックス出題) を追加
+  const isEdbSubject = subjectId === 'english-db';
+  const edbTestHtml = (() => {
+    if (!isEdbSubject) return '';
+    const lessons = ['L1', 'L2'];
+    const btns = lessons.map(ls => {
+      const lsUnits = units.filter(u => u.lesson === ls);
+      if (lsUnits.length === 0) return '';
+      const lsQ = state.questions.filter(q => lsUnits.some(u => u.id === q.unitId));
+      const lsCnt = lsQ.length;
+      const lsReview = unitsReviewMode
+        ? countReviewQuestions(q => lsUnits.some(u => u.id === q.unitId))
+        : null;
+      const sub = unitsReviewMode
+        ? `復習対象 ${lsReview}問 / 全${lsCnt}問`
+        : `${lsCnt}問・${lsUnits.length}カテゴリ混在`;
+      return `
+        <button class="list-item list-item-chevron" data-edb-lesson="${ls}">
+          <div class="list-item-main">
+            <div class="list-item-title">🎯 ${ls} 実力テスト${unitsReviewMode ? ' (復習)' : ''}</div>
+            <div class="list-item-subtitle">${escapeHtml(sub)}</div>
+          </div>
+        </button>`;
+    }).join('');
+    return `
+      <div class="section-label">🎯 実力テスト (単元名は非表示)</div>
+      <div class="list-group">${btns}</div>`;
+  })();
+
   document.getElementById('screen-units').innerHTML = `
     <div class="nav-bar">
       <button class="nav-button" id="u-back">‹ 戻る</button>
@@ -3617,16 +3982,17 @@ function renderUnits(subjectId) {
         <label class="radio-item ${!unitsReviewMode ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="umode" value="all" hidden>全問</label>
         <label class="radio-item ${unitsReviewMode ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="umode" value="review" hidden>○以外のみ (復習)</label>
       </div>
-      <div class="section-label">範囲を選んで学習を始める</div>
+      ${edbTestHtml}
+      <div class="section-label">${isEdbSubject ? '📚 学習: カテゴリ別 (単元名を表示)' : '範囲を選んで学習を始める'}</div>
       <div class="list-group">
         <button class="list-item list-item-chevron" id="u-all">
           <div class="list-item-main">
-            <div class="list-item-title">全単元から出題${unitsReviewMode ? ' (復習)' : ''}</div>
+            <div class="list-item-title">${isEdbSubject ? '🎯 教科全体 実力テスト' : '全単元から出題'}${unitsReviewMode ? ' (復習)' : ''}</div>
             <div class="list-item-subtitle">${allSubtitle}</div>
           </div>
         </button>
       </div>
-      <div class="section-label">単元別</div>
+      <div class="section-label">${isEdbSubject ? '単元' : '単元別'}</div>
       <div class="list-group">
         ${items || '<div class="list-item"><div class="list-item-main"><div class="list-item-subtitle">単元がありません。問題管理から追加してください。</div></div></div>'}
       </div>
@@ -3645,13 +4011,19 @@ function renderUnits(subjectId) {
     } else if (isEnglishSubject(subjectId)) {
       showScreen('english-direction', { subjectId, label: subject.name + ' 全単元', reviewMode: unitsReviewMode });
     } else if (subjectId === 'english-db') {
-      showScreen('edb-direction', { subjectId, label: subject.name + ' 全単元', reviewMode: unitsReviewMode });
+      showScreen('edb-direction', { subjectId, label: '教科全体 実力テスト', reviewMode: unitsReviewMode, testMode: true });
     } else if (subjectId === 'hyakunin') {
       showScreen('hyakunin-direction', { subjectId, label: subject.name + ' 全単元' });
     } else {
       startStudy({ subjectId, reviewMode: unitsReviewMode });
     }
   };
+  document.querySelectorAll('#screen-units .list-item[data-edb-lesson]').forEach(b => {
+    b.onclick = () => {
+      const ls = b.dataset.edbLesson;
+      showScreen('edb-direction', { subjectId, lesson: ls, label: ls + ' 実力テスト', reviewMode: unitsReviewMode, testMode: true });
+    };
+  });
   document.querySelectorAll('#screen-units .list-item[data-uid]').forEach(b => {
     b.onclick = () => {
       const uid = b.dataset.uid;
@@ -4519,23 +4891,25 @@ const EDB_MODES = [
 function renderEdbDirection(params) {
   const label = params && params.label ? params.label : '英語DB';
   const reviewMode = !!(params && params.reviewMode);
+  const testMode = !!(params && params.testMode);
+  const lesson = params && params.lesson;
 
   // この範囲のエントリ
   const inScope = state.questions.filter(q => {
     if (q.type !== 'edb-idiom' && q.type !== 'edb-word') return false;
+    const u = getUnit(q.unitId);
+    if (!u) return false;
+    if (lesson) return u.subjectId === 'english-db' && u.lesson === lesson;
     if (params.unitId) return q.unitId === params.unitId;
-    if (params.subjectId) {
-      const u = getUnit(q.unitId);
-      return u && u.subjectId === params.subjectId;
-    }
+    if (params.subjectId) return u.subjectId === params.subjectId;
     return false;
   });
   const hasEx = inScope.some(q => (q.examples || []).length > 0);
   const hasRel = inScope.some(q => (q.related || []).length > 0);
 
-  // カテゴリ情報 (単一 unit の時)
+  // カテゴリ情報 (テストモードでは非表示 = 単元名バレを防止)
   let catBlock = '';
-  if (params.unitId) {
+  if (!testMode && params.unitId) {
     const u = getUnit(params.unitId);
     if (u) {
       const meaningsLine = (u.catMeanings && u.catMeanings.length)
@@ -4546,6 +4920,8 @@ function renderEdbDirection(params) {
       const range = serials.length ? `No.${Math.min.apply(null,serials)}〜${Math.max.apply(null,serials)} (${inScope.length}語句)` : `${inScope.length}語句`;
       catBlock = `<div class="section-label">${escapeHtml(range)}</div>${meaningsLine}${introLine}`;
     }
+  } else if (testMode) {
+    catBlock = `<div class="section-label">${escapeHtml('対象: ' + inScope.length + '語句 (No.順は非表示)')}</div>`;
   }
 
   const modeBtnsHtml = EDB_MODES.filter(m => {
@@ -4575,6 +4951,7 @@ function renderEdbDirection(params) {
       </div>
       <div class="section-label">出題のしかた</div>
       <div class="list-group">${modeBtnsHtml}</div>
+      ${testMode ? '' : `
       <div class="section-label">この範囲を確認する</div>
       <div class="list-group">
         <button class="list-item list-item-chevron" id="ed2-list">
@@ -4583,7 +4960,7 @@ function renderEdbDirection(params) {
             <div class="list-item-subtitle">全エントリ・例文・派生語をまとめて確認</div>
           </div>
         </button>
-      </div>
+      </div>`}
     </div>`;
 
   document.getElementById('ed2-back').onclick = goBack;
@@ -4596,18 +4973,26 @@ function renderEdbDirection(params) {
   document.querySelectorAll('#screen-edb-direction .list-item[data-mode]').forEach(b => {
     b.onclick = () => startEdbBatch({ ...params, mode: b.dataset.mode, reviewMode: !!params.reviewMode });
   });
-  document.getElementById('ed2-list').onclick = () => showScreen('edb-list', params);
+  if (!testMode) document.getElementById('ed2-list').onclick = () => showScreen('edb-list', params);
 }
 
 const EDB_BATCH_SIZE = 5;
 
-function startEdbBatch({ unitId = null, subjectId = null, mode, reviewMode = false }) {
+function startEdbBatch({ unitId = null, subjectId = null, mode, reviewMode = false, lesson = null, testMode = false }) {
   let pool = state.questions.filter(q => (q.type === 'edb-idiom' || q.type === 'edb-word') && isUnitForProfile(getUnit(q.unitId)));
-  if (unitId) pool = pool.filter(q => q.unitId === unitId);
-  if (subjectId) pool = pool.filter(q => {
-    const u = getUnit(q.unitId);
-    return u && u.subjectId === subjectId;
-  });
+  if (lesson) {
+    pool = pool.filter(q => {
+      const u = getUnit(q.unitId);
+      return u && u.subjectId === 'english-db' && u.lesson === lesson;
+    });
+  } else if (unitId) {
+    pool = pool.filter(q => q.unitId === unitId);
+  } else if (subjectId) {
+    pool = pool.filter(q => {
+      const u = getUnit(q.unitId);
+      return u && u.subjectId === subjectId;
+    });
+  }
   // mode に応じて instance を展開
   const instances = [];
   for (const q of pool) instances.push(...edbExpandQuestion(q, mode));
@@ -4622,7 +5007,7 @@ function startEdbBatch({ unitId = null, subjectId = null, mode, reviewMode = fal
     return;
   }
   studySession = {
-    unitId, subjectId, mode, direction: mode, reviewMode,
+    unitId, subjectId, lesson, testMode, mode, direction: mode, reviewMode,
     instances: shuffle(pool2),
     batchIndex: 0,
     revealed: {},
@@ -4668,7 +5053,7 @@ function renderEdbBatch() {
       <div class="edb-row" data-id="${id}">
         <div class="edb-top">
           <button class="edb-speak" data-id="${id}" aria-label="音声を聞く">🔊</button>
-          <span class="edb-mode-pill">No.${it.serial}</span>
+          ${s.testMode ? '' : `<span class="edb-mode-pill">No.${it.serial}</span>`}
         </div>
         ${it.sub && it.sub.kind ? subHtml : ''}
         <div class="edb-prompt" data-id="${id}">${it.prompt.html}</div>
@@ -5306,7 +5691,7 @@ function renderResult() {
     </div>`;
 
   document.getElementById('r-again').onclick = () => {
-    const params = { unitId: s.unitId, subjectId: s.subjectId, direction: s.direction, reviewMode: s.reviewMode, order: s.order };
+    const params = { unitId: s.unitId, subjectId: s.subjectId, direction: s.direction, reviewMode: s.reviewMode, order: s.order, lesson: s.lesson, testMode: s.testMode };
     const mode = s.mode;
     studySession = null;
     if (mode === 'en-ja' || mode === 'ja-en' || mode === 'en-def-en') {
