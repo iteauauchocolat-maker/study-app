@@ -2099,6 +2099,78 @@ function buildEnglishJprepBL3Pack() {
   return { unit, questions };
 }
 
+/* 中学英語: 基数 (Cardinal Numbers) */
+const ENGLISH_CARDINAL_SOURCE = [
+  ['0', 'zero'],
+  ['1', 'one'], ['2', 'two'], ['3', 'three'], ['4', 'four'], ['5', 'five'],
+  ['6', 'six'], ['7', 'seven'], ['8', 'eight'], ['9', 'nine'], ['10', 'ten'],
+  ['11', 'eleven'], ['12', 'twelve'], ['13', 'thirteen'], ['14', 'fourteen'], ['15', 'fifteen'],
+  ['16', 'sixteen'], ['17', 'seventeen'], ['18', 'eighteen'], ['19', 'nineteen'], ['20', 'twenty'],
+  ['21', 'twenty-one'], ['22', 'twenty-two'],
+  ['30', 'thirty'], ['40', 'forty'], ['50', 'fifty'], ['60', 'sixty'], ['70', 'seventy'], ['80', 'eighty'], ['90', 'ninety'],
+  ['100', 'one hundred'], ['101', 'one hundred (and) one'],
+  ['200', 'two hundred'], ['1000', 'one thousand']
+];
+function buildEnglishCardinalPack() {
+  const unit = { id: 'u-eng-cardinal', subjectId: 'english', name: '基数', parentId: null };
+  const questions = [];
+  let n = 0;
+  for (const [ja, en] of ENGLISH_CARDINAL_SOURCE) {
+    n++;
+    questions.push({
+      id: 'q-card-' + String(n).padStart(3, '0'),
+      unitId: 'u-eng-cardinal',
+      type: 'english',
+      ja: ja,
+      en: en,
+      hint: '',
+      sourceNote: '',
+      createdAt: '2026-07-04'
+    });
+  }
+  return { unit, questions };
+}
+
+/* 中学英語: 序数 (Ordinal Numbers)
+   [日本語, スペル, 序数記号] の 3 要素。ordNum 付きは、日→英 モードでは
+   答えを「序数記号 + スペル」(例: '1st first') に、
+   英→日 モードではプロンプトをスペルのみ (例: 'first') にする */
+const ENGLISH_ORDINAL_SOURCE = [
+  ['1番目', 'first', '1st'], ['2番目', 'second', '2nd'], ['3番目', 'third', '3rd'],
+  ['4番目', 'fourth', '4th'], ['5番目', 'fifth', '5th'], ['6番目', 'sixth', '6th'],
+  ['7番目', 'seventh', '7th'], ['8番目', 'eighth', '8th'], ['9番目', 'ninth', '9th'],
+  ['10番目', 'tenth', '10th'], ['11番目', 'eleventh', '11th'], ['12番目', 'twelfth', '12th'],
+  ['13番目', 'thirteenth', '13th'], ['14番目', 'fourteenth', '14th'], ['15番目', 'fifteenth', '15th'],
+  ['16番目', 'sixteenth', '16th'], ['17番目', 'seventeenth', '17th'], ['18番目', 'eighteenth', '18th'],
+  ['19番目', 'nineteenth', '19th'], ['20番目', 'twentieth', '20th'],
+  ['21番目', 'twenty-first', '21st'], ['22番目', 'twenty-second', '22nd'],
+  ['30番目', 'thirtieth', '30th'], ['40番目', 'fortieth', '40th'], ['50番目', 'fiftieth', '50th'],
+  ['60番目', 'sixtieth', '60th'], ['70番目', 'seventieth', '70th'], ['80番目', 'eightieth', '80th'],
+  ['90番目', 'ninetieth', '90th'],
+  ['100番目', 'one hundredth', '100th'], ['101番目', 'one hundred (and) first', '101st'],
+  ['200番目', 'two hundredth', '200th'], ['1000番目', 'one thousandth', '1000th']
+];
+function buildEnglishOrdinalPack() {
+  const unit = { id: 'u-eng-ordinal', subjectId: 'english', name: '序数', parentId: null };
+  const questions = [];
+  let n = 0;
+  for (const [ja, en, ordNum] of ENGLISH_ORDINAL_SOURCE) {
+    n++;
+    questions.push({
+      id: 'q-ord-' + String(n).padStart(3, '0'),
+      unitId: 'u-eng-ordinal',
+      type: 'english',
+      ja: ja,
+      en: en,
+      ordNum: ordNum,
+      hint: '',
+      sourceNote: '',
+      createdAt: '2026-07-04'
+    });
+  }
+  return { unit, questions };
+}
+
 /* ============================================================
    高校英語 (profileId='p2')
    - 単語確認シート L14〜L18
@@ -4909,6 +4981,12 @@ function buildSampleData() {
   const ejpb3 = buildEnglishJprepBL3Pack();
   data.units.push(ejpb3.unit);
   data.questions.push(...ejpb3.questions);
+  const ecard = buildEnglishCardinalPack();
+  data.units.push(ecard.unit);
+  data.questions.push(...ecard.questions);
+  const eord = buildEnglishOrdinalPack();
+  data.units.push(eord.unit);
+  data.questions.push(...eord.questions);
   const hk = buildHyakuninPack();
   data.units.push(hk.unit);
   data.questions.push(...hk.questions);
@@ -5087,6 +5165,19 @@ function loadState() {
     // 英語 JPREP B L3 単語 (9問) 追加マイグレーション (既存ユーザー向け)
     if (!state.units.some(u => u.id === 'u-eng-jprep-b-l3')) {
       const pack = buildEnglishJprepBL3Pack();
+      state.units.push(pack.unit);
+      state.questions.push(...pack.questions);
+      migrated = true;
+    }
+    // 中学英語 基数・序数 追加マイグレーション (既存ユーザー向け)
+    if (!state.units.some(u => u.id === 'u-eng-cardinal')) {
+      const pack = buildEnglishCardinalPack();
+      state.units.push(pack.unit);
+      state.questions.push(...pack.questions);
+      migrated = true;
+    }
+    if (!state.units.some(u => u.id === 'u-eng-ordinal')) {
+      const pack = buildEnglishOrdinalPack();
       state.units.push(pack.unit);
       state.questions.push(...pack.questions);
       migrated = true;
@@ -5342,8 +5433,10 @@ function questionDisplay(q, direction) {
     return { text: q.yomi, answers: [q.kanji], qStyle: 'yomi-large', aStyle: 'kanji-large' };
   }
   if (q.type === 'english') {
+    // 序数エントリ (q.ordNum あり) は日→英モードで答えを「序数記号 + スペル」に
     if (direction === 'ja-en') {
-      return { text: q.ja || '', answers: [q.en || ''], qStyle: '', aStyle: '' };
+      const ans = q.ordNum ? (q.ordNum + ' ' + (q.en || '')) : (q.en || '');
+      return { text: q.ja || '', answers: [ans], qStyle: '', aStyle: '' };
     }
     if (direction === 'listen') {
       // 聞き取り: 結果画面では英単語と日本語を併記して見せる
@@ -5352,7 +5445,7 @@ function questionDisplay(q, direction) {
     if (direction === 'en-def-en') {
       return { text: q.enDef || '', answers: [q.en || ''], qStyle: '', aStyle: '' };
     }
-    // default: en-ja
+    // default: en-ja  (序数もプロンプトは q.en のみ、答えは q.ja)
     return { text: q.en || '', answers: [q.ja || ''], qStyle: '', aStyle: '' };
   }
   if (q.type === 'hyakunin') {
@@ -6278,8 +6371,10 @@ function renderEnglishBatch() {
                   : '日本語→英語';
 
   const rows = batch.map(q => {
+    // 序数(q.ordNum あり)は日→英モードで答えを「序数記号 + スペル」に
+    const enWithOrd = q.ordNum ? (q.ordNum + ' ' + (q.en || '')) : (q.en || '');
     const prompt = isDefEn ? (q.enDef || '') : (isEnJa ? (q.en || '') : (q.ja || ''));
-    const answer = isDefEn ? (q.en || '')   : (isEnJa ? (q.ja || '') : (q.en || ''));
+    const answer = isDefEn ? (q.en || '')   : (isEnJa ? (q.ja || '') : enWithOrd);
     const revealed = !!s.revealed[q.id];
     const grade = s.graded[q.id];
     const gradeArea = grade
