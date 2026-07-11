@@ -2105,6 +2105,39 @@ function buildEnglishJprepBL3Pack() {
   return { unit, questions };
 }
 
+const ENGLISH_JPREP_B_L4_SOURCE = [
+  ['〜を練習する', 'practice'],
+  ['〜を覚えている、思い出す', 'remember'],
+  ['絵、写真', 'picture'],
+  ['〜を試す', 'try'],
+  ['コンサート', 'concert'],
+  ['テニス', 'tennis'],
+  ['バスケットボール', 'basketball'],
+  ['踊る', 'dance'],
+  ['音楽', 'music'],
+  ['サッカー', 'soccer']
+];
+
+function buildEnglishJprepBL4Pack() {
+  const unit = { id: 'u-eng-jprep-b-l4', subjectId: 'english', name: 'JPREP B L4 単語', parentId: null };
+  const questions = [];
+  let n = 0;
+  for (const [ja, en] of ENGLISH_JPREP_B_L4_SOURCE) {
+    n++;
+    questions.push({
+      id: 'q-ejpb4-' + String(n).padStart(3, '0'),
+      unitId: 'u-eng-jprep-b-l4',
+      type: 'english',
+      ja: ja,
+      en: en,
+      hint: '',
+      sourceNote: '',
+      createdAt: '2026-07-04'
+    });
+  }
+  return { unit, questions };
+}
+
 /* 中学英語: 基数 (Cardinal Numbers) */
 const ENGLISH_CARDINAL_SOURCE = [
   ['0', 'zero'],
@@ -4987,6 +5020,9 @@ function buildSampleData() {
   const ejpb3 = buildEnglishJprepBL3Pack();
   data.units.push(ejpb3.unit);
   data.questions.push(...ejpb3.questions);
+  const ejpb4 = buildEnglishJprepBL4Pack();
+  data.units.push(ejpb4.unit);
+  data.questions.push(...ejpb4.questions);
   const ecard = buildEnglishCardinalPack();
   data.units.push(ecard.unit);
   data.questions.push(...ecard.questions);
@@ -5171,6 +5207,13 @@ function loadState() {
     // 英語 JPREP B L3 単語 (9問) 追加マイグレーション (既存ユーザー向け)
     if (!state.units.some(u => u.id === 'u-eng-jprep-b-l3')) {
       const pack = buildEnglishJprepBL3Pack();
+      state.units.push(pack.unit);
+      state.questions.push(...pack.questions);
+      migrated = true;
+    }
+    // 英語 JPREP B L4 単語 (10問) 追加マイグレーション (既存ユーザー向け)
+    if (!state.units.some(u => u.id === 'u-eng-jprep-b-l4')) {
+      const pack = buildEnglishJprepBL4Pack();
       state.units.push(pack.unit);
       state.questions.push(...pack.questions);
       migrated = true;
