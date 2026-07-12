@@ -2138,6 +2138,37 @@ function buildEnglishJprepBL4Pack() {
   return { unit, questions };
 }
 
+const ENGLISH_JPREP_B_L5_SOURCE = [
+  ['準備ができて', 'ready'],
+  ['〜の前に', 'before'],
+  ['いつ', 'when'],
+  ['〜まで(継続を表す)', 'until'],
+  ['(場所、時間などの一点)〜に、〜で', 'at'],
+  ['時間、1時間', 'hour'],
+  ['野球', 'baseball'],
+  ['夕食', 'dinner']
+];
+
+function buildEnglishJprepBL5Pack() {
+  const unit = { id: 'u-eng-jprep-b-l5', subjectId: 'english', name: 'JPREP B L5 単語', parentId: null };
+  const questions = [];
+  let n = 0;
+  for (const [ja, en] of ENGLISH_JPREP_B_L5_SOURCE) {
+    n++;
+    questions.push({
+      id: 'q-ejpb5-' + String(n).padStart(3, '0'),
+      unitId: 'u-eng-jprep-b-l5',
+      type: 'english',
+      ja: ja,
+      en: en,
+      hint: '',
+      sourceNote: '',
+      createdAt: '2026-07-04'
+    });
+  }
+  return { unit, questions };
+}
+
 /* 中学英語: 基数 (Cardinal Numbers) */
 const ENGLISH_CARDINAL_SOURCE = [
   ['0', 'zero'],
@@ -5023,6 +5054,9 @@ function buildSampleData() {
   const ejpb4 = buildEnglishJprepBL4Pack();
   data.units.push(ejpb4.unit);
   data.questions.push(...ejpb4.questions);
+  const ejpb5 = buildEnglishJprepBL5Pack();
+  data.units.push(ejpb5.unit);
+  data.questions.push(...ejpb5.questions);
   const ecard = buildEnglishCardinalPack();
   data.units.push(ecard.unit);
   data.questions.push(...ecard.questions);
@@ -5214,6 +5248,13 @@ function loadState() {
     // 英語 JPREP B L4 単語 (10問) 追加マイグレーション (既存ユーザー向け)
     if (!state.units.some(u => u.id === 'u-eng-jprep-b-l4')) {
       const pack = buildEnglishJprepBL4Pack();
+      state.units.push(pack.unit);
+      state.questions.push(...pack.questions);
+      migrated = true;
+    }
+    // 英語 JPREP B L5 単語 (8問) 追加マイグレーション (既存ユーザー向け)
+    if (!state.units.some(u => u.id === 'u-eng-jprep-b-l5')) {
+      const pack = buildEnglishJprepBL5Pack();
       state.units.push(pack.unit);
       state.questions.push(...pack.questions);
       migrated = true;
