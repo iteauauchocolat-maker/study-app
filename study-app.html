@@ -2627,6 +2627,132 @@ function buildHyakunin2Pack() {
   return { unit, questions };
 }
 
+const HYAKUNIN_3_SOURCE = [
+  { kami: '恋すてふ わが名はまだき 立ちにけり', shimo: '人知れずこそ 思ひそめしか', author: '壬生忠見', meaning: '恋をしているという私のうわさは、早くも立ってしまった。人に知られないように(あの人を)思い始めたのに。', technique: '倒置／係り結び', modernKami: 'こいすちょう わがなはまだき たちにけり', modernShimo: 'ひとしれずこそ おもいそめしか' },
+  { kami: '契りきな かたみに袖を しぼりつつ', shimo: '末の松山 波越さじとは', author: '清原元輔', meaning: '固く約束したことよ。互いに袖(の涙)をしぼりながら、末の松山を波が越さないように(=心変わりはしまい)とは。', technique: '倒置', modernKami: 'ちぎりきな かたみにそでを しぼりつつ', modernShimo: 'すえのまつやま なみこさじとは' },
+  { kami: '逢ひ見ての のちの心に くらぶれば', shimo: '昔は物を 思はざりけり', author: '藤原敦忠', meaning: '(あなたに)逢って契った後の心に比べると、(あなたに逢う)以前は物思いをしていなかったことだ。', technique: '', modernKami: 'あいみての のちのこころに くらぶれば', modernShimo: 'むかしはものを おもわざりけり' },
+  { kami: '逢ふことの 絶えてしなくは なかなかに', shimo: '人をも身をも 恨みざらまし', author: '藤原朝忠', meaning: '逢うことがまったくないのならば、かえってあなたをも自分をも恨まないだろうに。', technique: '', modernKami: 'おうことの たえてしなくは なかなかに', modernShimo: 'ひとをもみをも うらみざらまし' },
+  { kami: 'あはれとも 言ふべき人は 思ほえで', shimo: '身のいたづらに なりぬべきかな', author: '藤原伊尹', meaning: '(私のことを)かわいそうだと言ってくれるはずの人は思いつかないで、きっとむなしく死んでいくのだろうなあ。', technique: '', modernKami: 'あわれとも いうべきひとは おもおえで', modernShimo: 'みのいたずらに なりぬべきかな' },
+  { kami: '由良の門を 渡る舟人 かぢを絶え', shimo: 'ゆくへも知らぬ 恋の道かな', author: '曾禰好忠', meaning: '由良の海峡を漕ぎ渡る舟人が櫂を失って漂うように、これから先どうなるかわからない恋の道であるよ。', technique: '序詞(由良の門を〜絶え→ゆくへも知らぬ)', modernKami: 'ゆらのとを わたるふなびと かじをたえ', modernShimo: 'ゆくえもしらぬ こいのみちかな' },
+  { kami: '八重葎 しげれる宿の さびしきに', shimo: '人こそ見えね 秋は来にけり', author: '恵慶法師', meaning: '幾重にも葎が生い茂った寂しい宿に、人は姿を見せないが、秋はやってきたことだ。', technique: '係り結び', modernKami: 'やえむぐら しげれるやどの さびしきに', modernShimo: 'ひとこそみえね あきはきにけり' },
+  { kami: '風をいたみ 岩うつ波の おのれのみ', shimo: 'くだけて物を 思ふころかな', author: '源重之', meaning: '風が激しいので、岩にあたる波のように、自分だけが心もくだけるほどに物を思い悩んでいるころであるよ。', technique: '序詞(風をいたみ岩うつ波の→くだけて)', modernKami: 'かぜをいたみ いわうつなみの おのれのみ', modernShimo: 'くだけてものを おもうころかな' },
+  { kami: 'みかきもり 衛士のたく火の 夜は燃え', shimo: '昼は消えつつ 物をこそ思へ', author: '大中臣能宣', meaning: '宮中の御門を守る衛士がたく火のように、(私も)夜は(恋の炎が)燃え、昼は消え入るばかりに物思いをしている。', technique: '序詞(みかきもり〜火の→燃え)／係り結び', modernKami: 'みかきもり えじのたくひの よるはもえ', modernShimo: 'ひるはきえつつ ものをこそおもえ' },
+  { kami: '君がため 惜しからざりし 命さへ', shimo: '長くもがなと 思ひけるかな', author: '藤原義孝', meaning: 'あなたに逢うためなら(死んでも)惜しくないと思った命までが、(逢った今では)長くあってほしいと思ったことよ。', technique: '', modernKami: 'きみがため おしからざりし いのちさえ', modernShimo: 'ながくもがなと おもいけるかな' },
+  { kami: 'かくとだに えやはいぶきの さしも草', shimo: 'さしも知らじな 燃ゆる思ひを', author: '藤原実方', meaning: 'このように(恋している)とさえ言えないのだから、伊吹山のさしも草ではないが、それほどまで(私が)燃える思いを、(あなたは)知らないだろうね。', technique: '掛詞(いぶき→伊吹・言ふ)／序詞', modernKami: 'かくとだに えやはいぶきの さしもぐさ', modernShimo: 'さしもしらじな もゆるおもいを' },
+  { kami: '明けぬれば 暮るるものとは 知りながら', shimo: 'なほ恨めしき 朝ぼらけかな', author: '藤原道信', meaning: '(夜)明けると、また暮れるもの(=あなたにまた逢える)とは知っているが、やはり恨めしい夜明け方であるよ。', technique: '', modernKami: 'あけぬれば くるるものとは しりながら', modernShimo: 'なおうらめしき あさぼらけかな' },
+  { kami: '嘆きつつ ひとり寝る夜の 明くる間は', shimo: 'いかに久しき ものとかは知る', author: '藤原道綱母', meaning: '嘆きながらひとりで寝る夜の明けるまでの間は、どんなに長いものと、(あなたは)知っているのだろうか。', technique: '', modernKami: 'なげきつつ ひとりぬるよの あくるまは', modernShimo: 'いかにひさしき ものとかはしる' },
+  { kami: '忘れじの 行く末までは かたければ', shimo: '今日を限りの 命ともがな', author: '儀同三司母', meaning: '忘れまいという言葉が将来まで(変わらないというの)は難しいので、今日をかぎりの命でありたいものだ。', technique: '', modernKami: 'わすれじの ゆくすえまでは かたければ', modernShimo: 'きょうをかぎりの いのちともがな' },
+  { kami: '滝の音は 絶えて久しく なりぬれど', shimo: '名こそ流れて なほ聞こえけれ', author: '藤原公任', meaning: '滝の音は絶えてから長い年月がたってしまったが、その名声だけは流れ伝わってやはり聞こえていることよ。', technique: '縁語(滝・音・絶え・流れ・聞こえ)／係り結び', modernKami: 'たきのおとは たえてひさしく なりぬれど', modernShimo: 'なこそながれて なおきこえけれ' },
+  { kami: 'あらざらむ この世のほかの 思ひ出に', shimo: '今ひとたびの 逢ふこともがな', author: '和泉式部', meaning: '(私は)まもなく死ぬだろうが、あの世の思い出として、もう一度(あなたに)逢いたいものだなあ。', technique: '', modernKami: 'あらざらん このよのほかの おもいでに', modernShimo: 'いまひとたびの おうこともがな' },
+  { kami: 'めぐりあひて 見しやそれとも わかぬ間に', shimo: '雲隠れにし 夜半の月かな', author: '紫式部', meaning: '久しぶりに出会って、見たのがそれかどうかもわからないうちに、雲に隠れてしまった真夜中の月(のような旧友)よ。', technique: '縁語(月・めぐり・雲・隠れ)', modernKami: 'めぐりあいて みしやそれとも わかぬまに', modernShimo: 'くもがくれにし よわのつきかな' },
+  { kami: '有馬山 猪名の笹原 風吹けば', shimo: 'いでそよ人を 忘れやはする', author: '大弐三位', meaning: '有馬山に近い猪名の笹原に風が吹くとそよそよと鳴るが、そう、そのことよ、あなたを忘れるだろうか、忘れはしない。', technique: '序詞(有馬山〜風吹け→そよ)／掛詞(そよ→其よ・そよそよ)', modernKami: 'ありまやま いなのささはら かぜふけば', modernShimo: 'いでそよひとを わすれやはする' },
+  { kami: 'やすらはで 寝なましものを 小夜ふけて', shimo: 'かたぶくまでの 月を見しかな', author: '赤染衛門', meaning: '(あなたを待って)夜が更けて、(西に)傾くまでの月を見たことよ。ためらわないで寝てしまえばよかったのに。', technique: '縁語(月・傾く)', modernKami: 'やすらわで ねなましものを さよふけて', modernShimo: 'かたぶくまでの つきをみしかな' },
+  { kami: '大江山 いく野の道の 遠ければ', shimo: 'まだふみも見ず 天の橋立', author: '小式部内侍', meaning: '大江山を越え、生野を通る道が遠いので、まだ(丹後国の)天橋立を踏んだこともなく、(母からの)手紙を見たこともない。', technique: '掛詞(いく野→行く・生野、ふみ→踏み・文)／倒置', modernKami: 'おおえやま いくののみちの とおければ', modernShimo: 'まだふみもみず あまのはしだて' }
+];
+
+function buildHyakunin3Pack() {
+  const unit = { id: 'u-hyakunin-3', subjectId: 'hyakunin', name: '41〜60', parentId: null };
+  const questions = [];
+  let n = 40;
+  for (const p of HYAKUNIN_3_SOURCE) {
+    n++;
+    questions.push({
+      id: 'q-hk-' + String(n).padStart(3, '0'),
+      unitId: 'u-hyakunin-3',
+      type: 'hyakunin',
+      no: n,
+      kami: p.kami, shimo: p.shimo, meaning: p.meaning, author: p.author, technique: p.technique,
+      modernKami: p.modernKami || '', modernShimo: p.modernShimo || '',
+      hint: '', sourceNote: '', createdAt: '2026-07-04'
+    });
+  }
+  return { unit, questions };
+}
+
+const HYAKUNIN_4_SOURCE = [
+  { kami: 'いにしへの 奈良の都の 八重桜', shimo: 'けふ九重に にほひぬるかな', author: '伊勢大輔', meaning: '昔の奈良の都で咲いていた八重桜が、今日は宮中でいちだんと美しく咲いたことよ。', technique: '', modernKami: 'いにしえの ならのみやこの やえざくら', modernShimo: 'きょうここのえに においぬるかな' },
+  { kami: '夜をこめて 鳥のそら音は はかるとも', shimo: 'よに逢坂の 関はゆるさじ', author: '清少納言', meaning: '夜が明けないうちに鶏の鳴きまねをしてだましても、決して(私と逢おうという意味での)逢坂の関を通ることは許すまい。', technique: '掛詞(逢坂→逢う・逢坂の関)', modernKami: 'よをこめて とりのそらねは はかるとも', modernShimo: 'よにおうさかの せきはゆるさじ' },
+  { kami: '今はただ 思ひ絶えなむ とばかりを', shimo: '人づてならで 言ふよしもがな', author: '藤原道雅', meaning: '今はただ(あなたのことを)思い切ってしまおうということだけを、人づてではなく、(直接)言う方法があればなあ。', technique: '', modernKami: 'いまはただ おもいたえなん とばかりを', modernShimo: 'ひとづてならで いうよしもがな' },
+  { kami: '朝ぼらけ 宇治の川霧 絶え絶えに', shimo: 'あらはれわたる 瀬々の網代木', author: '藤原定頼', meaning: '夜の明けるころ、宇治川の川霧がとぎれとぎれになって、次々と現れる川瀬ごとにしかけた網代木であるよ。', technique: '体言止め', modernKami: 'あさぼらけ うじのかわぎり たえだえに', modernShimo: 'あらわれわたる せぜのあじろぎ' },
+  { kami: '恨みわび ほさぬ袖だに あるものを', shimo: '恋に朽ちなむ 名こそ惜しけれ', author: '相模', meaning: '恨み悲しんで(涙に)乾かすひまもない袖さえ(朽ちないで)あるのに、恋のために朽ちてしまうであろう(私の)評判が惜しい。', technique: '縁語(袖・朽ち)／係り結び', modernKami: 'うらみわび ほさぬそでだに あるものを', modernShimo: 'こいにくちなん なこそおしけれ' },
+  { kami: 'もろともに あはれと思へ 山桜', shimo: '花よりほかに 知る人もなし', author: '行尊', meaning: '(おまえも)一緒に(私を)なつかしく思ってくれ。山桜よ。(この山奥には)花以外に(心を)知ってくれる人もいない。', technique: '擬人法／倒置', modernKami: 'もろともに あわれとおもえ やまざくら', modernShimo: 'はなよりほかに しるひともなし' },
+  { kami: '春の夜の 夢ばかりなる 手枕に', shimo: 'かひなく立たむ 名こそ惜しけれ', author: '周防内侍', meaning: '春の夜の夢ほどの(はかない)腕枕のために、つまらなく立つ(あなたとの恋の)評判が惜しいことだ。', technique: '掛詞(かひな→腕・甲斐なく)／係り結び', modernKami: 'はるのよの ゆめばかりなる たまくらに', modernShimo: 'かいなくたたん なこそおしけれ' },
+  { kami: '心にも あらでうき世に ながらへば', shimo: '恋しかるべき 夜半の月かな', author: '三条院', meaning: '不本意ながらも、もしつらいこの世に生きながらえたら、恋しく思い出すに違いない真夜中の月であるよ。', technique: '倒置', modernKami: 'こころにも あらでうきよに ながらえば', modernShimo: 'こいしかるべき よわのつきかな' },
+  { kami: '嵐吹く 三室の山の もみぢ葉は', shimo: '竜田の川の 錦なりけり', author: '能因法師', meaning: '嵐が吹き散らす三室の山の紅葉の葉は、竜田川の(一面に)散り敷いた錦のようであることよ。', technique: '見立て', modernKami: 'あらしふく みむろのやまの もみじばは', modernShimo: 'たつたのかわの にしきなりけり' },
+  { kami: 'さびしさに 宿を立ち出でて ながむれば', shimo: 'いづこも同じ 秋の夕暮れ', author: '良暹法師', meaning: '寂しさに(耐えきれずに)庵を出て(辺りを)眺めてみると、どこも同じ秋の夕暮れであることよ。', technique: '体言止め', modernKami: 'さびしさに やどをたちいでて ながむれば', modernShimo: 'いずこもおなじ あきのゆうぐれ' },
+  { kami: '夕されば 門田の稲葉 おとづれて', shimo: '芦のまろやに 秋風ぞ吹く', author: '源経信', meaning: '夕方になると、家の前の田の稲葉に(そよそよと)音を立てて、葦で葺いた田舎家に秋風が吹いてくる。', technique: '係り結び', modernKami: 'ゆうされば かどたのいなば おとずれて', modernShimo: 'あしのまろやに あきかぜぞふく' },
+  { kami: '音に聞く 高師の浜の あだ波は', shimo: 'かけじや袖の ぬれもこそすれ', author: '祐子内親王家紀伊', meaning: '名高い高師の浜のあだ波(浮気名の高いあなたの言葉)は(心に)かけますまい、(涙で)袖がぬれるといけないから。', technique: '縁語(波・かけ・ぬれ)', modernKami: 'おとにきく たかしのはまの あだなみは', modernShimo: 'かけじやそでの ぬれもこそすれ' },
+  { kami: '高砂の 尾の上の桜 咲きにけり', shimo: '外山の霞 立たずもあらなむ', author: '大江匡房', meaning: '遠くの高い山の峰の桜が咲いたことよ。人里近い山の霞は、立ちこめて(見えなく)ないでほしい。', technique: '', modernKami: 'たかさごの おのえのさくら さきにけり', modernShimo: 'とやまのかすみ たたずもあらなん' },
+  { kami: '憂かりける 人を初瀬の 山おろしよ', shimo: 'はげしかれとは 祈らぬものを', author: '源俊頼', meaning: 'つれなかった人がなびくように初瀬の観音に祈ったが、初瀬の山おろしよ。(おまえのように)冷たさが激しくなれとは祈らなかったのに。', technique: '', modernKami: 'うかりける ひとをはつせの やまおろしよ', modernShimo: 'はげしかれとは いのらぬものを' },
+  { kami: '契りおきし させもが露を 命にて', shimo: 'あはれ今年の 秋もいぬめり', author: '藤原基俊', meaning: '約束してくれた、させも草の露のようなありがたい言葉を命に思ってきたが、ああ、(音さたなく)今年の秋も過ぎていくようだ。', technique: '', modernKami: 'ちぎりおきし させもがつゆを いのちにて', modernShimo: 'あわれことしの あきもいぬめり' },
+  { kami: 'わたの原 漕ぎ出でて見れば ひさかたの', shimo: '雲居にまがふ 沖つ白波', author: '藤原忠通', meaning: '大海原に(舟を)漕ぎ出して見わたすと、雲と見間違えそうな沖の白波であるよ。', technique: '枕詞(ひさかたの→雲)／体言止め', modernKami: 'わたのはら こぎいでてみれば ひさかたの', modernShimo: 'くもいにまがう おきつしらなみ' },
+  { kami: '瀬をはやみ 岩にせかるる 滝川の', shimo: 'われても末に あはむとぞ思ふ', author: '崇徳院', meaning: '川の瀬の流れが速いので、岩にせき止められる急流のように、(あなたと)別れても将来に(また逢おうと)思う。', technique: '序詞(瀬をはやみ〜滝川の→われても末にあはむ)', modernKami: 'せをはやみ いわにせかるる たきがわの', modernShimo: 'われてもすえに あわんとぞおもう' },
+  { kami: '淡路島 かよふ千鳥の 鳴く声に', shimo: '幾夜寝ざめぬ 須磨の関守', author: '源兼昌', meaning: '淡路島から通ってくる千鳥のもの悲しく鳴く声のために、幾夜目覚めたことよ、須磨の関守は。', technique: '倒置／体言止め', modernKami: 'あわじしま かようちどりの なくこえに', modernShimo: 'いくよねざめぬ すまのせきもり' },
+  { kami: '秋風に たなびく雲の 絶え間より', shimo: 'もれ出づる月の 影のさやけさ', author: '藤原顕輔', meaning: '秋風に(吹かれて)たなびいている雲の切れ間からもれ出てくる月の光の、なんと澄み切った明るさよ。', technique: '体言止め', modernKami: 'あきかぜに たなびくくもの たえまより', modernShimo: 'もれいずるつきの かげのさやけさ' },
+  { kami: '長からむ 心も知らず 黒髪の', shimo: '乱れて今朝は 物をこそ思へ', author: '待賢門院堀河', meaning: '末長く変わらない心かどうかもわからずに、(乱れた)黒髪のように心も乱れて、今朝は物思いをしている。', technique: '縁語(黒髪・長から・乱れ)／係り結び', modernKami: 'ながからん こころもしらず くろかみの', modernShimo: 'みだれてけさは ものをこそおもえ' }
+];
+
+function buildHyakunin4Pack() {
+  const unit = { id: 'u-hyakunin-4', subjectId: 'hyakunin', name: '61〜80', parentId: null };
+  const questions = [];
+  let n = 60;
+  for (const p of HYAKUNIN_4_SOURCE) {
+    n++;
+    questions.push({
+      id: 'q-hk-' + String(n).padStart(3, '0'),
+      unitId: 'u-hyakunin-4',
+      type: 'hyakunin',
+      no: n,
+      kami: p.kami, shimo: p.shimo, meaning: p.meaning, author: p.author, technique: p.technique,
+      modernKami: p.modernKami || '', modernShimo: p.modernShimo || '',
+      hint: '', sourceNote: '', createdAt: '2026-07-04'
+    });
+  }
+  return { unit, questions };
+}
+
+const HYAKUNIN_5_SOURCE = [
+  { kami: 'ほととぎす 鳴きつる方を ながむれば', shimo: 'ただ有明の 月ぞ残れる', author: '藤原実定', meaning: 'ホトトギスが今し鳴いた方角を眺めると、(その姿はなく)ただ明け方の月だけが残っている。', technique: '係り結び', modernKami: 'ほととぎす なきつるかたを ながむれば', modernShimo: 'ただありあけの つきぞのこれる' },
+  { kami: '思ひわび さても命は あるものを', shimo: '憂きにたへぬは 涙なりけり', author: '道因法師', meaning: '思い嘆いて、それでも命はつながっているのに、つらさに耐えられない(で落ちる)のは涙であることよ。', technique: '', modernKami: 'おもいわび さてもいのちは あるものを', modernShimo: 'うきにたえぬは なみだなりけり' },
+  { kami: '世の中よ 道こそなけれ 思ひ入る', shimo: '山の奥にも 鹿ぞ鳴くなる', author: '藤原俊成', meaning: 'この世の中には逃れる道はないのだ。深く思い詰めて分け入った山の奥でも、鹿が悲しげに鳴いている。', technique: '縁語(山・道・入る・奥)／係り結び', modernKami: 'よのなかよ みちこそなけれ おもいいる', modernShimo: 'やまのおくにも しかぞなくなる' },
+  { kami: 'ながらへば またこのごろや 忍ばれむ', shimo: '憂しと見し世ぞ 今は恋しき', author: '藤原清輔', meaning: '生きながらえば、またこのごろのことがなつかしく思われるのだろうか。つらいと思っていた昔が今は恋しい。', technique: '係り結び', modernKami: 'ながらえば またこのごろや しのばれん', modernShimo: 'うしとみしよぞ いまはこいしき' },
+  { kami: '夜もすがら 物思ふころは 明けやらで', shimo: '閨のひまさへ つれなかりけり', author: '俊恵法師', meaning: '一晩中物思いをしているこのごろは、(夜が)なかなか明けきらないで、(朝の光がささない)寝室のすきまでが無情に感じられることよ。', technique: '', modernKami: 'よもすがら ものおもうころは あけやらで', modernShimo: 'ねやのひまさえ つれなかりけり' },
+  { kami: '嘆けとて 月やは物を 思はする', shimo: 'かこち顔なる わが涙かな', author: '西行法師', meaning: '嘆けといって月が(私に)物思いをさせるのか。いや、月のせいだというような顔で流れ落ちる私の(恋の)涙であるよ。', technique: '擬人法', modernKami: 'なげけとて つきやはものを おもわする', modernShimo: 'かこちがおなる わがなみだかな' },
+  { kami: '村雨の 露もまだひぬ まきの葉に', shimo: '霧立ちのぼる 秋の夕暮れ', author: '寂蓮法師', meaning: '秋のにわか雨の露もまだ乾いていない真木(=杉や檜などの常緑樹)の葉に、早くも霧が立ちこめる秋の夕暮れであるよ。', technique: '体言止め', modernKami: 'むらさめの つゆもまだひぬ まきのはに', modernShimo: 'きりたちのぼる あきのゆうぐれ' },
+  { kami: '難波江の 芦のかりねの ひとよゆゑ', shimo: 'みをつくしてや 恋ひわたるべき', author: '皇嘉門院別当', meaning: '難波の入り江の芦の刈根の一節のような一夜の仮寝のために、身を捨てても恋し続けるのだろうか。', technique: '序詞(難波江の芦の→刈寝)／掛詞(みをつくし→澪標・身を尽くし)／係り結び', modernKami: 'なにわえの あしのかりねの ひとよゆえ', modernShimo: 'みをつくしてや こいわたるべき' },
+  { kami: '玉の緒よ 絶えなば絶えね ながらへば', shimo: '忍ぶることの 弱りもぞする', author: '式子内親王', meaning: '(私の)命よ、絶えてしまうのなら絶えてしまえ。生きながらえていたら、堪え忍ぶ心が弱まるといけないから。', technique: '縁語(緒・絶え・ながら・弱り)', modernKami: 'たまのおよ たえなばたえね ながらえば', modernShimo: 'しのぶることの よわりもぞする' },
+  { kami: '見せばやな 雄島のあまの 袖だにも', shimo: 'ぬれにぞぬれし 色はかはらず', author: '殷富門院大輔', meaning: '(血の涙で色が変わった私の袖を)見せたいものだ。雄島の漁夫の袖でさえ、ぬれにぬれた。(だが、その色は変わらないというから。)', technique: '', modernKami: 'みせばやな おじまのあまの そでだにも', modernShimo: 'ぬれにぞぬれし いろはかわらず' },
+  { kami: 'きりぎりす 鳴くや霜夜の さむしろに', shimo: '衣かたしき ひとりかも寝む', author: '藤原良経', meaning: 'コオロギが鳴いている霜の降る夜の寒々としたむしろの上に、着物の片袖を敷いてひとりで寝るのだろうか。', technique: '掛詞(さむしろ→さ庭・寒し)', modernKami: 'きりぎりす なくやしもよの さむしろに', modernShimo: 'ころもかたしき ひとりかもねん' },
+  { kami: 'わが袖は 潮干に見えぬ 沖の石の', shimo: '人こそ知らね 乾く間もなし', author: '二条院讃岐', meaning: '私の袖は、潮が引いたときにも見えない沖の石のように、人は知らないけれども、(涙で)乾くひまもない。', technique: '序詞(潮干に〜石の→人こそ知らね)', modernKami: 'わがそでは しおひにみえぬ おきのいしの', modernShimo: 'ひとこそしらね かわくまもなし' },
+  { kami: '世の中は 常にもがもな 渚こぐ', shimo: 'あまの小舟の 綱手かなしも', author: '源実朝', meaning: 'この世は永遠に変わらないでほしい。渚を漕いでいく漁夫の小舟の、引き綱を引く姿は心ひかれることよ。', technique: '', modernKami: 'よのなかは つねにもがもな なぎさこぐ', modernShimo: 'あまのおぶねの つなでかなしも' },
+  { kami: 'み吉野の 山の秋風 さ夜更けて', shimo: 'ふるさと寒く 衣打つなり', author: '藤原雅経', meaning: '吉野の山の秋風が吹き、夜も更けて、旧都の里寒く、(砧で)衣を打つ音が(寒々と)聞こえてくる。', technique: '掛詞(ふる→降り・旧)', modernKami: 'みよしのの やまのあきかぜ さよふけて', modernShimo: 'ふるさとさむく ころもうつなり' },
+  { kami: 'おほけなく うき世の民に おほふかな', shimo: 'わが立つ杣に 墨染の袖', author: '慈円', meaning: '分不相応にも、(仏のご加護を祈り)この世の人々を覆うことよ。比叡山に住み始めた私の墨染めの(法衣の)袖で。', technique: '倒置', modernKami: 'おおけなく うきよのたみに おおうかな', modernShimo: 'わがたつそまに すみぞめのそで' },
+  { kami: '花さそふ 嵐の庭の 雪ならで', shimo: 'ふりゆくものは わが身なりけり', author: '藤原公経', meaning: '(桜の)花を誘って散らす嵐が吹く庭に降りゆく花吹雪ではなく、古くなってゆくものは、私自身の身なのだなあ。', technique: '掛詞(ふり→降り・古り)', modernKami: 'はなさそう あらしのにわの ゆきならで', modernShimo: 'ふりゆくものは わがみなりけり' },
+  { kami: '来ぬ人を まつほの浦の 夕なぎに', shimo: '焼くや藻塩の 身もこがれつつ', author: '藤原定家', meaning: '来ない人を待つ、松帆の浦の夕凪時に焼く藻塩のように、身も恋こがれていることよ。', technique: '掛詞(まつ→松・待つ)／序詞(まつほの〜藻塩の→こがれ)', modernKami: 'こぬひとを まつほのうらの ゆうなぎに', modernShimo: 'やくやもしおの みもこがれつつ' },
+  { kami: '風そよぐ ならの小川の 夕暮れは', shimo: 'みそぎぞ夏の しるしなりける', author: '藤原家隆', meaning: '風がそよそよと楢の葉に吹くならの小川の夕暮れ時は(秋の趣で)、六月祓の行事だけが夏のしるしであることよ。', technique: '掛詞(なら→楢・ならの小川)／係り結び', modernKami: 'かぜそよぐ ならのおがわの ゆうぐれは', modernShimo: 'みそぎぞなつの しるしなりける' },
+  { kami: '人もをし 人も恨めし あぢきなく', shimo: '世を思ふゆゑに 物思ふ身は', author: '後鳥羽院', meaning: '人がいとしくもあり、また人が恨めしくもある。つまらなく世を思うために物思いをする私の身には。', technique: '倒置', modernKami: 'ひともおし ひともうらめし あじきなく', modernShimo: 'よをおもうゆえに ものおもうみは' },
+  { kami: 'ももしきや 古き軒端の しのぶにも', shimo: 'なほ余りある 昔なりけり', author: '順徳院', meaning: '宮中の古びた軒端の忍ぶ草を見るにつけ、なつかしくしのんでもまだしのびきれない昔(の御代)であるよ。', technique: '掛詞(しのぶ→偲ぶ・忍ぶ草)', modernKami: 'ももしきや ふるきのきばの しのぶにも', modernShimo: 'なおあまりある むかしなりけり' }
+];
+
+function buildHyakunin5Pack() {
+  const unit = { id: 'u-hyakunin-5', subjectId: 'hyakunin', name: '81〜100', parentId: null };
+  const questions = [];
+  let n = 80;
+  for (const p of HYAKUNIN_5_SOURCE) {
+    n++;
+    questions.push({
+      id: 'q-hk-' + String(n).padStart(3, '0'),
+      unitId: 'u-hyakunin-5',
+      type: 'hyakunin',
+      no: n,
+      kami: p.kami, shimo: p.shimo, meaning: p.meaning, author: p.author, technique: p.technique,
+      modernKami: p.modernKami || '', modernShimo: p.modernShimo || '',
+      hint: '', sourceNote: '', createdAt: '2026-07-04'
+    });
+  }
+  return { unit, questions };
+}
+
 /* ------------------------------------------------------------
    英語DB (English DB) — 高校用
    構造: Lesson → Category(Unit) → Entry(Question)
@@ -5069,6 +5195,15 @@ function buildSampleData() {
   const hk2 = buildHyakunin2Pack();
   data.units.push(hk2.unit);
   data.questions.push(...hk2.questions);
+  const hk3 = buildHyakunin3Pack();
+  data.units.push(hk3.unit);
+  data.questions.push(...hk3.questions);
+  const hk4 = buildHyakunin4Pack();
+  data.units.push(hk4.unit);
+  data.questions.push(...hk4.questions);
+  const hk5 = buildHyakunin5Pack();
+  data.units.push(hk5.unit);
+  data.questions.push(...hk5.questions);
   // 全単元に profileId='p1' (中学) を付与 (高校用パックは個別に 'p2' を持つ)
   data.units.forEach(u => { if (!u.profileId) u.profileId = 'p1'; });
   // 高校英語パック (profileId='p2' は内部で設定済み)
@@ -5327,11 +5462,33 @@ function loadState() {
       state.questions.push(...pack.questions);
       migrated = true;
     }
+    // 百人一首 41〜60 / 61〜80 / 81〜100 単元の追加マイグレーション (既存ユーザー向け)
+    if (!state.units.some(u => u.id === 'u-hyakunin-3')) {
+      const pack = buildHyakunin3Pack();
+      state.units.push(pack.unit);
+      state.questions.push(...pack.questions);
+      migrated = true;
+    }
+    if (!state.units.some(u => u.id === 'u-hyakunin-4')) {
+      const pack = buildHyakunin4Pack();
+      state.units.push(pack.unit);
+      state.questions.push(...pack.questions);
+      migrated = true;
+    }
+    if (!state.units.some(u => u.id === 'u-hyakunin-5')) {
+      const pack = buildHyakunin5Pack();
+      state.units.push(pack.unit);
+      state.questions.push(...pack.questions);
+      migrated = true;
+    }
     // 既存の百人一首問題に modernKami / modernShimo が欠けていれば補う
     {
       const modernMap = new Map();
       buildHyakuninPack().questions.forEach(q => modernMap.set(q.id, { mk: q.modernKami, ms: q.modernShimo }));
       buildHyakunin2Pack().questions.forEach(q => modernMap.set(q.id, { mk: q.modernKami, ms: q.modernShimo }));
+      buildHyakunin3Pack().questions.forEach(q => modernMap.set(q.id, { mk: q.modernKami, ms: q.modernShimo }));
+      buildHyakunin4Pack().questions.forEach(q => modernMap.set(q.id, { mk: q.modernKami, ms: q.modernShimo }));
+      buildHyakunin5Pack().questions.forEach(q => modernMap.set(q.id, { mk: q.modernKami, ms: q.modernShimo }));
       state.questions.forEach(q => {
         if (q.type === 'hyakunin' && (!q.modernKami || !q.modernShimo)) {
           const m = modernMap.get(q.id);
