@@ -1330,6 +1330,11 @@ input, textarea, select {
 .edb-graded-mark.eb-d { background: #ff950033; color: #ff9500; }
 .edb-graded-mark.eb-x { background: #ff3b3033; color: #ff3b30; }
 .edb-speak { background: none; border: 1px solid var(--border); border-radius: 50%; width: 36px; height: 36px; font-size: 16px; cursor: pointer; }
+.edb-list-speak { background: none; border: 1px solid var(--border); border-radius: 12px; padding: 1px 6px; font-size: 12px; cursor: pointer; margin-right: 6px; vertical-align: middle; }
+.edb-list-speak:active { background: rgba(50,173,230,0.15); }
+.el-list-speak { text-align: center; padding: 4px; }
+.el-list-speak-btn { background: none; border: 1px solid var(--border); border-radius: 12px; padding: 2px 6px; font-size: 12px; cursor: pointer; }
+.el-list-speak-btn:active { background: rgba(50,173,230,0.15); }
 .edb-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 .edb-mode-pill { display: inline-block; font-size: 11px; background: var(--bg); color: var(--text-secondary); padding: 2px 8px; border-radius: 10px; margin-bottom: 4px; }
 .edb-list-card { background: var(--card-bg); border-radius: 10px; padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
@@ -6987,6 +6992,7 @@ function renderEnglishList(params) {
       : '';
     return `
       <tr>
+        <td class="el-list-speak"><button class="el-list-speak-btn" data-qid="${q.id}" aria-label="音声を聞く">🔊</button></td>
         <td class="el-list-en">${escapeHtml(q.en || '')}</td>
         <td class="el-list-ja">${escapeHtml(q.ja || '')}</td>
         <td class="kl-result">${markCell(eJa)}</td>
@@ -7000,6 +7006,7 @@ function renderEnglishList(params) {
     : `<table class="kanji-list-table">
         <thead>
           <tr>
+            <th></th>
             <th>英語</th>
             <th>日本語</th>
             <th>英→日</th>
@@ -7018,10 +7025,17 @@ function renderEnglishList(params) {
       <span class="nav-spacer"></span>
     </div>
     <div class="content">
-      <div class="section-label">${pool.length}件 / 最新の解答結果を表示</div>
+      <div class="section-label">${pool.length}件 / 🔊 をタップで音声再生</div>
       ${tableHtml}
     </div>`;
   document.getElementById('el-list-back').onclick = goBack;
+  document.querySelectorAll('#screen-english-list .el-list-speak-btn').forEach(b => {
+    b.onclick = (e) => {
+      e.stopPropagation();
+      const q = getQuestion(b.dataset.qid);
+      if (q && q.en) speakEnglish(q.en);
+    };
+  });
 }
 
 /* ------------------------------------------------------------
@@ -7417,13 +7431,17 @@ function renderEdbList(params) {
         <span class="edb-list-mlabel">${escapeHtml(m.label || (m.idx ? '①②③④⑤'[m.idx-1] || ('('+m.idx+')') : ''))}</span>
         ${escapeHtml(m.ja || '')}${m.pos ? ' <span class="edb-list-pos">' + escapeHtml(m.pos) + '</span>' : ''}${m.note ? ' <span class="edb-list-pos">' + escapeHtml(m.note) + '</span>' : ''}
       </div>`).join('');
-    const examplesHtml = (q.examples || []).map(ex => `
+    const examplesHtml = (q.examples || []).map((ex, i) => `
       <div class="edb-list-ex">
-        <div>${ex.label ? '<span class="edb-list-mlabel">' + escapeHtml(ex.label) + '</span>' : ''}${edbRenderHilite(ex.en)}</div>
+        <div>
+          <button class="edb-list-speak" data-speak="${escapeHtml(edbPlain(ex.en))}" aria-label="例文を聞く">🔊</button>
+          ${ex.label ? '<span class="edb-list-mlabel">' + escapeHtml(ex.label) + '</span>' : ''}${edbRenderHilite(ex.en)}
+        </div>
         <div style="color:var(--text-secondary)">${ex.label ? '<span class="edb-list-mlabel">　</span>' : ''}${edbRenderHilite(ex.ja)}</div>
       </div>`).join('');
     const relHtml = (q.related || []).map(r => `
       <div class="edb-list-rel">
+        <button class="edb-list-speak" data-speak="${escapeHtml(r.en)}" aria-label="音声を聞く">🔊</button>
         <span class="kind ${r.kind === 'colloc' ? 'colloc' : 'deriv'}">${r.kind === 'colloc' ? 'コロケ' : '派生'}</span>
         <strong>${escapeHtml(r.en)}</strong>${r.pos ? ' <span class="edb-list-pos">' + escapeHtml(r.pos) + '</span>' : ''} — ${escapeHtml(r.ja)}
       </div>`).join('');
@@ -7433,7 +7451,10 @@ function renderEdbList(params) {
     return `
       <div class="edb-list-card">
         <div class="edb-list-serial">No.${q.serial}</div>
-        <div class="edb-list-head">${escapeHtml(q.headEn)}${q.pos ? ' <span class="edb-list-pos">' + escapeHtml(q.pos) + '</span>' : ''}${hintsHtml}</div>
+        <div class="edb-list-head">
+          <button class="edb-list-speak" data-speak="${escapeHtml(q.headEn || '')}" aria-label="見出しを聞く">🔊</button>
+          ${escapeHtml(q.headEn)}${q.pos ? ' <span class="edb-list-pos">' + escapeHtml(q.pos) + '</span>' : ''}${hintsHtml}
+        </div>
         <div class="edb-list-meanings">${meaningsHtml}</div>
         ${relHtml ? '<div class="edb-list-section">派生語・コロケーション</div>' + relHtml : ''}
         ${examplesHtml ? '<div class="edb-list-section">例文</div>' + examplesHtml : ''}
@@ -7450,10 +7471,17 @@ function renderEdbList(params) {
       <span class="nav-spacer"></span>
     </div>
     <div class="content">
-      <div class="section-label">${pool.length}件 (No.順)</div>
+      <div class="section-label">${pool.length}件 (No.順) / 🔊 をタップで音声再生</div>
       ${pool.length ? cardsHtml : emptyHtml}
     </div>`;
   document.getElementById('edl-back').onclick = goBack;
+  document.querySelectorAll('#screen-edb-list .edb-list-speak').forEach(b => {
+    b.onclick = (e) => {
+      e.stopPropagation();
+      const text = b.dataset.speak;
+      if (text) speakEnglish(text);
+    };
+  });
 }
 
 /* ------------------------------------------------------------
