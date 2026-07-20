@@ -7969,8 +7969,34 @@ function renderResult() {
       <div class="section-label">復習が必要な問題</div>
       ${mistakeHtml}
       <button class="btn" id="r-again" style="margin-top:16px">もう一度同じ範囲を学習</button>
+      <button class="btn secondary" id="r-redir">出題方法を選び直す</button>
       <button class="btn secondary" id="r-home">ホームへ戻る</button>
     </div>`;
+
+  // 現在のセッションから出題方法選択(direction)画面への params を生成
+  const dirParams = () => {
+    const p = { unitId: s.unitId, unitIds: s.unitIds, subjectId: s.subjectId, reviewMode: s.reviewMode, order: s.order, lesson: s.lesson, testMode: s.testMode, label: s.label };
+    if (!p.label) {
+      if (p.unitIds && p.unitIds.length) p.label = '選択した ' + p.unitIds.length + ' 単元';
+      else if (p.unitId) { const u = getUnit(p.unitId); if (u) p.label = u.name; }
+      else if (p.lesson) p.label = p.lesson + ' 実力テスト';
+      else if (p.subjectId) { const sub = getSubject(p.subjectId); if (sub) p.label = sub.name + ' 全単元'; }
+    }
+    return p;
+  };
+  // subject / mode から 出題方法選択画面 名を判定
+  const directionScreenName = () => {
+    const mode = s.mode || '';
+    if (mode.startsWith('edb-')) return 'edb-direction';
+    if (mode === 'en-ja' || mode === 'ja-en' || mode === 'en-def-en' || mode === 'listen') return 'english-direction';
+    if (mode === 'hk-graded' || mode === 'progressive' || mode === 'blank' || mode === 'meaning') return 'hyakunin-direction';
+    // 漢字 or その他
+    const u = s.unitId ? getUnit(s.unitId) : null;
+    const subId = s.subjectId || (u && u.subjectId);
+    if (subId === 'kanji' || (u && u.subjectId === 'kanji')) return 'study-direction';
+    if (subId === 'hyakunin') return 'hyakunin-direction';
+    return null; // 社会/理科 は direction 画面がない
+  };
 
   document.getElementById('r-again').onclick = () => {
     const params = { unitId: s.unitId, unitIds: s.unitIds, subjectId: s.subjectId, direction: s.direction, reviewMode: s.reviewMode, order: s.order, lesson: s.lesson, testMode: s.testMode };
@@ -7986,6 +8012,21 @@ function renderResult() {
       startHyakuninGraded(params);
     } else {
       startStudy(params);
+    }
+  };
+  document.getElementById('r-redir').onclick = () => {
+    const target = directionScreenName();
+    studySession = null;
+    if (target) {
+      // 結果 → direction まで一気に戻す (navStack から result 分を除外して direction を表示)
+      navStack = [];
+      showScreen(target, dirParams(), true);
+    } else {
+      // direction 画面がない教科 → units 画面へ戻す
+      navStack = [];
+      const subId = s.subjectId || (s.unitId && (getUnit(s.unitId) || {}).subjectId);
+      if (subId) showScreen('units', { subjectId: subId }, true);
+      else showScreen('home', {}, true);
     }
   };
   document.getElementById('r-home').onclick = () => {
