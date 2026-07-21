@@ -1303,9 +1303,27 @@ input, textarea, select {
 /* 教科ごとのアクセントカラー (タイル左ボーダー) */
 .tile-color-english    { box-shadow: inset 4px 0 0 #5856d6, var(--shadow); }
 .tile-color-english-db { box-shadow: inset 4px 0 0 #32ade6, var(--shadow); }
+.tile-color-chem-basic { box-shadow: inset 4px 0 0 #af52de, var(--shadow); }
 .tile-color-kanji      { box-shadow: inset 4px 0 0 #ff2d55, var(--shadow); }
 .tile-color-social     { box-shadow: inset 4px 0 0 #ff9500, var(--shadow); }
 .tile-color-science    { box-shadow: inset 4px 0 0 #34c759, var(--shadow); }
+
+/* 化学基礎 表形式 */
+.chem-tbl { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 14px; }
+.chem-tbl th, .chem-tbl td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; vertical-align: middle; }
+.chem-tbl th { width: 4.2em; background: var(--bg); font-weight: 600; color: var(--text-secondary); font-size: 12px; }
+.chem-tbl td { background: var(--card-bg); }
+.chem-tbl sub, .chem-tbl sup { font-size: 0.75em; }
+.chem-blank { display: inline-block; min-width: 2em; padding: 0 6px; border-radius: 4px; background: rgba(175,82,222,0.15); color: #af52de; font-weight: 700; text-align: center; }
+.chem-blank-sub { background: transparent; color: var(--text-secondary); font-weight: 400; }
+.chem-reveal { color: #af52de; font-weight: 600; }
+.chem-list-wrap { overflow-x: auto; margin-bottom: 12px; }
+.chem-list-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.chem-list-tbl th, .chem-list-tbl td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; vertical-align: middle; background: var(--card-bg); }
+.chem-list-tbl th { background: var(--bg); font-weight: 600; font-size: 11px; color: var(--text-secondary); }
+.chem-list-tbl sub, .chem-list-tbl sup { font-size: 0.75em; }
+.chem-list-name { white-space: nowrap; font-weight: 600; }
+.chem-list-strength { white-space: nowrap; color: var(--text-secondary); }
 
 /* 複数単元選択 */
 .multi-select-item { display: flex; align-items: center; padding-left: 10px; }
@@ -1373,6 +1391,9 @@ input, textarea, select {
   <div id="screen-edb-direction" class="screen"></div>
   <div id="screen-edb-batch" class="screen"></div>
   <div id="screen-edb-list" class="screen"></div>
+  <div id="screen-chem-direction" class="screen"></div>
+  <div id="screen-chem-batch" class="screen"></div>
+  <div id="screen-chem-list" class="screen"></div>
   <div id="screen-hyakunin-direction" class="screen"></div>
   <div id="screen-hyakunin-quiz" class="screen"></div>
   <div id="screen-hyakunin-test" class="screen"></div>
@@ -2271,6 +2292,61 @@ function buildEnglishOrdinalPack() {
       ja: ja,
       en: en,
       ordNum: ordNum,
+      hint: '',
+      sourceNote: '',
+      createdAt: '2026-07-04'
+    });
+  }
+  return { unit, questions };
+}
+
+/* 化学基礎: 酸と塩基 (7酸 + 5塩基) — 高校 (p2)
+   HTML の下付き (<sub>) / 上付き (<sup>) 表記でそのまま格納する */
+const CHEM_ACID_BASE_SOURCE = [
+  // ===== 酸 7種 =====
+  { cat: 'acid', name: '塩化水素',   formula: 'HCl',                                 valence: '1価', strength: '強酸',
+    ionEq: 'HCl → H<sup>+</sup> + Cl<sup>−</sup>' },
+  { cat: 'acid', name: '硝酸',       formula: 'HNO<sub>3</sub>',                     valence: '1価', strength: '強酸',
+    ionEq: 'HNO<sub>3</sub> → H<sup>+</sup> + NO<sub>3</sub><sup>−</sup>' },
+  { cat: 'acid', name: '硫酸',       formula: 'H<sub>2</sub>SO<sub>4</sub>',         valence: '2価', strength: '強酸',
+    ionEq: 'H<sub>2</sub>SO<sub>4</sub> → 2H<sup>+</sup> + SO<sub>4</sub><sup>2−</sup>' },
+  { cat: 'acid', name: '酢酸',       formula: 'CH<sub>3</sub>COOH',                  valence: '1価', strength: '弱酸',
+    ionEq: 'CH<sub>3</sub>COOH ⇌ CH<sub>3</sub>COO<sup>−</sup> + H<sup>+</sup>' },
+  { cat: 'acid', name: '炭酸',       formula: 'H<sub>2</sub>CO<sub>3</sub>',         valence: '2価', strength: '弱酸',
+    ionEq: 'H<sub>2</sub>CO<sub>3</sub> ⇌ 2H<sup>+</sup> + CO<sub>3</sub><sup>2−</sup>' },
+  { cat: 'acid', name: 'シュウ酸',   formula: '(COOH)<sub>2</sub>',                  valence: '2価', strength: '弱酸',
+    ionEq: '(COOH)<sub>2</sub> ⇌ 2COO<sup>−</sup> + 2H<sup>+</sup>' },
+  { cat: 'acid', name: 'リン酸',     formula: 'H<sub>3</sub>PO<sub>4</sub>',         valence: '3価', strength: '弱酸',
+    ionEq: 'H<sub>3</sub>PO<sub>4</sub> ⇌ 3H<sup>+</sup> + PO<sub>4</sub><sup>3−</sup>' },
+  // ===== 塩基 5種 =====
+  { cat: 'base', name: '水酸化ナトリウム', formula: 'NaOH',                          valence: '1価', strength: '強塩基',
+    ionEq: 'NaOH → Na<sup>+</sup> + OH<sup>−</sup>' },
+  { cat: 'base', name: '水酸化カリウム',   formula: 'KOH',                           valence: '1価', strength: '強塩基',
+    ionEq: 'KOH → K<sup>+</sup> + OH<sup>−</sup>' },
+  { cat: 'base', name: '水酸化カルシウム', formula: 'Ca(OH)<sub>2</sub>',            valence: '2価', strength: '強塩基',
+    ionEq: 'Ca(OH)<sub>2</sub> → Ca<sup>2+</sup> + 2OH<sup>−</sup>' },
+  { cat: 'base', name: '水酸化バリウム',   formula: 'Ba(OH)<sub>2</sub>',            valence: '2価', strength: '強塩基',
+    ionEq: 'Ba(OH)<sub>2</sub> → Ba<sup>2+</sup> + 2OH<sup>−</sup>' },
+  { cat: 'base', name: 'アンモニア',       formula: 'NH<sub>3</sub>',                valence: '1価', strength: '弱塩基',
+    ionEq: 'NH<sub>3</sub> + H<sub>2</sub>O ⇌ NH<sub>4</sub><sup>+</sup> + OH<sup>−</sup>' }
+];
+
+function buildChemAcidBasePack() {
+  const unit = { id: 'u-chem-acid-base', subjectId: 'chem-basic', name: '酸と塩基', parentId: null, profileId: 'p2' };
+  const questions = [];
+  let n = 0;
+  for (const e of CHEM_ACID_BASE_SOURCE) {
+    n++;
+    questions.push({
+      id: 'q-chem-ab-' + String(n).padStart(3, '0'),
+      unitId: 'u-chem-acid-base',
+      type: 'chemtable',
+      cat: e.cat,
+      name: e.name,
+      formula: e.formula,
+      valence: e.valence,
+      strength: e.strength,
+      ionEq: e.ionEq,
       hint: '',
       sourceNote: '',
       createdAt: '2026-07-04'
@@ -5142,12 +5218,13 @@ function buildSampleData() {
   const data = {
     version: 1,
     subjects: [
-      { id: 'english',    name: '英語',     profileIds: ['p1', 'p2'] },
-      { id: 'english-db', name: '英語DB',   profileIds: ['p2'] },
-      { id: 'kanji',      name: '漢字',     profileIds: ['p1'] },
-      { id: 'social',     name: '社会',     profileIds: ['p1'] },
-      { id: 'science',    name: '理科',     profileIds: ['p1'] },
-      { id: 'hyakunin',   name: '百人一首', profileIds: ['p1'] }
+      { id: 'english',    name: '英語',       profileIds: ['p1', 'p2'] },
+      { id: 'english-db', name: '英語DB',     profileIds: ['p2'] },
+      { id: 'chem-basic', name: '化学基礎',   profileIds: ['p2'] },
+      { id: 'kanji',      name: '漢字',       profileIds: ['p1'] },
+      { id: 'social',     name: '社会',       profileIds: ['p1'] },
+      { id: 'science',    name: '理科',       profileIds: ['p1'] },
+      { id: 'hyakunin',   name: '百人一首',   profileIds: ['p1'] }
     ],
     units: [
       { id: 'u-soc-1', subjectId: 'social',  name: '日本史',     parentId: null },
@@ -5230,6 +5307,9 @@ function buildSampleData() {
   const eord = buildEnglishOrdinalPack();
   data.units.push(eord.unit);
   data.questions.push(...eord.questions);
+  const chemAb = buildChemAcidBasePack();
+  data.units.push(chemAb.unit);
+  data.questions.push(...chemAb.questions);
   const hk = buildHyakuninPack();
   data.units.push(hk.unit);
   data.questions.push(...hk.questions);
@@ -5442,6 +5522,13 @@ function loadState() {
       state.questions.push(...pack.questions);
       migrated = true;
     }
+    // 化学基礎 酸と塩基 (12問) 追加マイグレーション (既存ユーザー向け)
+    if (!state.units.some(u => u.id === 'u-chem-acid-base')) {
+      const pack = buildChemAcidBasePack();
+      state.units.push(pack.unit);
+      state.questions.push(...pack.questions);
+      migrated = true;
+    }
     // 中学英語 基数・序数 追加マイグレーション (既存ユーザー向け)
     if (!state.units.some(u => u.id === 'u-eng-cardinal')) {
       const pack = buildEnglishCardinalPack();
@@ -5473,6 +5560,7 @@ function loadState() {
       const defaults = {
         english:      ['p1', 'p2'],
         'english-db': ['p2'],
+        'chem-basic': ['p2'],
         kanji:        ['p1'],
         social:       ['p1'],
         science:      ['p1'],
@@ -5486,6 +5574,10 @@ function loadState() {
       });
       if (!state.subjects.some(s => s.id === 'english-db')) {
         state.subjects.push({ id: 'english-db', name: '英語DB', profileIds: ['p2'] });
+        migrated = true;
+      }
+      if (!state.subjects.some(s => s.id === 'chem-basic')) {
+        state.subjects.push({ id: 'chem-basic', name: '化学基礎', profileIds: ['p2'] });
         migrated = true;
       }
     }
@@ -5906,6 +5998,9 @@ function showScreen(name, params = {}, replace = false) {
     case 'edb-direction':   renderEdbDirection(params); break;
     case 'edb-batch':       renderEdbBatch(); break;
     case 'edb-list':        renderEdbList(params); break;
+    case 'chem-direction':  renderChemDirection(params); break;
+    case 'chem-batch':      renderChemBatch(); break;
+    case 'chem-list':       renderChemList(params); break;
     case 'hyakunin-direction': renderHyakuninDirection(params); break;
     case 'hyakunin-quiz':   renderHyakuninQuiz(); break;
     case 'hyakunin-test':   renderHyakuninTest(); break;
@@ -5943,6 +6038,9 @@ function goBack() {
     case 'edb-direction':   renderEdbDirection(prev.params); break;
     case 'edb-batch':       renderEdbBatch(); break;
     case 'edb-list':        renderEdbList(prev.params); break;
+    case 'chem-direction':  renderChemDirection(prev.params); break;
+    case 'chem-batch':      renderChemBatch(); break;
+    case 'chem-list':       renderChemList(prev.params); break;
     case 'hyakunin-direction': renderHyakuninDirection(prev.params); break;
     case 'hyakunin-quiz':   renderHyakuninQuiz(); break;
     case 'hyakunin-test':   renderHyakuninTest(); break;
@@ -6006,7 +6104,7 @@ function renderHome() {
   if (!profile) { showScreen('profile-select', {}, true); return; }
 
   const initial = (profile.name || '?').charAt(0);
-  const subjectIcons = { english: '🌐', 'english-db': '🗂', kanji: '✏️', social: '🗾', science: '🔬', hyakunin: '🎴' };
+  const subjectIcons = { english: '🌐', 'english-db': '🗂', 'chem-basic': '⚗️', kanji: '✏️', social: '🗾', science: '🔬', hyakunin: '🎴' };
 
   const visibleSubjects = state.subjects.filter(s => !s.profileIds || s.profileIds.includes(currentProfileId));
   const tiles = visibleSubjects.map(s => {
@@ -6285,6 +6383,8 @@ function renderUnits(subjectId) {
     } else if (subjectId === 'english-db') {
       const isTest = scope.subjectId || scope.lesson;
       showScreen('edb-direction', { subjectId, ...scope, reviewMode: unitsReviewMode, testMode: !!isTest });
+    } else if (subjectId === 'chem-basic') {
+      showScreen('chem-direction', { subjectId, ...scope, reviewMode: unitsReviewMode });
     } else if (subjectId === 'hyakunin') {
       showScreen('hyakunin-direction', { subjectId, ...scope });
     } else {
@@ -6341,6 +6441,277 @@ function renderUnits(subjectId) {
       };
     });
   }
+}
+
+/* ------------------------------------------------------------
+   化学基礎: 表形式暗記 (酸と塩基など)
+   ------------------------------------------------------------ */
+// 化学式の <sub>/<sup> を保った HTML をエスケープなしで返す (信頼できる自前データのみ)
+function chemFormula(s) { return s || ''; }
+// 各セル表示。hide=true なら伏せる (下線でクリック領域を作る)
+function chemCell(text, hide) {
+  if (hide) return '<span class="chem-blank">？</span>';
+  return text || '';
+}
+
+const CHEM_MODES = [
+  { id: 'chem-name-to-formula',   label: '📝 名称 → 化学式',   sub: '名称から化学式を答える', show: ['name'], ask: ['formula'] },
+  { id: 'chem-formula-to-name',   label: '📖 化学式 → 名称',   sub: '化学式から名称を答える', show: ['formula'], ask: ['name'] },
+  { id: 'chem-name-to-valence',   label: '🔢 名称 → 価数',     sub: '名称から価数を答える', show: ['name', 'formula'], ask: ['valence'] },
+  { id: 'chem-name-to-strength',  label: '💪 名称 → 強弱',     sub: '強酸/弱酸/強塩基/弱塩基を答える', show: ['name', 'formula'], ask: ['strength'] },
+  { id: 'chem-name-to-ioneq',     label: '⚗️ 名称 → 電離式',   sub: '電離を表す反応式を答える', show: ['name', 'formula', 'valence'], ask: ['ionEq'] },
+  { id: 'chem-ioneq-to-name',     label: '🧪 電離式 → 名称',   sub: '電離式から名称を答える', show: ['ionEq'], ask: ['name', 'formula'] },
+  { id: 'chem-full-recall',       label: '🎯 総合 (名称のみ表示)', sub: '化学式・価数・電離式・強弱をすべて答える', show: ['name'], ask: ['formula', 'valence', 'ionEq', 'strength'] }
+];
+
+function renderChemDirection(params) {
+  const label = params && params.label ? params.label : '化学基礎';
+  const reviewMode = !!(params && params.reviewMode);
+
+  const inScope = state.questions.filter(q => q.type === 'chemtable' && inUnitScope(q, params));
+  const catCounts = { acid: inScope.filter(q => q.cat === 'acid').length, base: inScope.filter(q => q.cat === 'base').length };
+  const rangeSub = `対象: ${inScope.length}項目 (酸 ${catCounts.acid} / 塩基 ${catCounts.base})`;
+
+  const modeBtnsHtml = CHEM_MODES.map(m => {
+    const reviewCnt = reviewMode ? inScope.filter(q => getLatestResult(q.id, m.id, currentProfileId) !== 'o').length : null;
+    const sub = reviewMode ? '復習対象 ' + reviewCnt + '問 / 全' + inScope.length + '問' : m.sub;
+    return `
+      <button class="list-item list-item-chevron" data-mode="${m.id}">
+        <div class="list-item-main">
+          <div class="list-item-title">${m.label}${reviewMode ? ' (復習)' : ''}</div>
+          <div class="list-item-subtitle">${escapeHtml(sub)}</div>
+        </div>
+      </button>`;
+  }).join('');
+
+  document.getElementById('screen-chem-direction').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="chd-back">‹ 戻る</button>
+      <span class="nav-title">${escapeHtml(label)}</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="content">
+      <div class="section-label">${escapeHtml(rangeSub)}</div>
+      <div class="section-label">出題範囲</div>
+      <div class="radio-group" id="chd-mode">
+        <label class="radio-item ${!reviewMode ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="chdmode" value="all" hidden>全問</label>
+        <label class="radio-item ${reviewMode ? 'selected' : ''}"><span class="radio-dot"></span><input type="radio" name="chdmode" value="review" hidden>○以外のみ (復習)</label>
+      </div>
+      <div class="section-label">出題のしかた</div>
+      <div class="list-group">${modeBtnsHtml}</div>
+      <div class="section-label">この範囲を確認する</div>
+      <div class="list-group">
+        <button class="list-item list-item-chevron" id="chd-list">
+          <div class="list-item-main">
+            <div class="list-item-title">📋 一覧表示 (表を全部見る)</div>
+            <div class="list-item-subtitle">名称・化学式・価数・電離式・強弱をまとめて確認</div>
+          </div>
+        </button>
+      </div>
+    </div>`;
+
+  document.getElementById('chd-back').onclick = goBack;
+  document.querySelectorAll('#chd-mode .radio-item').forEach(item => {
+    item.onclick = () => {
+      params.reviewMode = item.querySelector('input').value === 'review';
+      renderChemDirection(params);
+    };
+  });
+  document.querySelectorAll('#screen-chem-direction .list-item[data-mode]').forEach(b => {
+    b.onclick = () => startChemBatch({ ...params, mode: b.dataset.mode, reviewMode: !!params.reviewMode });
+  });
+  document.getElementById('chd-list').onclick = () => showScreen('chem-list', params);
+}
+
+const CHEM_BATCH_SIZE = 5;
+
+function startChemBatch({ unitId = null, unitIds = null, subjectId = null, mode, reviewMode = false, lesson = null }) {
+  let pool = state.questions.filter(q => q.type === 'chemtable' && isUnitForProfile(getUnit(q.unitId)));
+  if (unitIds && unitIds.length) pool = pool.filter(q => unitIds.includes(q.unitId));
+  else if (unitId) pool = pool.filter(q => q.unitId === unitId);
+  if (subjectId) pool = pool.filter(q => {
+    const u = getUnit(q.unitId);
+    return u && u.subjectId === subjectId;
+  });
+  if (reviewMode) {
+    pool = pool.filter(q => getLatestResult(q.id, mode, currentProfileId) !== 'o');
+  }
+  if (pool.length === 0) {
+    showAlert('問題がありません', reviewMode
+      ? 'この範囲には「○以外」の問題がありません。'
+      : 'この範囲には項目がありません。');
+    return;
+  }
+  studySession = {
+    unitId, unitIds, subjectId, mode, direction: mode, reviewMode,
+    questions: shuffle(pool),
+    batchIndex: 0,
+    revealed: {},
+    graded: {},
+    results: [],
+    startedAt: Date.now()
+  };
+  showScreen('chem-batch');
+}
+
+// 表形式で1行を描画。columns={name,formula,valence,ionEq,strength}
+function chemRowHtml(q, showSet, askSet, revealed) {
+  const cells = [
+    { key: 'name',     label: '名称',   value: q.name },
+    { key: 'formula',  label: '化学式', value: q.formula,  isHtml: true },
+    { key: 'valence',  label: '価数',   value: q.valence },
+    { key: 'ionEq',    label: '電離式', value: q.ionEq,    isHtml: true },
+    { key: 'strength', label: '強弱',   value: q.strength }
+  ];
+  return `
+    <table class="chem-tbl">
+      ${cells.map(c => {
+        const isShown = showSet.has(c.key);
+        const isAsk = askSet.has(c.key);
+        let cellHtml;
+        if (isShown) {
+          cellHtml = c.isHtml ? (c.value || '') : escapeHtml(c.value || '');
+        } else if (isAsk) {
+          if (revealed) cellHtml = '<span class="chem-reveal">' + (c.isHtml ? (c.value || '') : escapeHtml(c.value || '')) + '</span>';
+          else cellHtml = '<span class="chem-blank">？</span>';
+        } else {
+          // 表示も出題対象でもない = 参考として伏せる
+          if (revealed) cellHtml = '<span style="color:var(--text-secondary)">' + (c.isHtml ? (c.value || '') : escapeHtml(c.value || '')) + '</span>';
+          else cellHtml = '<span class="chem-blank chem-blank-sub">-</span>';
+        }
+        return `<tr><th>${c.label}</th><td>${cellHtml}</td></tr>`;
+      }).join('')}
+    </table>`;
+}
+
+function renderChemBatch() {
+  const s = studySession;
+  if (!s) { goBack(); return; }
+  if (s.batchIndex >= s.questions.length) { showScreen('result', {}, true); return; }
+  const batch = s.questions.slice(s.batchIndex, s.batchIndex + CHEM_BATCH_SIZE);
+  const totalBatches = Math.ceil(s.questions.length / CHEM_BATCH_SIZE);
+  const currentBatch = Math.floor(s.batchIndex / CHEM_BATCH_SIZE) + 1;
+  const modeDef = CHEM_MODES.find(m => m.id === s.mode) || CHEM_MODES[0];
+  const showSet = new Set(modeDef.show);
+  const askSet = new Set(modeDef.ask);
+
+  const rows = batch.map(q => {
+    const revealed = !!s.revealed[q.id];
+    const grade = s.graded[q.id];
+    const gradeArea = grade
+      ? `<div class="edb-graded-mark eb-${grade}">${grade === 'o' ? '○' : grade === 'd' ? '△' : '×'}</div>`
+      : (revealed
+          ? `<div class="edb-grade-row">
+              <button class="edb-grade-btn x" data-id="${q.id}" data-r="x">×</button>
+              <button class="edb-grade-btn d" data-id="${q.id}" data-r="d">△</button>
+              <button class="edb-grade-btn o" data-id="${q.id}" data-r="o">○</button>
+            </div>`
+          : `<button class="btn secondary chem-reveal-btn" data-id="${q.id}" style="margin-top:8px">答えを見る</button>`);
+    return `
+      <div class="edb-row" data-id="${q.id}">
+        <div class="edb-top">
+          <span class="edb-mode-pill">${q.cat === 'acid' ? '酸' : '塩基'}</span>
+        </div>
+        ${chemRowHtml(q, showSet, askSet, revealed)}
+        ${gradeArea}
+      </div>`;
+  }).join('');
+
+  const allGraded = batch.every(q => s.graded[q.id]);
+  const isLast = s.batchIndex + CHEM_BATCH_SIZE >= s.questions.length;
+  const remaining = s.questions.length - s.batchIndex - CHEM_BATCH_SIZE;
+  const nextLabel = isLast ? '結果を見る' : '次の' + Math.min(CHEM_BATCH_SIZE, remaining) + '問へ';
+
+  document.getElementById('screen-chem-batch').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="chb-quit">中断</button>
+      <span class="nav-title">${escapeHtml(modeDef.label)}</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="study-header">
+      <div class="study-progress">${currentBatch} / ${totalBatches} グループ</div>
+    </div>
+    <div class="content">
+      ${rows}
+      <button class="btn" id="chb-next" ${!allGraded ? 'disabled style="opacity:0.5"' : ''}>${escapeHtml(nextLabel)}</button>
+    </div>`;
+
+  document.querySelectorAll('#screen-chem-batch .chem-reveal-btn').forEach(b => {
+    b.onclick = (e) => {
+      e.stopPropagation();
+      s.revealed[b.dataset.id] = true;
+      renderChemBatch();
+    };
+  });
+  document.querySelectorAll('#screen-chem-batch .edb-grade-btn').forEach(b => {
+    b.onclick = (e) => {
+      e.stopPropagation();
+      const id = b.dataset.id;
+      const r = b.dataset.r;
+      s.graded[id] = r;
+      s.results.push({ questionId: id, result: r });
+      state.history[currentProfileId].push({
+        questionId: id,
+        profileId: currentProfileId,
+        result: r,
+        direction: s.mode,
+        answeredAt: new Date().toISOString()
+      });
+      saveState();
+      renderChemBatch();
+    };
+  });
+  document.getElementById('chb-next').onclick = () => {
+    if (!allGraded) return;
+    s.batchIndex += CHEM_BATCH_SIZE;
+    if (s.batchIndex >= s.questions.length) showScreen('result', {}, true);
+    else renderChemBatch();
+  };
+  document.getElementById('chb-quit').onclick = async () => {
+    const ok = await showConfirm('学習を中断', 'これまでの結果は記録されています。中断しますか?', { okText: '中断', danger: true });
+    if (ok) { studySession = null; goBack(); }
+  };
+}
+
+function renderChemList(params) {
+  const label = params && params.label ? params.label : '化学基礎';
+  let pool = state.questions.filter(q => q.type === 'chemtable' && isUnitForProfile(getUnit(q.unitId)) && inUnitScope(q, params || {}));
+
+  const groupHtml = (title, items) => {
+    if (items.length === 0) return '';
+    const rows = items.map(q => `
+      <tr>
+        <td class="chem-list-name">${escapeHtml(q.name)}</td>
+        <td class="chem-list-formula">${q.formula}</td>
+        <td class="chem-list-valence">${escapeHtml(q.valence)}</td>
+        <td class="chem-list-ioneq">${q.ionEq}</td>
+        <td class="chem-list-strength">${escapeHtml(q.strength)}</td>
+      </tr>`).join('');
+    return `
+      <div class="section-label">${escapeHtml(title)}</div>
+      <div class="chem-list-wrap">
+        <table class="chem-list-tbl">
+          <thead>
+            <tr><th>名称</th><th>化学式</th><th>価数</th><th>電離式</th><th>強弱</th></tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  };
+  const acids = pool.filter(q => q.cat === 'acid');
+  const bases = pool.filter(q => q.cat === 'base');
+  const body = pool.length === 0
+    ? '<div class="card" style="text-align:center;color:var(--text-secondary)">この範囲に項目がありません</div>'
+    : (groupHtml('酸 ' + acids.length + '種', acids) + groupHtml('塩基 ' + bases.length + '種', bases));
+
+  document.getElementById('screen-chem-list').innerHTML = `
+    <div class="nav-bar">
+      <button class="nav-button" id="chl-back">‹ 戻る</button>
+      <span class="nav-title">${escapeHtml(label)} 一覧</span>
+      <span class="nav-spacer"></span>
+    </div>
+    <div class="content">${body}</div>`;
+  document.getElementById('chl-back').onclick = goBack;
 }
 
 /* ------------------------------------------------------------
@@ -7941,6 +8312,13 @@ function renderResult() {
           <div class="result-mistake-a">→ ${m.edb.answer.html}</div>
         </div>`;
         }
+        if (m.q && m.q.type === 'chemtable') {
+          return `
+        <div class="result-mistake">
+          <div class="result-mistake-q">${m.mark === 'd' ? '△' : '×'} ${escapeHtml(m.q.name)} (${m.q.cat === 'acid' ? '酸' : '塩基'})</div>
+          <div class="result-mistake-a">→ ${m.q.formula} ・ ${escapeHtml(m.q.valence)} ・ ${m.q.ionEq} ・ ${escapeHtml(m.q.strength)}</div>
+        </div>`;
+        }
         const d = questionDisplay(m.q, s.direction);
         return `
         <div class="result-mistake">
@@ -7988,12 +8366,14 @@ function renderResult() {
   const directionScreenName = () => {
     const mode = s.mode || '';
     if (mode.startsWith('edb-')) return 'edb-direction';
+    if (mode.startsWith('chem-')) return 'chem-direction';
     if (mode === 'en-ja' || mode === 'ja-en' || mode === 'en-def-en' || mode === 'listen') return 'english-direction';
     if (mode === 'hk-graded' || mode === 'progressive' || mode === 'blank' || mode === 'meaning') return 'hyakunin-direction';
     // 漢字 or その他
     const u = s.unitId ? getUnit(s.unitId) : null;
     const subId = s.subjectId || (u && u.subjectId);
     if (subId === 'kanji' || (u && u.subjectId === 'kanji')) return 'study-direction';
+    if (subId === 'chem-basic') return 'chem-direction';
     if (subId === 'hyakunin') return 'hyakunin-direction';
     return null; // 社会/理科 は direction 画面がない
   };
@@ -8008,6 +8388,8 @@ function renderResult() {
       startEnglishListen(params);
     } else if (mode && mode.startsWith('edb-')) {
       startEdbBatch({ ...params, mode });
+    } else if (mode && mode.startsWith('chem-')) {
+      startChemBatch({ ...params, mode });
     } else if (mode === 'hk-graded') {
       startHyakuninGraded(params);
     } else {
