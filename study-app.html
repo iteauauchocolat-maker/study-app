@@ -6802,19 +6802,31 @@ function renderUnits(subjectId) {
 
   const inMulti = unitsMultiSelectMode;
   const items = units.map(u => {
-    const qcount = state.questions.filter(q => q.unitId === u.id).length;
+    const qs = state.questions.filter(q => q.unitId === u.id);
+    const qcount = qs.length;
     const acc = getUnitAccuracy(u.id, currentProfileId);
     const reviewCount = unitsReviewMode ? countReviewQuestions(q => q.unitId === u.id) : null;
     const subtitle = unitsReviewMode
       ? `復習対象 ${reviewCount}問 / 全${qcount}問`
       : `${qcount}問 ${acc != null ? '・正答率 ' + acc + '%' : '・未学習'}`;
+    // 英語DB は単元名の後ろに通し番号レンジを付ける
+    let displayName = u.name;
+    if (u.subjectId === 'english-db') {
+      const serials = qs.map(q => q.serial).filter(n => typeof n === 'number');
+      if (serials.length) {
+        const lo = Math.min.apply(null, serials);
+        const hi = Math.max.apply(null, serials);
+        const range = lo === hi ? String(lo) : (lo + '〜' + hi);
+        displayName = u.name + ' (' + range + ')';
+      }
+    }
     if (inMulti) {
       const checked = unitsSelectedIds.has(u.id);
       return `
         <button class="list-item multi-select-item ${checked ? 'is-checked' : ''}" data-uid="${u.id}" data-multi="1">
           <div class="multi-check">${checked ? '☑' : '☐'}</div>
           <div class="list-item-main">
-            <div class="list-item-title">${escapeHtml(u.name)}</div>
+            <div class="list-item-title">${escapeHtml(displayName)}</div>
             <div class="list-item-subtitle">${subtitle}</div>
           </div>
         </button>`;
@@ -6822,7 +6834,7 @@ function renderUnits(subjectId) {
     return `
       <button class="list-item list-item-chevron" data-uid="${u.id}">
         <div class="list-item-main">
-          <div class="list-item-title">${escapeHtml(u.name)}</div>
+          <div class="list-item-title">${escapeHtml(displayName)}</div>
           <div class="list-item-subtitle">${subtitle}</div>
         </div>
       </button>`;
