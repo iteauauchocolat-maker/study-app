@@ -5176,6 +5176,566 @@ const HS_EDB_PACKS = [
         meanings: [{ idx: 1, ja: '型、版' }],
         examples: [{ ja: 'これは古い[[バージョン]]のソフトウェアだ。', en: 'This is an old [[version]] of the software.' }] }
     ]
+  },
+  // ===== L3 「先頭に立って導く」ことなどを表す語 =====
+  {
+    category: { id: 'u-edb-l3-lead', name: 'L3 「先頭に立って導く」ことなどを表す語', lesson: 'L3', lessonName: '単語', catType: 'theme', catKey: '「先頭に立って導く」ことなどを表す語', catOrder: 1, meanings: [], intro: '' },
+    entries: [
+      { serial: 804, headEn: 'lead', pos: '動/名',
+        hints: { irregular: '<led - led>' },
+        meanings: [
+          { idx: 1, label: 'ⓐ', ja: '①を導く、の先頭に立つ、を案内する', pos: '動' },
+          { idx: 2, label: 'ⓑ', ja: '②(道などが)通じる', pos: '動' },
+          { idx: 3, ja: '首位、リード、手本', pos: '名' }
+        ],
+        examples: [
+          { label: 'ⓐ', ja: '彼は決勝でチームを[[優勝に導いた]]。', en: 'He [[led]] the team to victory in the final.' },
+          { label: 'ⓑ', ja: 'この道は湖に[[通じている]]。', en: 'This road [[leads]] to the lake.' }
+        ] },
+      { serial: 805, headEn: 'conduct', pos: '動/名',
+        meanings: [
+          { idx: 1, ja: '①を行う、を運営する ②を指揮する', pos: '動' },
+          { idx: 2, ja: '行為、ふるまい / 運営', pos: '名' }
+        ],
+        examples: [{ ja: '私たちは高校生を対象とした調査を[[行っ]]ている最中である。', en: 'We are [[conducting]] a survey of high school students.' }],
+        related: [{ kind: 'deriv', en: 'conductor', ja: '①指揮者 ②車掌', pos: '名' }] },
+      { serial: 806, headEn: 'direct', pos: '動/形/副',
+        meanings: [
+          { idx: 1, ja: '①を向ける ②を指揮する ③に道を教える', pos: '動' },
+          { idx: 2, ja: '直接の、まっすぐな', pos: '形' },
+          { idx: 3, ja: 'じかに', pos: '副' }
+        ],
+        examples: [{ ja: '私はその男性に注意を[[向けた]]。', en: 'I [[directed]] my attention to the man.' }],
+        related: [{ kind: 'deriv', en: 'direction', ja: '①指揮 ②方向', pos: '名' }] },
+      { serial: 807, headEn: 'influence', pos: '動/名',
+        meanings: [
+          { idx: 1, label: 'ⓐ', ja: 'に(間接的な)影響を与える', pos: '動' },
+          { idx: 2, label: 'ⓑ', ja: '影響、影響力', pos: '名' }
+        ],
+        examples: [
+          { label: 'ⓐ', ja: '子どもは親に大きく[[影響を与えられ]]る。', en: 'Children are greatly [[influenced]] by their parents.' },
+          { label: 'ⓑ', ja: '親は子どもに大きな[[影響力]]を持つ。', en: 'Parents have a great [[influence]] on their children.' }
+        ],
+        related: [{ kind: 'deriv', en: 'influential', ja: '影響力のある、有力な', pos: '形' }] },
+      { serial: 808, headEn: 'affect', pos: '動',
+        meanings: [{ idx: 1, ja: '①に(直接的な)影響を与える、(病気が)冒す ②を感動させる' }],
+        examples: [{ ja: 'その戦争は世界の食料供給に[[影響を与えた]]。', en: "The war [[affected]] the world's food supply." }],
+        related: [{ kind: 'deriv', en: 'affection', ja: '愛情、好意', pos: '名' }] },
+      { serial: 809, headEn: 'exert', pos: '動',
+        meanings: [{ idx: 1, ja: '(力・影響力など)を使う、に及ぼす' }],
+        examples: [{ ja: '彼らは試合に勝つため自分たちの全力を[[使った]]。', en: 'They [[exerted]] their full power to win the game.' }],
+        related: [{ kind: 'colloc', en: 'exert oneself', ja: '努力する' }] }
+    ]
+  },
+  // ===== L3 つづりと意味が混乱しやすい形容詞 (1)(2)(3) 統合 =====
+  {
+    category: { id: 'u-edb-l3-confuse-adj', name: 'L3 つづりと意味が混乱しやすい形容詞', lesson: 'L3', lessonName: '単語', catType: 'theme', catKey: 'つづりと意味が混乱しやすい形容詞', catOrder: 2, meanings: [], intro: '語源が同じ形容詞でも、語尾(接尾辞)によって意味が変わってくるものがある。つづりと意味が混乱しないように、例文を通して整理しておきたい。代表的な接尾辞は、-able / -ible「〜できる」、-ful「〜に満ちた」、-ous「〜の多い」、-ic「〜に関係がある」、-ive「〜の性質を持つ」、-ate「〜された状態の」など。' },
+    entries: [
+      { serial: 810, headEn: 'favorite', pos: '形/名',
+        meanings: [
+          { idx: 1, ja: 'お気に入りの、いちばん好きな', pos: '形' },
+          { idx: 2, ja: 'お気に入りの人(もの)', pos: '名' }
+        ],
+        examples: [{ ja: 'あなたが[[いちばん好きな]]色は何ですか。', en: "What's your [[favorite]] color?" }],
+        related: [{ kind: 'deriv', en: 'favor', ja: '好意', pos: '名' }] },
+      { serial: 811, headEn: 'favorable', pos: '形',
+        meanings: [{ idx: 1, ja: '①(返事などが)好意的な、賛成の ②好都合な、有利な' }],
+        examples: [{ ja: 'その映画は[[好意的な]]批評を受けた。', en: 'The film received [[favorable]] reviews.' }] },
+      { serial: 812, headEn: 'industrial', pos: '形',
+        meanings: [{ idx: 1, ja: '産業の、工業の' }],
+        examples: [{ ja: '[[産業]]廃棄物は慎重に取り扱われなければならない。', en: '[[Industrial]] waste must be treated carefully.' }],
+        related: [
+          { kind: 'colloc', en: 'Industrial Revolution', ja: '産業革命' },
+          { kind: 'deriv', en: 'industrialized', ja: '工業化した、産業化した', pos: '形' }
+        ] },
+      { serial: 813, headEn: 'industrious', pos: '形',
+        meanings: [{ idx: 1, ja: '勤勉な、よく働く (= hardworking)' }],
+        examples: [{ ja: 'その学生はとてもまじめで[[勤勉]]だった。', en: 'The student was very serious and [[industrious]].' }] },
+      { serial: 814, headEn: 'sensitive', pos: '形',
+        meanings: [{ idx: 1, ja: '敏感な、(人が)傷つきやすい、傷ついて' }],
+        examples: [{ ja: 'もっと他人の気持ちに[[敏感になりなさい]]。', en: 'Be more [[sensitive]] to the feelings of others.' }],
+        related: [
+          { kind: 'colloc', en: 'be sensitive to ...', ja: '…に敏感である' },
+          { kind: 'deriv', en: 'sense', ja: '感覚、分別', pos: '名' }
+        ] },
+      { serial: 815, headEn: 'sensible', pos: '形',
+        meanings: [{ idx: 1, ja: '分別のある、賢明な' }],
+        examples: [{ ja: 'いつも確かな判断をするので、彼女はとても[[分別がある]]ように思われる。', en: 'She seems very [[sensible]] because she always shows good judgment.' }] },
+      { serial: 823, headEn: 'successful', pos: '形',
+        meanings: [{ idx: 1, ja: '成功した、うまくいっている' }],
+        examples: [{ ja: '国際スポーツイベントで[[成功した]]のですか。', en: 'Were you [[successful]] at the international sports event?' }],
+        related: [
+          { kind: 'deriv', en: 'success', ja: '成功', pos: '名' },
+          { kind: 'deriv', en: 'succeed', ja: '①成功する ②を継ぐ', pos: '動' }
+        ] },
+      { serial: 824, headEn: 'successive', pos: '形',
+        meanings: [{ idx: 1, ja: '連続の' }],
+        examples: [{ ja: '私たちには5月に[[連続した]]休日(連休)がある。', en: 'We have [[successive]] holidays in May.' }],
+        related: [{ kind: 'deriv', en: 'succession', ja: '連続、継承', pos: '名' }] },
+      { serial: 825, headEn: 'literate', pos: '形',
+        meanings: [{ idx: 1, ja: '(人が)読み書きができる (↔ illiterate 読み書きができない)' }],
+        examples: [{ ja: '当時はほとんどの人が[[読み書きできなかった]]。', en: 'Most people were not [[literate]] in those days.' }],
+        related: [{ kind: 'deriv', en: 'literacy', ja: '読み書きの能力', pos: '名' }] },
+      { serial: 826, headEn: 'literal', pos: '形',
+        meanings: [{ idx: 1, ja: '文字どおりの、逐語的な、実際の' }],
+        examples: [{ ja: '私はその言葉の[[文字どおりの]]意味を使った。', en: 'I used the [[literal]] meaning of the word.' }],
+        related: [{ kind: 'deriv', en: 'literally', ja: '文字どおりに(は)', pos: '副' }] },
+      { serial: 827, headEn: 'literary', pos: '形',
+        meanings: [{ idx: 1, ja: '文学の、文芸の' }],
+        examples: [{ ja: '彼は[[文学]]界では非常に有名だ。', en: 'He is very famous in the [[literary]] world.' }],
+        related: [{ kind: 'deriv', en: 'literature', ja: '文学', pos: '名' }] },
+      { serial: 828, headEn: 'healthful', pos: '形',
+        meanings: [{ idx: 1, ja: '健康によい、健康を増進させるような' }],
+        examples: [{ ja: '毎日[[健康によい]]物を食べることが大切だ。', en: "It's important to eat [[healthful]] foods every day." }],
+        note: '食物・場所などに用いられる。' },
+      { serial: 829, headEn: 'healthy', pos: '形',
+        meanings: [{ idx: 1, ja: '健康な、健全な、健康によい' }],
+        examples: [{ ja: '私の祖父母はとても[[健康的な]]生活を送っている。', en: 'My grandparents lead a very [[healthy]] life.' }],
+        note: '肉体的・精神的な状態を表し、人間・動植物・組織・制度などに用いられる。' },
+      { serial: 830, headEn: 'invaluable', pos: '形',
+        meanings: [{ idx: 1, ja: '非常に価値のある、大いに役立つ (↔ valueless)' }],
+        examples: [{ ja: 'あなたの助言は私にとって[[非常に価値のある]]ものだった。', en: 'Your advice was [[invaluable]] to me.' }] },
+      { serial: 831, headEn: 'valueless', pos: '形',
+        meanings: [{ idx: 1, ja: '価値のない (↔ valuable、invaluable)' }],
+        examples: [{ ja: 'その絵はまったく[[価値のない]]ものであると判明した。', en: 'The painting was found to be completely [[valueless]].' }] },
+      { serial: 832, headEn: 'social', pos: '形',
+        meanings: [{ idx: 1, ja: '社会の、社交の' }],
+        examples: [{ ja: '私たちは皆、[[社会]]の問題をどう解決するか考えるべきだ。', en: 'We should all consider how to solve [[social]] problems.' }],
+        related: [{ kind: 'deriv', en: 'socially', ja: '社会的に、社交上', pos: '副' }] },
+      { serial: 833, headEn: 'sociable', pos: '形',
+        meanings: [{ idx: 1, ja: '社交的な' }],
+        examples: [{ ja: '姉(妹)は私たちの家族の中でもっとも[[社交的]]だ。', en: 'My sister is the most [[sociable]] in our family.' }] }
+    ]
+  },
+  // ===== L3 「示す」「引きつける」ことなどを表す語 =====
+  {
+    category: { id: 'u-edb-l3-show', name: 'L3 「示す」「引きつける」ことなどを表す語', lesson: 'L3', lessonName: '単語', catType: 'theme', catKey: '「示す」「引きつける」ことなどを表す語', catOrder: 3, meanings: [], intro: '' },
+    entries: [
+      { serial: 816, headEn: 'display', pos: '動/名',
+        meanings: [
+          { idx: 1, ja: '①を陳列する、を示す ②を画面に表示する', pos: '動' },
+          { idx: 2, ja: '①陳列、展示 ②ディスプレー', pos: '名' }
+        ],
+        examples: [{ ja: 'その書店の入り口近くには人気の本が[[陳列されている]]。', en: 'Popular books are [[displayed]] near the entrance of the bookstore.' }] },
+      { serial: 817, headEn: 'arrange', pos: '動',
+        meanings: [
+          { idx: 1, label: 'ⓐ', ja: '①を手配する、を取り決める' },
+          { idx: 2, label: 'ⓑ', ja: '②を配置する、をきちんと並べる' }
+        ],
+        examples: [
+          { label: 'ⓐ', ja: 'ベスはメアリーのための誕生会を[[手配した]]。', en: 'Beth [[arranged]] a birthday party for Mary.' },
+          { label: 'ⓑ', ja: '本を大きさごとに[[並べて]]ください。', en: 'Please [[arrange]] the books by sizes.' }
+        ],
+        related: [{ kind: 'deriv', en: 'arrangement', ja: '①手配 ②協定', pos: '名' }] },
+      { serial: 818, headEn: 'imitate', pos: '動',
+        meanings: [{ idx: 1, ja: '①をまねる、を模倣する ②を見習う' }],
+        examples: [{ ja: 'ジャックは先生の声を[[まねる]]のが上手だ。', en: "Jack is good at [[imitating]] his teacher's voice." }],
+        related: [{ kind: 'deriv', en: 'imitation', ja: '模造品、にせもの', pos: '名' }] },
+      { serial: 819, headEn: 'indicate', pos: '動',
+        meanings: [{ idx: 1, ja: '①を示す ②を暗示する' }],
+        examples: [{ ja: 'その研究は天候が人の感情に影響を与えることを[[示している]]。', en: 'The study [[indicates]] that weather affects human feelings.' }],
+        related: [{ kind: 'deriv', en: 'indication', ja: '暗示、(ある事の)しるし', pos: '名' }] },
+      { serial: 820, headEn: 'behave', pos: '動',
+        meanings: [{ idx: 1, ja: 'ふるまう' }],
+        examples: [{ ja: 'あなたはなぜ人前でそんなふうに[[ふるまった]]んですか。', en: 'Why did you [[behave]] like that in public?' }],
+        related: [
+          { kind: 'colloc', en: 'behave oneself', ja: '行儀よくふるまう' },
+          { kind: 'deriv', en: 'behavior / (英)behaviour', ja: '行動、態度', pos: '名' }
+        ] },
+      { serial: 821, headEn: 'attract', pos: '動',
+        meanings: [{ idx: 1, ja: 'を引きつける、を魅惑する' }],
+        examples: [{ ja: 'どうしたらもっと多くの客を我々のレストランに[[引きつける]]ことができるだろうか。', en: 'How can we [[attract]] more customers to our restaurant?' }],
+        related: [{ kind: 'deriv', en: 'attractive', ja: '魅力的な', pos: '形' }] },
+      { serial: 822, headEn: 'entertain', pos: '動',
+        meanings: [{ idx: 1, ja: 'を楽しませる、をもてなす' }],
+        examples: [{ ja: '私たちは自宅で客を[[もてなす]]のが好きだ。', en: 'We like to [[entertain]] guests at home.' }],
+        related: [
+          { kind: 'deriv', en: 'entertainer', ja: '人を楽しませる人、芸能人', pos: '名' },
+          { kind: 'deriv', en: 'entertainment', ja: '娯楽、エンターテイメント', pos: '名' }
+        ] }
+    ]
+  },
+  // ===== L3 注意すべき形容詞・副詞 =====
+  {
+    category: { id: 'u-edb-l3-adj-adv', name: 'L3 注意すべき形容詞・副詞', lesson: 'L3', lessonName: '単語', catType: 'theme', catKey: '注意すべき形容詞・副詞', catOrder: 4, meanings: [], intro: '' },
+    entries: [
+      { serial: 834, headEn: 'minor', pos: '形',
+        meanings: [{ idx: 1, ja: '(程度が)小さな、重要でない、(2つのうち)小さいほうの' }],
+        examples: [{ ja: '彼はその映画では[[重要でない]]役だ。', en: 'He has a [[minor]] role in the movie.' }] },
+      { serial: 835, headEn: 'collective', pos: '形',
+        meanings: [{ idx: 1, ja: '①集団の、全員の ②集合的な、集団的な' }],
+        examples: [{ ja: '世界平和は私たちの[[集団的]]目標である。', en: 'World peace is our [[collective]] goal.' }],
+        related: [{ kind: 'deriv', en: 'collectively', ja: '集団的に、まとめて', pos: '副' }] },
+      { serial: 836, headEn: 'overall', pos: '形/副',
+        meanings: [
+          { idx: 1, ja: '全体の、全般的な', pos: '形' },
+          { idx: 2, ja: '総合で、全体として', pos: '副' }
+        ],
+        examples: [{ ja: 'その本[[全体]]の印象はポジティブなものだった。', en: 'My [[overall]] impression of the book was positive.' }] },
+      { serial: 837, headEn: 'internal', pos: '形',
+        meanings: [{ idx: 1, ja: '内(部)の、本質的な' }],
+        examples: [{ ja: '問題は会社の[[内部]]にある。', en: 'The problem is [[internal]] to the company.' }] },
+      { serial: 838, headEn: 'commonly', pos: '副',
+        meanings: [{ idx: 1, ja: '一般(的)に、通例' }],
+        examples: [{ ja: '英語はアフリカの多くの地域で[[一般的に]]話されている。', en: 'English is [[commonly]] spoken in many parts of Africa.' }] },
+      { serial: 839, headEn: 'totally', pos: '副',
+        meanings: [{ idx: 1, ja: 'まったく、すっかり' }],
+        examples: [{ ja: '昨夜のコンサートは[[まったく]]すばらしかった。', en: 'The concert last night was [[totally]] amazing.' }] },
+      { serial: 840, headEn: 'eventually', pos: '副',
+        meanings: [{ idx: 1, ja: '最後には、ついに' }],
+        examples: [{ ja: '彼は[[最後には]]経営者として成功した。', en: 'He [[eventually]] became a successful business owner.' }] },
+      { serial: 841, headEn: 'primarily', pos: '副',
+        meanings: [{ idx: 1, ja: 'おもに、第一に、本来' }],
+        examples: [{ ja: '私は[[おもに]]仕事でノートパソコンを使っている。', en: 'I [[primarily]] use my laptop for work.' }] }
+    ]
+  },
+  // ===== L3 類似・相似などを表す語 =====
+  {
+    category: { id: 'u-edb-l3-similar', name: 'L3 類似・相似などを表す語', lesson: 'L3', lessonName: '単語', catType: 'theme', catKey: '類似・相似などを表す語', catOrder: 5, meanings: [], intro: '' },
+    entries: [
+      { serial: 842, headEn: 'alike', pos: '形/副',
+        meanings: [
+          { idx: 1, ja: '似ている', pos: '形' },
+          { idx: 2, ja: '同様に、同等に', pos: '副' }
+        ],
+        examples: [{ ja: 'あなたとあなたの姉(妹)は[[そっくりだ]]。', en: 'You and your sister [[look alike]].' }],
+        related: [{ kind: 'colloc', en: 'look alike', ja: 'そっくりである' }] },
+      { serial: 843, headEn: 'similar', pos: '形',
+        meanings: [{ idx: 1, ja: '同類の、よく似た' }],
+        examples: [{ ja: "トムの声は彼の兄(弟)の声に[[よく似ている]]。", en: "Tom's voice [[is similar]] to his brother's." }],
+        related: [
+          { kind: 'colloc', en: 'be similar to ...', ja: '…によく似ている' },
+          { kind: 'deriv', en: 'similarity', ja: '類似', pos: '名' },
+          { kind: 'deriv', en: 'similarly', ja: '類似して、同様に', pos: '副' }
+        ] },
+      { serial: 844, headEn: 'equal', pos: '形/名/動',
+        meanings: [
+          { idx: 1, ja: '①等しい ②平等な', pos: '形' },
+          { idx: 2, ja: '対等の人', pos: '名' },
+          { idx: 3, ja: 'に等しい、に匹敵する', pos: '動' }
+        ],
+        examples: [{ ja: '1,000 グラムは 1 キログラム[[と等しい]]。', en: 'One thousand grams [[is equal]] to one kilogram.' }],
+        related: [{ kind: 'colloc', en: 'be equal to ...', ja: '…に等しい、…に匹敵する' }] },
+      { serial: 845, headEn: 'variety', pos: '名',
+        meanings: [{ idx: 1, ja: '①種類 (= kind) ②多様性、変化' }],
+        examples: [{ ja: '私たちのレストランでは[[さまざまな]]デザートを提供している。', en: 'Our restaurant offers [[a variety of]] desserts.' }],
+        related: [{ kind: 'colloc', en: 'a variety of ...', ja: 'さまざまな…、多様な…' }] }
+    ]
+  },
+  // ===== L3 「意見を述べる」ことなどを表す語 =====
+  {
+    category: { id: 'u-edb-l3-state', name: 'L3 「意見を述べる」ことなどを表す語', lesson: 'L3', lessonName: '単語', catType: 'theme', catKey: '「意見を述べる」ことなどを表す語', catOrder: 6, meanings: [], intro: '' },
+    entries: [
+      { serial: 846, headEn: 'state', pos: '動/名',
+        meanings: [
+          { idx: 1, label: 'ⓐ', ja: 'を(はっきり)述べる、を表明する', pos: '動' },
+          { idx: 2, label: 'ⓑ', ja: '①状態 ②国家、州', pos: '名' }
+        ],
+        examples: [
+          { label: 'ⓐ', ja: '私は彼らに対し書面で自分の意見を[[述べた]]。', en: 'I [[stated]] my opinion to them in writing.' },
+          { label: 'ⓑ', ja: 'そのとき彼は混乱[[状態]]にあった。', en: 'He was in a confused [[state]] at the time.' }
+        ],
+        related: [{ kind: 'deriv', en: 'statement', ja: '声明、陳述', pos: '名' }] },
+      { serial: 847, headEn: 'refer', pos: '動',
+        meanings: [{ idx: 1, ja: '①言及する、述べる ②を参照する' }],
+        examples: [{ ja: 'その俳優はスキャンダルに[[言及する]]のを避けた。', en: 'The actor avoided [[referring to]] the scandal.' }],
+        related: [
+          { kind: 'colloc', en: 'refer to ...', ja: '…に言及する (= mention)' },
+          { kind: 'deriv', en: 'reference', ja: '①言及 ②参照', pos: '名' }
+        ] },
+      { serial: 848, headEn: 'claim', pos: '動/名',
+        meanings: [
+          { idx: 1, ja: '①を主張する ②を要求する、を求める', pos: '動' },
+          { idx: 2, ja: '①主張 ②要求', pos: '名' }
+        ],
+        examples: [{ ja: '彼は原作を自分が書いたと[[主張している]]。', en: 'He [[claims]] that he wrote the original story.' }] },
+      { serial: 849, headEn: 'approve', pos: '動',
+        meanings: [{ idx: 1, ja: '(に)賛成する、(を)認める' }],
+        examples: [{ ja: '私はその種のビデオを見ることに[[賛成し]]ない。', en: "I don't [[approve of]] watching those kinds of videos." }],
+        related: [
+          { kind: 'colloc', en: 'approve of ...', ja: '…に賛成する、…を認める' },
+          { kind: 'deriv', en: 'approval', ja: '賛成、是認', pos: '名' }
+        ] },
+      { serial: 850, headEn: 'recommend', pos: '動',
+        meanings: [{ idx: 1, ja: 'を勧める、を推薦する' }],
+        examples: [{ ja: '専門家の助言を受けることを[[勧めます]]。', en: 'I [[recommend]] that you get some professional advice.' }],
+        related: [{ kind: 'deriv', en: 'recommendation', ja: '勧告、推薦', pos: '名' }] },
+      { serial: 851, headEn: 'reply', pos: '動/名',
+        meanings: [
+          { idx: 1, ja: '返事をする、答える', pos: '動' },
+          { idx: 2, ja: '返事、答え', pos: '名' }
+        ],
+        examples: [{ ja: '私は彼に[[返事をする]]のを忘れた。', en: 'I forgot to [[reply]] to him.' }] },
+      { serial: 852, headEn: 'correct', pos: '動/形',
+        meanings: [
+          { idx: 1, ja: 'を訂正する', pos: '動' },
+          { idx: 2, ja: '正しい、正確な (↔ incorrect)', pos: '形' }
+        ],
+        examples: [{ ja: '彼は私のレポートの中の誤りを[[訂正した]]。', en: 'He [[corrected]] some mistakes in my report.' }],
+        related: [{ kind: 'colloc', en: 'correct answer', ja: '正解' }] },
+      { serial: 853, headEn: 'accept', pos: '動',
+        meanings: [{ idx: 1, ja: '①を受け入れる (↔ refuse を拒む) ②を受け取る' }],
+        examples: [{ ja: '私は彼の謝罪を[[受け入れた]]。', en: 'I [[accepted]] his apology.' }],
+        related: [{ kind: 'deriv', en: 'acceptable', ja: '許容できる', pos: '形' }] },
+      { serial: 854, headEn: 'debate', pos: '動/名',
+        meanings: [
+          { idx: 1, ja: 'を討論する、議論する', pos: '動' },
+          { idx: 2, ja: '討論、議論', pos: '名' }
+        ],
+        examples: [{ ja: '政治家たちは地元の人々とその問題を[[討論した]]。', en: 'The politicians [[debated]] the issue with the local people.' }] }
+    ]
+  },
+  // ===== L3 注意すべき前置詞・副詞 =====
+  {
+    category: { id: 'u-edb-l3-prep-adv', name: 'L3 注意すべき前置詞・副詞', lesson: 'L3', lessonName: '単語', catType: 'theme', catKey: '注意すべき前置詞・副詞', catOrder: 7, meanings: [], intro: '' },
+    entries: [
+      { serial: 855, headEn: 'despite', pos: '前',
+        meanings: [{ idx: 1, ja: '〜にもかかわらず (= in spite of ...)' }],
+        examples: [{ ja: '私たちは大雨[[にもかかわらず]]外出した。', en: 'We went out [[despite]] the heavy rain.' }] },
+      { serial: 856, headEn: 'beyond', pos: '前',
+        meanings: [{ idx: 1, ja: '①〜を越えて (= above) ②〜の向こうに ③《疑問・否定文で》〜のほかに' }],
+        examples: [{ ja: '営業成績は予想を[[超えていた]]。', en: 'The sales results were [[beyond]] our expectations.' }] },
+      { serial: 857, headEn: 'beneath', pos: '前',
+        meanings: [{ idx: 1, ja: '①〜の下に ②〜に値しない' }],
+        examples: [{ ja: 'クジラは波の[[下]]に消えていった。', en: 'The whale disappeared [[beneath]] the waves.' }] },
+      { serial: 858, headEn: 'besides', pos: '前/副',
+        meanings: [
+          { idx: 1, ja: '〜のほかに、〜に加えて', pos: '前' },
+          { idx: 2, ja: 'そのうえ、さらに、そのほかに', pos: '副' }
+        ],
+        examples: [{ ja: '牛乳[[以外]]に何を買うつもりですか。', en: 'What will you buy [[besides]] milk?' }] },
+      { serial: 859, headEn: 'throughout', pos: '前/副',
+        meanings: [
+          { idx: 1, ja: '①〜のいたるところに ②〜の間ずっと', pos: '前' },
+          { idx: 2, ja: 'すっかり', pos: '副' }
+        ],
+        examples: [{ ja: 'その絵は世界[[中]]に知れ渡っている。', en: 'The painting is known [[throughout]] the world.' }] },
+      { serial: 860, headEn: 'therefore', pos: '副',
+        meanings: [{ idx: 1, ja: 'したがって、それゆえに' }],
+        examples: [{ ja: 'この漫画は200部しか刷られていない、[[それゆえ]]希少価値がある。', en: 'Only 200 copies of this comic book were printed, [[therefore]] it is rare.' }],
+        note: '接続詞ではなく副詞。' },
+      { serial: 861, headEn: 'anyway', pos: '副',
+        meanings: [{ idx: 1, ja: 'とにかく、いずれにせよ (= anyhow)、どうにかして' }],
+        examples: [{ ja: '私は彼の贈り物が好きではなかったが、[[とにかく]]ありがとうと言った。', en: "I didn't like his gift, but I said thanks [[anyway]]." }] }
+    ]
+  },
+  // ===== L3 「高い/安い」「多い/少ない」を表す語 =====
+  {
+    category: { id: 'u-edb-l3-high-low', name: 'L3 「高い/安い」「多い/少ない」を表す語', lesson: 'L3', lessonName: '単語', catType: 'theme', catKey: '「高い/安い」「多い/少ない」を表す語', catOrder: 8, meanings: [], intro: 'expensive / cheap は、おもに品物の値段が「高い/安い」を表す。「高くはない」の意味では inexpensive を用いる。high / low は price「価格」や salary「給料」などの「高い/低い」を表し、large / small は expense「費用」や population「人口」などの「多い/少ない」を表す。' },
+    entries: [
+      { serial: 862, headEn: 'high', pos: '形/副',
+        meanings: [
+          { idx: 1, ja: '①(高さ・位置が)高い ②(価値・給料が)高い', pos: '形' },
+          { idx: 2, ja: '高く', pos: '副' }
+        ],
+        examples: [
+          { label: 'ⓐ', ja: 'ここでの生活費はとても[[高い]]。', en: 'The cost of living here is very [[high]].' },
+          { label: 'ⓑ', ja: 'この壁は約2メートルの[[高さ]]だ。', en: 'This wall is about two meters [[high]].' }
+        ],
+        related: [
+          { kind: 'deriv', en: 'height', ja: '高さ', pos: '名' },
+          { kind: 'deriv', en: 'highly', ja: '大いに', pos: '副' }
+        ] },
+      { serial: 863, headEn: 'low', pos: '形/副',
+        meanings: [
+          { idx: 1, ja: '①(高さ・位置が)低い ②(価値・給料が)低い(安い)', pos: '形' },
+          { idx: 2, ja: '低く', pos: '副' }
+        ],
+        examples: [{ ja: '近ごろはコンピュータの価格がとても[[安い]]。', en: 'Computer prices are very [[low]] nowadays.' }] },
+      { serial: 864, headEn: 'expensive', pos: '形',
+        meanings: [{ idx: 1, ja: '(品物が)高価な、費用のかかる (↔ inexpensive 値打ちの割に安い)' }],
+        examples: [{ ja: '彼女は[[高価な]]ドレスを着ていた。', en: 'She wore an [[expensive]] dress.' }] },
+      { serial: 865, headEn: 'cheap', pos: '形',
+        meanings: [{ idx: 1, ja: '(品物が)安い、安物の、安っぽい' }],
+        examples: [{ ja: '私はその[[安い]]いすを買うのをためらった。', en: 'I hesitated to buy the [[cheap]] chair.' }] },
+      { serial: 866, headEn: 'large', pos: '形',
+        meanings: [{ idx: 1, ja: '①(数・量が)多い ②(形・面積・容量が)大きい、広い' }],
+        examples: [{ ja: 'この町は高齢者の人口が[[多い]]。', en: 'This town has a [[large]] population of elderly people.' }],
+        related: [{ kind: 'deriv', en: 'largely', ja: '主として', pos: '副' }] },
+      { serial: 867, headEn: 'small', pos: '形',
+        meanings: [{ idx: 1, ja: '①(数・量が)少ない、わずかな ②(形・面積・容量が)小さい、せまい' }],
+        examples: [{ ja: '公園に[[少ない]]数の子どもたちがいた(公園にいる子どもたちの数は少なかった)。', en: 'There was a [[small]] number of children in the park.' }] },
+      { serial: 868, headEn: 'majority', pos: '名',
+        meanings: [{ idx: 1, ja: '大多数、過半数、多数派 (↔ minority)' }],
+        examples: [{ ja: '[[過半数]]がその計画に同意した。', en: 'The [[majority]] agreed to the plan.' }],
+        related: [{ kind: 'deriv', en: 'major', ja: '(程度が)大きな、主要な', pos: '形' }] },
+      { serial: 869, headEn: 'minority', pos: '名',
+        meanings: [{ idx: 1, ja: '少数派、少数民族 (↔ majority)' }],
+        examples: [{ ja: 'ごく一部の[[少数派]]がその決定に反対した。', en: 'A small [[minority]] disagreed with the decision.' }],
+        related: [{ kind: 'deriv', en: 'minor', ja: '(程度が)小さな、重要でない', pos: '形' }] }
+    ]
+  },
+  // ===== L3 計算に関する語 =====
+  {
+    category: { id: 'u-edb-l3-calc', name: 'L3 計算に関する語', lesson: 'L3', lessonName: '単語', catType: 'theme', catKey: '計算に関する語', catOrder: 9, meanings: [], intro: '' },
+    entries: [
+      { serial: 870, headEn: 'estimate', pos: '動/名',
+        meanings: [
+          { idx: 1, ja: '①(を)見積もる ②を評価する', pos: '動' },
+          { idx: 2, ja: '見積もり(の金額)', pos: '名' }
+        ],
+        examples: [{ ja: 'その巨木は樹齢7,000年と[[見積もられ]]ている。', en: 'The huge tree is [[estimated]] to be 7,000 years old.' }],
+        related: [{ kind: 'deriv', en: 'estimation', ja: '判断、評価', pos: '名' }] },
+      { serial: 871, headEn: 'measure', pos: '動/名',
+        meanings: [
+          { idx: 1, label: 'ⓐ', ja: '①(を)測定する ②を評価する', pos: '動' },
+          { idx: 2, label: 'ⓑ', ja: '①対策 ②基準', pos: '名' }
+        ],
+        examples: [
+          { label: 'ⓐ', ja: 'このテストは英語のスピーキング能力を[[測定する]]。', en: 'This test [[measures]] English speaking ability.' },
+          { label: 'ⓑ', ja: '私たちはコスト削減のために何らかの[[対策]]を講じなければならない。', en: 'We must take some [[measures]] to reduce costs.' }
+        ],
+        related: [
+          { kind: 'colloc', en: 'take measures', ja: '対策をとる' },
+          { kind: 'deriv', en: 'measurement', ja: '測量、寸法', pos: '名' }
+        ] },
+      { serial: 872, headEn: 'divide', pos: '動',
+        meanings: [{ idx: 1, ja: '①を分ける、を分類する ②(数)を割る (↔ multiply を掛ける)' }],
+        examples: [{ ja: '私たちのクラスは5つのグループに[[分けられた]]。', en: 'Our class was [[divided]] into five groups.' }],
+        related: [{ kind: 'deriv', en: 'division', ja: '割り算、分割', pos: '名' }] },
+      { serial: 873, headEn: 'add', pos: '動',
+        meanings: [
+          { idx: 1, label: 'ⓐ', ja: '①(を)足す' },
+          { idx: 2, label: 'ⓑ', ja: '②を加える、をつけ加える' }
+        ],
+        examples: [
+          { label: 'ⓐ', ja: 'この列のすべての数字を[[足してください]]。', en: 'Please [[add]] all the numbers on this line.' },
+          { label: 'ⓑ', ja: '私は自分のコーヒーに砂糖を[[加えた]]。', en: 'I [[added]] sugar to my coffee.' }
+        ],
+        related: [
+          { kind: 'colloc', en: 'add ... to ~', ja: '…を〜に加える' },
+          { kind: 'deriv', en: 'addition', ja: '追加、足し算', pos: '名' },
+          { kind: 'colloc', en: 'in addition to ...', ja: '…に加えて' },
+          { kind: 'deriv', en: 'additional', ja: '追加の', pos: '形' }
+        ] },
+      { serial: 874, headEn: 'amount', pos: '動/名',
+        meanings: [
+          { idx: 1, label: 'ⓐ', ja: '〈amount to ... で〉①(合計して)…に達する ②結局…になる', pos: '動' },
+          { idx: 2, label: 'ⓑ', ja: '①〈the amount で〉総計、総額 ②量、額', pos: '名' }
+        ],
+        examples: [
+          { label: 'ⓐ', ja: '今日の売上は100万円に[[達した]]。', en: "Today's sales [[amounted]] to one million yen." },
+          { label: 'ⓑ', ja: '[[多額]]のお金がその計画に費やされた。', en: 'A large [[amount]] of money was spent on the project.' }
+        ],
+        related: [{ kind: 'colloc', en: 'a large amount of ...', ja: '多量の…、多額の…' }] },
+      { serial: 875, headEn: 'dimension', pos: '名',
+        meanings: [{ idx: 1, ja: '①寸法、面積 ②(物事の)側面' }],
+        examples: [{ ja: 'インターネットでその部屋の[[寸法]]を調べられる。', en: 'You can find the [[dimensions]] of the room on the internet.' }] }
+    ]
+  },
+  // ===== L3 「可能」を表す形容詞 =====
+  {
+    category: { id: 'u-edb-l3-possible', name: 'L3 「可能」を表す形容詞', lesson: 'L3', lessonName: '単語', catType: 'grammar', catKey: '「可能」を表す形容詞', catOrder: 10, meanings: [], intro: 'able は人のみを主語にとる。capable は人も無生物も主語にとる。possible は人を主語にとらず、〈it is possible for + ⟨人⟩ + to do〉の形で用いる。able、capable は限定用法で人を修飾するが、possible は限定用法で人を修飾せず possible solution「可能な解決策」のように使う。' },
+    entries: [
+      { serial: 876, headEn: 'able', pos: '形',
+        meanings: [{ idx: 1, ja: 'できる、有能な (↔ unable できない)' }],
+        examples: [
+          { label: 'ⓐ', ja: '彼は中国語を読んだり書いたりでき[[る]]。', en: 'He [[is able]] to read and write Chinese.' },
+          { label: 'ⓑ', ja: '彼女はわが社で[[有能な]]働き手だ。', en: 'She is an [[able]] worker in our company.' }
+        ],
+        related: [
+          { kind: 'colloc', en: 'be able to do', ja: '〜することができる' },
+          { kind: 'deriv', en: 'ability', ja: '能力、才能', pos: '名' }
+        ] },
+      { serial: 877, headEn: 'capable', pos: '形',
+        meanings: [{ idx: 1, ja: '能力がある、有能な (↔ incapable 能力がない)' }],
+        examples: [{ ja: '彼はいくつもの異なる仕事をうまくこなすことが[[できる]]。', en: 'He [[is capable of]] doing several different jobs well.' }],
+        related: [
+          { kind: 'colloc', en: 'be capable of -ing', ja: '〜することができる' },
+          { kind: 'deriv', en: 'capability', ja: '能力', pos: '名' }
+        ] },
+      { serial: 878, headEn: 'possible', pos: '形',
+        meanings: [{ idx: 1, ja: '①可能な、可能性のある ②できる限りの (↔ impossible 不可能な)' }],
+        examples: [{ ja: '本日、受診することは[[可能]]ですか。', en: 'Is it [[possible]] to see the doctor today?' }],
+        related: [
+          { kind: 'colloc', en: 'it is possible for ⟨人⟩ to do', ja: '⟨人⟩が〜することは可能である' },
+          { kind: 'deriv', en: 'possibility', ja: '可能性', pos: '名' }
+        ] }
+    ]
+  },
+  // ===== L3 人間関係に関する語 =====
+  {
+    category: { id: 'u-edb-l3-relation', name: 'L3 人間関係に関する語', lesson: 'L3', lessonName: '単語', catType: 'theme', catKey: '人間関係に関する語', catOrder: 11, meanings: [], intro: '' },
+    entries: [
+      { serial: 879, headEn: 'attitude', pos: '名',
+        meanings: [{ idx: 1, ja: '①態度、心がまえ ②姿勢' }],
+        examples: [{ ja: '彼の[[態度]]は変える必要がある。', en: 'His [[attitude]] needs to change.' }] },
+      { serial: 880, headEn: 'manner', pos: '名',
+        meanings: [
+          { idx: 1, label: 'ⓐ', ja: '①方法、やり方 (= way)' },
+          { idx: 2, label: 'ⓑ', ja: '②《複》で行儀 ③態度' }
+        ],
+        examples: [
+          { label: 'ⓐ', ja: '彼は私を不快にさせるような[[やり方]]で話した。', en: 'He spoke in a [[manner]] that made me uncomfortable.' },
+          { label: 'ⓑ', ja: '[[行儀]]に気をつけなさい。', en: 'Watch your [[manners]].' }
+        ] },
+      { serial: 881, headEn: 'habit', pos: '名',
+        meanings: [{ idx: 1, ja: '(個人の)習慣、くせ' }],
+        examples: [{ ja: '彼は会議に遅れてくる[[くせ]]がある。', en: 'He has a [[habit]] of coming to meetings late.' }],
+        related: [{ kind: 'deriv', en: 'habitual', ja: '習慣的な', pos: '形' }] },
+      { serial: 882, headEn: 'appointment', pos: '名',
+        meanings: [{ idx: 1, ja: '①(面会の)約束、(医者などの)予約 ②任命' }],
+        examples: [{ ja: '私は3時に教授[[と会う約束がある]]。', en: "I [[have an appointment with]] the professor at three o'clock." }],
+        related: [{ kind: 'colloc', en: 'have an appointment with ...', ja: '…と会う約束がある' }] },
+      { serial: 883, headEn: 'concern', pos: '名/動',
+        meanings: [
+          { idx: 1, label: 'ⓐ', ja: '①関心、心配 ②関係、関連', pos: '名' },
+          { idx: 2, label: 'ⓑ', ja: 'を心配させる、に関係する', pos: '動' }
+        ],
+        examples: [
+          { label: 'ⓐ', ja: '子どもの安全に対する[[関心]]が高まっている。', en: "[[Concern]] is growing for the children's safety." },
+          { label: 'ⓑ', ja: '私は彼の健康が[[心配]]だ。', en: "I'm [[concerned]] about his health." }
+        ] },
+      { serial: 884, headEn: 'affair', pos: '名',
+        meanings: [{ idx: 1, ja: '①《複》で情勢、問題、事情 ②事件' }],
+        examples: [{ ja: '彼は国際[[情勢]]に興味がある。', en: 'He is interested in international [[affairs]].' }],
+        related: [{ kind: 'colloc', en: 'foreign affairs', ja: '外交問題' }] },
+      { serial: 885, headEn: 'consensus', pos: '名',
+        meanings: [{ idx: 1, ja: '意見の一致、合意' }],
+        examples: [{ ja: '私たちはその件に関して明確な[[合意]]に達した。', en: 'We reached a clear [[consensus]] on that matter.' }],
+        related: [{ kind: 'colloc', en: 'reach (a) consensus', ja: '合意に達する' }] }
+    ]
+  },
+  // ===== L3 「口を使ってする」ことを表す語 =====
+  {
+    category: { id: 'u-edb-l3-speak-mouth', name: 'L3 「口を使ってする」ことを表す語', lesson: 'L3', lessonName: '単語', catType: 'theme', catKey: '「口を使ってする」ことを表す語', catOrder: 12, meanings: [], intro: '' },
+    entries: [
+      { serial: 886, headEn: 'announce', pos: '動',
+        meanings: [{ idx: 1, ja: 'を公表する、を知らせる' }],
+        examples: [{ ja: 'その野球選手は昨日自らの引退[[を公表した]]。', en: 'The baseball player [[announced]] his retirement yesterday.' }],
+        related: [{ kind: 'deriv', en: 'announcement', ja: '公表、告知', pos: '名' }] },
+      { serial: 887, headEn: 'greet', pos: '動',
+        meanings: [{ idx: 1, ja: 'にあいさつをする、を迎える' }],
+        examples: [{ ja: 'ケイトとマナはいつも互いに英語で[[あいさつをしている]]。', en: 'Kate and Mana always [[greet]] each other in English.' }],
+        related: [{ kind: 'deriv', en: 'greeting', ja: 'あいさつ', pos: '名' }] },
+      { serial: 888, headEn: 'scold', pos: '動',
+        meanings: [{ idx: 1, ja: '(を)しかる、(に)小言を言う' }],
+        examples: [{ ja: '私の母親は成績が悪いことで兄(弟)を[[しかった]]。', en: 'My mother [[scolded]] my brother for his bad grades.' }],
+        related: [{ kind: 'colloc', en: 'scold ⟨人⟩ for ...', ja: '…のことで⟨人⟩をしかる' }] },
+      { serial: 889, headEn: 'scream', pos: '動/名',
+        meanings: [
+          { idx: 1, ja: '悲鳴を上げる、叫ぶ', pos: '動' },
+          { idx: 2, ja: '悲鳴、絶叫', pos: '名' }
+        ],
+        examples: [{ ja: '警察は誰かが[[悲鳴を上げる]]のを聞いた。', en: 'The police heard someone [[scream]].' }] },
+      { serial: 890, headEn: 'quarrel', pos: '名/動',
+        meanings: [
+          { idx: 1, ja: '口論、言い争い', pos: '名' },
+          { idx: 2, ja: '口論する、言い争う', pos: '動' }
+        ],
+        examples: [{ ja: '私は電車でナンシーと[[口論した]]。', en: 'I had a [[quarrel]] with Nancy on the train.' }],
+        related: [{ kind: 'colloc', en: 'have a quarrel with ...', ja: '…と口論する' }] },
+      { serial: 891, headEn: 'breathe', pos: '動',
+        meanings: [{ idx: 1, ja: '呼吸する、息をする' }],
+        examples: [{ ja: '深[[呼吸]]してリラックスしてください。', en: 'Now just [[breathe]] deeply and relax.' }],
+        related: [{ kind: 'deriv', en: 'breath', ja: '息、呼吸', pos: '名' }] },
+      { serial: 892, headEn: 'sigh', pos: '動/名',
+        meanings: [
+          { idx: 1, ja: 'ため息をつく', pos: '動' },
+          { idx: 2, ja: 'ため息', pos: '名' }
+        ],
+        examples: [{ ja: '彼女は自席に座り、[[ため息をついた]]。', en: 'She sat down at her desk and [[sighed]].' }] }
+    ]
   }
 ];
 
@@ -6289,7 +6849,8 @@ function renderUnits(subjectId) {
   const isEdbSubject = subjectId === 'english-db';
   const edbTestHtml = (() => {
     if (!isEdbSubject) return '';
-    const lessons = ['L1', 'L2'];
+    // Lesson は units から動的に抽出 (L1/L2/L3/… 増えても自動追随)
+    const lessons = [...new Set(units.map(u => u.lesson).filter(Boolean))].sort();
     const btns = lessons.map(ls => {
       const lsUnits = units.filter(u => u.lesson === ls);
       if (lsUnits.length === 0) return '';
