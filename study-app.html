@@ -7853,7 +7853,17 @@ function renderUnits(subjectId) {
     unitsSelectedIds = new Set();
     unitsLastSubjectId = subjectId;
   }
-  const units = state.units.filter(u => u.subjectId === subjectId && isUnitForProfile(u));
+  let units = state.units.filter(u => u.subjectId === subjectId && isUnitForProfile(u));
+  // 英語DB は各単元の最小 serial で並び替え (通し番号順)
+  if (subjectId === 'english-db') {
+    const minSerialFor = (uid) => {
+      const serials = state.questions
+        .filter(q => q.unitId === uid && typeof q.serial === 'number')
+        .map(q => q.serial);
+      return serials.length ? Math.min.apply(null, serials) : Number.MAX_SAFE_INTEGER;
+    };
+    units = units.slice().sort((a, b) => minSerialFor(a.id) - minSerialFor(b.id));
+  }
 
   const totalQ = state.questions.filter(q => {
     const u = getUnit(q.unitId);
